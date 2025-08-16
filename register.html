@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrar Nuevo Usuario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .btn-animation { transition: all 0.2s ease-in-out; }
+        .btn-animation:hover { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); }
+        .input-focus-animation:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25); }
+        .modal-overlay { background-color: rgba(0, 0, 0, 0.5); z-index: 999; }
+        .modal-content { z-index: 1000; transform: translateY(-20px); opacity: 0; transition: opacity 0.3s ease-out, transform 0.3s ease-out; }
+        .modal-content.show { opacity: 1; transform: translateY(0); }
+        /* Eliminadas las reglas CSS específicas para details/summary ya que no se usarán */
+        .message-success { background-color: #d1fae5; border-color: #a7f3d0; color: #065f46; }
+        .message-error { background-color: #fee2e2; border-color: #fca5a5; color: #991b1b; }
+        .message-info { background-color: #e0f2fe; border-color: #93c5fd; color: #1e40af; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-lg mx-auto">
+        <div class="bg-white rounded-3xl shadow-2xl p-8 sm:p-10 border border-gray-100">
+            <h1 class="text-4xl font-extrabold text-center text-gray-900 mb-3">Registrar Nuevo Usuario</h1>
+            <p class="text-center text-gray-500 mb-8 max-w-sm mx-auto">Completa el formulario para crear una nueva cuenta.</p>
+
+            <!-- Navigation Buttons -->
+            <div class="flex justify-start mb-8">
+                <button id="back-button" class="btn-animation py-2 px-4 rounded-xl font-semibold bg-gray-200 text-gray-800 shadow-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">Regresar</button>
+            </div>
+
+            <!-- Registration Form Container -->
+            <div id="registration-section" class="form-container">
+                <form id="newUserForm">
+                    <!-- Sección DATOS BÁSICOS (anteriormente un <details>, ahora directamente visible) -->
+                    <div id="datos-basicos-content" class="space-y-5 mb-5 rounded-xl shadow-sm border border-gray-200 bg-white p-6">
+                        <h2 class="text-xl font-semibold text-gray-900 mb-4">Datos Básicos del Cliente</h2>
+                        <div>
+                            <label for="nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre Completo</label>
+                            <input type="text" id="nombre" name="nombre" required
+                                   class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800">
+                        </div>
+                        <div>
+                            <label for="correo" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                            <input type="email" id="correo" name="correo" 
+                                   class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800">
+                        </div>
+                        <div>
+                            <label for="telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+                            <input type="tel" id="telefono" name="telefono" 
+                                   class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800">
+                        </div>
+                        <div>
+                            <label for="cliente_idx" class="block text-sm font-medium text-gray-700 mb-1">Clave IDX Númerica</label>
+                            <input type="text" id="cliente_idx" name="cliente_idx" required
+                                   class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800"
+                                   placeholder="Ej. ABC12345">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-animation w-full mt-8 flex items-center justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Registrarme
+                    </button>
+                </form>
+            </div>
+
+            <!-- Área para mostrar mensajes y resultados del formulario de registro -->
+            <div id="result-container" class="mt-8 text-center p-4 rounded-xl transition-all duration-300 ease-in-out"></div>
+        </div>
+    </div>
+
+    <!-- Estructura del Modal (Pop-up) -->
+    <div id="registration-modal" class="fixed inset-0 flex items-center justify-center hidden modal-overlay">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full modal-content">
+            <h3 class="text-2xl font-bold text-green-700 text-center mb-4" id="modal-title"></h3>
+            <p class="text-gray-700 text-center mb-4" id="modal-message"></p>
+            <div id="modal-content-details" class="text-left bg-green-50 text-green-800 p-4 rounded-lg space-y-2 mb-6">
+                <!-- Los detalles del registro se insertarán aquí por JavaScript -->
+            </div>
+            <button type="button" onclick="handleAcceptRegistration()" class="btn-animation w-full flex items-center justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Aceptar
+            </button>
+        </div>
+    </div>
+
+    <!-- Nuevo Modal de Confirmación para Salir/Regresar -->
+    <div id="confirm-exit-modal" class="fixed inset-0 flex items-center justify-center hidden modal-overlay">
+        <div class="bg-white rounded-xl shadow-2xl p-8 max-w-sm w-full modal-content">
+            <h3 class="text-2xl font-bold text-red-700 text-center mb-4">¡Atención!</h3>
+            <p class="text-gray-700 text-center mb-6">Si regresas a la página de inicio, tu sesión de registro actual se perderá.</p>
+            <div class="flex justify-center space-x-4">
+                <button type="button" id="confirm-exit-accept-btn" class="btn-animation py-2.5 px-6 rounded-xl font-semibold text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                    Aceptar y Salir
+                </button>
+                <button type="button" id="confirm-exit-cancel-btn" class="btn-animation py-2.5 px-6 rounded-xl font-semibold bg-gray-300 text-gray-800 hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIGURACIÓN - ref DRIVE archivo: App Registro Datos Taller (script)
+        const scriptURL = 'https://script.google.com/macros/s/AKfycbxdsFH6vUuDO7oe4WwL-b4KcvCcfomByJ5r9PbUwDFKdmXIAmSxeNw2OALMFXDV8wRs1Q/exec'; // ¡Reemplaza con tu URL de Google Apps Script!
+
+        // Elementos del DOM del formulario de registro
+        const newUserForm = document.getElementById('newUserForm');
+        const resultContainer = document.getElementById('result-container');
+        const registrationModal = document.getElementById('registration-modal');
+        const modalContentDetails = document.getElementById('modal-content-details');
+
+        // Nuevos elementos del DOM para el modal de confirmación de salida
+        const confirmExitModal = document.getElementById('confirm-exit-modal');
+        const confirmExitAcceptBtn = document.getElementById('confirm-exit-accept-btn');
+        const confirmExitCancelBtn = document.getElementById('confirm-exit-cancel-btn');
+        const backButton = document.getElementById('back-button'); // Nuevo: Referencia al botón de regresar
+
+        // Función para generar un UUID (ID único de cliente)
+        function generateUUID() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789';
+            let result = '';
+            for (let i = 0; i < 5; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+
+        // Función para generar una contraseña aleatoria
+        function generateRandomPassword(length = 6) {
+            const charset = "abcefghijkmnoqrstuvwxyzABCEFGHIJKLMNQRSTUVWXYZ23456789";
+            let password = "";
+            for (let i = 0; i < length; i++) {
+                const randomIndex = Math.floor(Math.random() * charset.length);
+                password += charset[randomIndex];
+            }
+            return password;
+        }
+
+        // Función para formatear la fecha y hora a dd/mm/aaaa hh:mm:ss
+        function formatDateTime(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses son 0-indexados
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        }
+
+        // Manejador del formulario de registro
+        newUserForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const submitButton = newUserForm.querySelector('button[type="submit"]');
+            setLoading(submitButton, 'Registrando...');
+
+            const formData = new FormData(newUserForm);
+            const formDataObj = Object.fromEntries(formData.entries());
+
+            formDataObj.clave = generateRandomPassword();
+            formDataObj.cliente_id = generateUUID();
+            formDataObj.productos_seleccionados_carrito = JSON.stringify([]); // Siempre vacío en esta página
+            formDataObj.cliente_data_reg = formatDateTime(new Date()); // Añadir fecha y hora de registro para Historia
+            formDataObj.cliente_treg = formatDateTime(new Date()); // Añadir fecha y hora de registro para Clientes
+            formDataObj.cliente_tienda = 'X6_Taller'; // Añadir el campo 'cliente_tienda'
+
+            console.log("Contenido completo del objeto JSON enviado:", formDataObj);
+
+            fetch(scriptURL, { method: 'POST', body: JSON.stringify(formDataObj) })
+                .then(response => response.json())
+                .then(responseData => {
+                    console.log('Success:', responseData);
+                    if (responseData.status === 'success') {
+                        // Guardar el nuevo usuario en sessionStorage
+                        const newUser = {
+                            Cliente_ID: formDataObj.cliente_id,
+                            Cliente_Nombre: formDataObj.nombre,
+                            Cliente_Clave: formDataObj.clave, // La clave generada
+                            Cliente_Perfil: 'Client', // Por defecto, es un cliente
+                            Cliente_Data_Reg: formDataObj.cliente_data_reg // Guardar la fecha/hora formateada
+                            
+                        };
+                        sessionStorage.setItem('loggedInUser', JSON.stringify(newUser));
+                        showRegistrationSuccessModal(formDataObj, formDataObj.cliente_id);
+                    } else {
+                        showResult(`
+                            <h3 class="text-xl font-bold text-red-700 mb-2">Error en el Registro</h3>
+                            <p class="text-gray-700 mt-2">${responseData.message || 'No se pudo completar el registro. Inténtalo de nuevo.'}</p>
+                        `, 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error!', error.message);
+                    showResult(`
+                        <h3 class="text-xl font-bold text-red-700 mb-2">Error en la Conexión</h3>
+                        <p class="text-gray-700 mt-2">Ocurrió un problema al conectar con el servidor. Inténtalo de nuevo más tarde o contacta soporte.</p>
+                    `, 'error');
+                })
+                .finally(() => {
+                    resetButton(submitButton, 'Registrarme');
+                });
+        });
+
+        // Función para mostrar el modal de registro con los datos
+        function showRegistrationSuccessModal(formData, clienteId) {
+            const modalTitleElement = document.getElementById('modal-title');
+            const modalMessageElement = document.getElementById('modal-message');
+
+            if (modalTitleElement) modalTitleElement.textContent = '¡Registro Exitoso!';
+            if (modalMessageElement) modalMessageElement.textContent = 'Tus datos han sido guardados correctamente:';
+
+            modalContentDetails.innerHTML = `
+                <p class="text-sm"><strong>Nombre:</strong> ${formData.nombre}</p>
+                <p class="text-sm"><strong>Correo:</strong> ${formData.correo || 'N/A'}</p>
+                <p class="text-sm"><strong>Teléfono:</strong> ${formData.telefono || 'N/A'}</p>
+                <p class="text-sm"><strong>Clave IDX Númerica:</strong> ${formData.cliente_idx || 'N/A'}</p>
+                <div class="relative flex items-center w-full">
+                    <p class="text-sm font-bold mr-2">Clave:</p>
+                    <input type="text" value="${formData.clave}" readonly class="flex-grow shadow appearance-none border rounded-lg py-1.5 px-2 text-gray-700 bg-gray-100 cursor-text" id="modal-password-display">
+                    <span id="copy-password-icon" class="absolute right-2 cursor-pointer text-gray-500 hover:text-gray-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.375m-9-1.5h.008v.008H10.5v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+                        </svg>
+                    </span>                 
+                </div>
+                <p class="text-sm"><strong>ID Cliente:</strong> ${clienteId}</p>
+                <p class="text-sm"><strong>Fecha Registro:</strong> ${formData.cliente_treg}</p>
+                <p class="text-sm"><strong>Tienda:</strong> ${formData.cliente_tienda}</p>
+            `;
+            registrationModal.classList.remove('hidden');
+            setTimeout(() => {
+                registrationModal.querySelector('.modal-content').classList.add('show');
+
+                // Añadir event listener al icono de copiar después de que el modal se muestre
+                const copyPasswordIcon = document.getElementById('copy-password-icon');
+                if (copyPasswordIcon) {
+                    copyPasswordIcon.addEventListener('click', () => {
+                        const passwordField = document.getElementById('modal-password-display');
+                        if (passwordField) {
+                            passwordField.select(); // Selecciona el texto del campo
+                            document.execCommand('copy'); // Copia el texto seleccionado
+                            passwordField.setSelectionRange(0, 0); // Deselecciona el texto inmediatamente
+                            
+                            // Opcional: Mostrar un mensaje de confirmación temporal
+                            const originalIconHtml = copyPasswordIcon.innerHTML;
+                            copyPasswordIcon.innerHTML = `<span class="text-green-500">¡Copiado!</span>`;
+                            setTimeout(() => {
+                                copyPasswordIcon.innerHTML = originalIconHtml;
+                            }, 500);
+                        }
+                    });
+                }
+            }, 10);
+        }
+
+        // Función para manejar el clic en el botón "Aceptar" del modal
+        function handleAcceptRegistration() {
+            registrationModal.querySelector('.modal-content').classList.remove('show');
+            setTimeout(() => {
+                registrationModal.classList.add('hidden');
+                newUserForm.reset();
+                resultContainer.innerHTML = '';
+                resultContainer.className = 'mt-8 text-center p-4 rounded-xl transition-all duration-300 ease-in-out';
+                window.location.href = 'index.html'; // Redirigir al menú después de aceptar
+            }, 300);
+        }
+
+        // Funciones de utilidad para la UI (mostrar carga, restablecer botón, mostrar resultados, modal)
+        function setLoading(button, text) {
+            button.disabled = true;
+            button.classList.add('opacity-75', 'cursor-not-allowed');
+            button.innerHTML = `<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>${text}`;
+        }
+
+        function resetButton(button, text) {
+            button.disabled = false;
+            button.classList.remove('opacity-75', 'cursor-not-allowed');
+            button.innerHTML = text;
+        }
+
+        function showResult(htmlContent, type) {
+            resultContainer.innerHTML = htmlContent;
+            if (type === 'success') {
+                resultContainer.classList.add('bg-green-100', 'border-green-300', 'text-green-800', 'shadow-md');
+                resultContainer.classList.remove('bg-red-100', 'border-red-300', 'text-red-800');
+            } else {
+                resultContainer.classList.add('bg-red-100', 'border-red-300', 'text-red-800', 'shadow-md');
+                resultContainer.classList.remove('bg-green-100', 'border-green-300', 'text-green-800');
+            }
+        }
+
+        function showMessageModal(title, message, type) {
+            const modal = document.getElementById('registration-modal');
+            const modalTitleElement = modal.querySelector('#modal-title');
+            const modalMessageElement = modal.querySelector('#modal-message');
+            const modalContent = modal.querySelector('.modal-content');
+
+            if (modalTitleElement) {
+                modalTitleElement.textContent = title;
+                modalTitleElement.classList.remove('text-green-700', 'text-red-700', 'text-blue-700');
+                if (type === 'success') { modalTitleElement.classList.add('text-green-700'); }
+                else if (type === 'error') { modalTitleElement.classList.add('text-red-700'); }
+                else if (type === 'info') { modalTitleElement.classList.add('text-blue-700'); }
+            }
+            if (modalMessageElement) {
+                modalMessageElement.textContent = message;
+                modalMessageElement.classList.remove('text-gray-700');
+                if (type === 'success') { modalMessageElement.classList.add('text-green-800'); }
+                else if (type === 'error') { modalMessageElement.classList.add('text-red-800'); }
+                else if (type === 'info') { modalMessageElement.classList.add('text-blue-800'); }
+                else { modalMessageElement.classList.add('text-gray-700'); }
+            }
+            modalContent.classList.remove('bg-green-100', 'bg-red-100', 'bg-blue-100', 'bg-white');
+            if (type === 'success') { modalContent.classList.add('bg-green-100'); }
+            else if (type === 'error') { modalContent.classList.add('bg-red-100'); }
+            else if (type === 'info') { modalContent.classList.add('bg-blue-100'); }
+            else { modalContent.classList.add('bg-white'); }
+
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modalContent.classList.add('show');
+            }, 10);
+        }
+
+        window.closeMessageModal = function() {
+            const modal = document.getElementById('registration-modal');
+            const modalContent = modal.querySelector('.modal-content');
+            modalContent.classList.remove('show');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        };
+
+        // Lógica para el botón "Regresar"
+        backButton.addEventListener('click', () => {
+            confirmExitModal.classList.remove('hidden');
+            setTimeout(() => {
+                confirmExitModal.querySelector('.modal-content').classList.add('show');
+            }, 10);
+        });
+
+        // Lógica para el botón "Aceptar y Salir" del modal de confirmación
+        confirmExitAcceptBtn.addEventListener('click', () => {
+            sessionStorage.removeItem('loggedInUser'); // Asegurarse de limpiar cualquier sesión si existiera
+            window.location.href = 'index.html'; // Redirigir al login
+        });
+
+        // Lógica para el botón "Cancelar" del modal de confirmación
+        confirmExitCancelBtn.addEventListener('click', () => {
+            confirmExitModal.querySelector('.modal-content').classList.remove('show');
+            setTimeout(() => {
+                confirmExitModal.classList.add('hidden');
+            }, 300);
+        });
+    </script>
+</body>
+</html>
