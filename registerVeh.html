@@ -307,7 +307,7 @@
                 Vehiculo_PersonaContacto: personaContacto, // Nuevo campo
                 Vehiculo_Estado: 'Activo',
                 // Se usa el ID del cliente de la sesión para el registro
-                Vehiculo_UsuarioReg: loggedInUser.Cliente_ID,
+                Vehiculo_UsuarioReg: loggedInUser.Cliente_Nombre,
                 Vehiculo_Data_Reg: formatDateTime(new Date()),
                 // CAMBIO: Se incluye el Cliente_ID para que el modal lo pueda mostrar
                 Cliente_ID: loggedInUser.Cliente_ID
