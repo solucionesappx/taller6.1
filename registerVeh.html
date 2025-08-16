@@ -295,17 +295,22 @@
             }
             loggedInUser = JSON.parse(userString);
 
+            // CORRECCIÓN: Se actualiza el objeto `vehicleData` para que use los valores correctos
             const vehicleData = {
                 Vehiculo_ID: generateShortUUID(),
-                Cliente_Nombre: 'X',
+                // Se usa el nombre del cliente de la sesión para el registro
+                Cliente_Nombre: loggedInUser.Cliente_Nombre,
                 Vehiculo_Marca: marca,
                 Vehiculo_Modelo: modelo,
                 Vehiculo_Año: anio,
                 Vehiculo_Placa: placa,
                 Vehiculo_PersonaContacto: personaContacto, // Nuevo campo
                 Vehiculo_Estado: 'Activo',
-                Vehiculo_UsuarioReg: loggedInUser.Cliente_Nombre,
-                Vehiculo_Data_Reg: formatDateTime(new Date())
+                // Se usa el ID del cliente de la sesión para el registro
+                Vehiculo_UsuarioReg: loggedInUser.Cliente_ID,
+                Vehiculo_Data_Reg: formatDateTime(new Date()),
+                // CAMBIO: Se incluye el Cliente_ID para que el modal lo pueda mostrar
+                Cliente_ID: loggedInUser.Cliente_ID
             };          
             console.log("Contenido completo del objeto JSON enviado:", vehicleData);
             
@@ -352,7 +357,8 @@
 
         // --- Inicialización al cargar la página ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Verificar si el usuario está logueado
+            // Se comenta la validación de sesión para pruebas
+            /*
             const userString = sessionStorage.getItem('loggedInUser');
             if (!userString) {
                 // Si no hay usuario logueado, redirigir al login
@@ -360,6 +366,13 @@
                 return;
             }
             loggedInUser = JSON.parse(userString);
+            */
+            // Se asigna un usuario de prueba fijo para evitar la redirección durante el desarrollo.
+            // Se ha añadido un ID de cliente para pruebas del modal y el script.
+            loggedInUser = {
+                "Cliente_Nombre": "Pruebas",
+                "Cliente_ID": "TEST-12345"
+            };
             welcomeMessage.textContent = `Hola, ${loggedInUser.Cliente_Nombre}.`;
         });
 
