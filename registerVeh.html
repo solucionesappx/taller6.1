@@ -357,22 +357,19 @@
 
         // --- Inicialización al cargar la página ---
         document.addEventListener('DOMContentLoaded', () => {
-            // Se comenta la validación de sesión para pruebas
-            /*
+            // Lógica para verificar si existe un usuario logueado en sessionStorage
             const userString = sessionStorage.getItem('loggedInUser');
-            if (!userString) {
-                // Si no hay usuario logueado, redirigir al login
-                window.location.href = 'index.html';
-                return;
+
+            // Si hay un usuario, se usan sus datos de sesión (producción).
+            if (userString) {
+                loggedInUser = JSON.parse(userString);
+            } else {
+                // Si no, se usan los datos de prueba (entorno de desarrollo/pruebas).
+                loggedInUser = {
+                    "Cliente_Nombre": "Pruebas",
+                    "Cliente_ID": "TEST-12345"
+                };
             }
-            loggedInUser = JSON.parse(userString);
-            */
-            // Se asigna un usuario de prueba fijo para evitar la redirección durante el desarrollo.
-            // Se ha añadido un ID de cliente para pruebas del modal y el script.
-            loggedInUser = {
-                "Cliente_Nombre": "Pruebas",
-                "Cliente_ID": "TEST-12345"
-            };
             welcomeMessage.textContent = `Hola, ${loggedInUser.Cliente_Nombre}.`;
         });
 
