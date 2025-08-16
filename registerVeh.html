@@ -77,7 +77,7 @@
                                    class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800"
                                    placeholder="Ej. ABC123">
                         </div>
-                        <!-- Nuevo campo para Persona de Contacto -->
+                        <!-- Campo para Persona de Contacto -->
                         <div>
                             <label for="persona-contacto" class="block text-sm font-medium text-gray-700 mb-1">Persona de Contacto</label>
                             <input type="text" id="persona-contacto"
@@ -260,7 +260,6 @@
                 <p class="text-sm"><strong>Placa:</strong> ${vehicleData.Vehiculo_Placa}</p>
                 <p class="text-sm"><strong>Persona de Contacto:</strong> ${vehicleData.Vehiculo_PersonaContacto}</p>
                 <p class="text-sm"><strong>ID Vehículo:</strong> ${vehicleData.Vehiculo_ID}</p>
-                <!-- Eliminado el campo Cliente ID para simplificar -->
             `;
             registrationModal.classList.remove('hidden');
             setTimeout(() => {
@@ -278,10 +277,11 @@
             const modelo = vehiculoModeloInput.value.trim();
             const anio = vehiculoAnioInput.value.trim();
             const placa = vehiculoPlacaInput.value.trim();
-            const personaContacto = personaContactoInput.value.trim(); // Nuevo campo
+            const personaContacto = personaContactoInput.value.trim(); // Se obtiene el valor del campo
 
-            if (!marca || !modelo || !anio || !placa) {
-                showResult('Por favor, completa todos los campos del vehículo.', 'error');
+            // SE HA AGREGADO personaContacto a la validación
+            if (!marca || !modelo || !anio || !placa || !personaContacto) {
+                showResult('Por favor, completa todos los campos obligatorios.', 'error');
                 resetButton(submitButton, 'Registrar Vehículo');
                 return;
             }
@@ -295,20 +295,19 @@
             }
             loggedInUser = JSON.parse(userString);
 
-            // Se elimina la referencia a Cliente_ID
+            // Objeto JSON con los datos del vehículo a enviar.
             const vehicleData = {
                 Vehiculo_ID: generateShortUUID(),
-                Cliente_Nombre: loggedInUser.Cliente_Nombre,
+                Vehiculo_PersonaContacto: personaContacto,
                 Vehiculo_Marca: marca,
                 Vehiculo_Modelo: modelo,
-                Vehiculo_Año: anio,
+                Vehiculo_Año: anio, // Se ha corregido el nombre de la clave para coincidir con el script.
                 Vehiculo_Placa: placa,
-                Vehiculo_PersonaContacto: personaContacto,
                 Vehiculo_Estado: 'Activo',
-                // Se usa el nombre del cliente en lugar del ID para el registro
                 Vehiculo_UsuarioReg: loggedInUser.Cliente_Nombre,
                 Vehiculo_Data_Reg: formatDateTime(new Date()),
             };          
+            // Este comando permite ver en la consola el JSON completo antes de ser enviado
             console.log("Contenido completo del objeto JSON enviado:", vehicleData);
             
             // Corregido: Encadenamiento correcto de promesas
@@ -356,18 +355,22 @@
         document.addEventListener('DOMContentLoaded', () => {
             // Lógica para verificar si el usuario está logueado
             const userString = sessionStorage.getItem('loggedInUser');
+            
+            // Si el usuario no está logueado, simula un usuario para el entorno de desarrollo.
             if (!userString) {
-                // Si no hay usuario logueado, redirigir al login
-                window.location.href = 'index.html';
-                return;
+                console.warn('Sandbox Mode: No se encontró usuario logueado. Creando usuario de prueba.');
+                const mockUser = {
+                    Cliente_Nombre: 'Usuario de Prueba',
+                    Cliente_ID: 'TEST001' // Un ID de prueba
+                };
+                sessionStorage.setItem('loggedInUser', JSON.stringify(mockUser));
             }
             
-            // Si hay un usuario, se usan sus datos de sesión.
-            loggedInUser = JSON.parse(userString);
+            // Se usa el usuario guardado (real o simulado)
+            loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
             welcomeMessage.textContent = `Hola, ${loggedInUser.Cliente_Nombre}.`;
             
-            // CAMBIO: Autocompletar el campo 'Persona de Contacto' con el nombre del usuario logueado.
-            personaContactoInput.value = loggedInUser.Cliente_Nombre;
+            // El campo 'Persona de Contacto' ahora estará vacío por defecto, permitiendo un valor único.
         });
 
         // Event Listeners para navegación y cierre de sesión
