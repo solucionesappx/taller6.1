@@ -260,7 +260,7 @@
                 <p class="text-sm"><strong>Placa:</strong> ${vehicleData.Vehiculo_Placa}</p>
                 <p class="text-sm"><strong>Persona de Contacto:</strong> ${vehicleData.Vehiculo_PersonaContacto}</p>
                 <p class="text-sm"><strong>ID Vehículo:</strong> ${vehicleData.Vehiculo_ID}</p>
-                <p class="text-sm"><strong>Cliente ID:</strong> ${vehicleData.Cliente_Nombre}</p>
+                <!-- Eliminado el campo Cliente ID para simplificar -->
             `;
             registrationModal.classList.remove('hidden');
             setTimeout(() => {
@@ -295,22 +295,19 @@
             }
             loggedInUser = JSON.parse(userString);
 
-            // CORRECCIÓN: Se actualiza el objeto `vehicleData` para que use los valores correctos
+            // Se elimina la referencia a Cliente_ID
             const vehicleData = {
                 Vehiculo_ID: generateShortUUID(),
-                // Se usa el nombre del cliente de la sesión para el registro
                 Cliente_Nombre: loggedInUser.Cliente_Nombre,
                 Vehiculo_Marca: marca,
                 Vehiculo_Modelo: modelo,
                 Vehiculo_Año: anio,
                 Vehiculo_Placa: placa,
-                Vehiculo_PersonaContacto: personaContacto, // Nuevo campo
+                Vehiculo_PersonaContacto: personaContacto,
                 Vehiculo_Estado: 'Activo',
-                // Se usa el ID del cliente de la sesión para el registro
+                // Se usa el nombre del cliente en lugar del ID para el registro
                 Vehiculo_UsuarioReg: loggedInUser.Cliente_Nombre,
                 Vehiculo_Data_Reg: formatDateTime(new Date()),
-                // CAMBIO: Se incluye el Cliente_ID para que el modal lo pueda mostrar
-                Cliente_ID: loggedInUser.Cliente_Nombre
             };          
             console.log("Contenido completo del objeto JSON enviado:", vehicleData);
             
@@ -361,7 +358,6 @@
             const userString = sessionStorage.getItem('loggedInUser');
             if (!userString) {
                 // Si no hay usuario logueado, redirigir al login
-                // Este es el comportamiento de producción, asegurando que solo los usuarios autenticados puedan acceder.
                 window.location.href = 'index.html';
                 return;
             }
@@ -369,6 +365,9 @@
             // Si hay un usuario, se usan sus datos de sesión.
             loggedInUser = JSON.parse(userString);
             welcomeMessage.textContent = `Hola, ${loggedInUser.Cliente_Nombre}.`;
+            
+            // CAMBIO: Autocompletar el campo 'Persona de Contacto' con el nombre del usuario logueado.
+            personaContactoInput.value = loggedInUser.Cliente_Nombre;
         });
 
         // Event Listeners para navegación y cierre de sesión
