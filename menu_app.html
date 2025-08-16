@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Menú Principal</title>
+    <!-- Incluye Tailwind CSS desde CDN para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga la fuente Inter de Google Fonts para un diseño limpio -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Incluye la biblioteca de íconos Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col">
+
+    <!-- Barra de navegación superior con estilo personalizado -->
+    <nav class="bg-gray-900 text-white p-4 shadow-md flex items-center justify-between">
+        
+        <!-- Contenedor del botón de Inicio con el efecto de hover -->
+        <button id="homeBtn" class="group flex items-center space-x-2 p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white">
+            <i class="fas fa-home text-xl"></i>
+            <span class="text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Inicio</span>
+        </button>
+
+        <!-- Título de la aplicación, centrado -->
+        <h1 class="text-2xl font-bold flex-grow text-center">Menú Principal</h1>
+
+        <!-- Contenedor del botón de Cerrar Sesión con el efecto de hover, ahora sin fondo rojo -->
+        <button id="logoutBtn" class="group flex items-center space-x-2 p-2 rounded-lg text-red-500 hover:text-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400">
+            <span class="text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Cerrar Sesión</span>
+            <i class="fas fa-sign-out-alt text-xl"></i>
+        </button>
+    </nav>
+
+    <!-- Contenedor principal para los botones del dashboard -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+
+            <!-- Botón de Vehículos -->
+            <button id="vehiculosBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <span class="block text-4xl font-extrabold mb-2">🚗</span>
+                <span class="block text-2xl font-bold">Vehículos</span>
+            </button>
+
+            <!-- Botón de Órdenes -->
+            <button id="ordenesBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <span class="block text-4xl font-extrabold mb-2">📋</span>
+                <span class="block text-2xl font-bold">Órdenes</span>
+            </button>
+
+            <!-- Botón de Buscar -->
+            <button class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <span class="block text-4xl font-extrabold mb-2">🔍</span>
+                <span class="block text-2xl font-bold">Buscar</span>
+            </button>
+
+            <!-- Botón de Modificar -->
+            <button class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
+                <span class="block text-4xl font-extrabold mb-2">✏️</span>
+                <span class="block text-2xl font-bold">Modificar</span>
+            </button>
+
+        </div>
+    </main>
+    
+    <!-- Contenedor de mensajes (simula una alerta sin usar `alert()`) -->
+    <div id="messageBox" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+            <p id="messageText" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></p>
+            <button onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                Entendido
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Maneja los clics de los botones para redireccionar a otras páginas.
+         */
+
+        // Botón de Inicio (nuevo)
+        document.getElementById('homeBtn').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+
+        // Botón Cerrar Sesión
+        document.getElementById('logoutBtn').addEventListener('click', function() {
+            window.location.href = 'index.html';
+        });
+
+        // Botón Vehículos
+        document.getElementById('vehiculosBtn').addEventListener('click', function() {
+            window.location.href = 'registerVeh.html';
+        });
+
+        // Botón Órdenes
+        document.getElementById('ordenesBtn').addEventListener('click', function() {
+            window.location.href = 'registerOrd.html';
+        });
+
+        // Manejador genérico para los botones de Buscar y Modificar
+        document.querySelectorAll('.menu-btn:not(#vehiculosBtn):not(#ordenesBtn)').forEach(button => {
+            button.addEventListener('click', function() {
+                const buttonName = this.querySelector('span:last-child').innerText;
+                showMessage(`Has presionado el botón de "${buttonName}".`);
+            });
+        });
+        
+        /**
+         * Muestra un mensaje personalizado en el cuadro de diálogo.
+         * @param {string} message - El texto que se mostrará en el cuadro de mensaje.
+         */
+        function showMessage(message) {
+            document.getElementById('messageText').innerText = message;
+            document.getElementById('messageBox').classList.remove('hidden');
+        }
+
+        /**
+         * Cierra el cuadro de diálogo de mensaje.
+         */
+        function closeMessage() {
+            document.getElementById('messageBox').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
