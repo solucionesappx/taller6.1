@@ -260,7 +260,7 @@
                 <p class="text-sm"><strong>Placa:</strong> ${vehicleData.Vehiculo_Placa}</p>
                 <p class="text-sm"><strong>Persona de Contacto:</strong> ${vehicleData.Vehiculo_PersonaContacto}</p>
                 <p class="text-sm"><strong>ID Vehículo:</strong> ${vehicleData.Vehiculo_ID}</p>
-                <p class="text-sm"><strong>Cliente ID:</strong> ${vehicleData.Cliente_ID}</p>
+                <p class="text-sm"><strong>Cliente ID:</strong> ${vehicleData.Cliente_Nombre}</p>
             `;
             registrationModal.classList.remove('hidden');
             setTimeout(() => {
@@ -310,7 +310,7 @@
                 Vehiculo_UsuarioReg: loggedInUser.Cliente_Nombre,
                 Vehiculo_Data_Reg: formatDateTime(new Date()),
                 // CAMBIO: Se incluye el Cliente_ID para que el modal lo pueda mostrar
-                Cliente_ID: loggedInUser.Cliente_ID
+                Cliente_ID: loggedInUser.Cliente_Nombre
             };          
             console.log("Contenido completo del objeto JSON enviado:", vehicleData);
             
