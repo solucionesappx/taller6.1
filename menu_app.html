@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -16,61 +16,67 @@
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col">
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
 
     <!-- Barra de navegación superior con estilo personalizado -->
     <nav class="bg-gray-900 text-white p-4 shadow-md flex items-center justify-between">
         
-        <!-- Contenedor del botón de Inicio con el efecto de hover -->
-        <button id="homeBtn" class="group flex items-center space-x-2 p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white">
+        <!-- Contenedor del botón de Inicio con el efecto de hover y etiqueta debajo -->
+        <button id="homeBtn" class="group flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Ir a la página de inicio">
             <i class="fas fa-home text-xl"></i>
-            <span class="text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Inicio</span>
+            <span class="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Inicio</span>
         </button>
 
         <!-- Título de la aplicación, centrado -->
-        <h1 class="text-2xl font-bold flex-grow text-center">Menú Principal</h1>
+        <h1 class="text-xl sm:text-2xl font-bold flex-grow text-center">Menú Principal</h1>
 
-        <!-- Contenedor del botón de Cerrar Sesión con el efecto de hover, ahora sin fondo rojo -->
-        <button id="logoutBtn" class="group flex items-center space-x-2 p-2 rounded-lg text-red-500 hover:text-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400">
-            <span class="text-sm font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Cerrar Sesión</span>
-            <i class="fas fa-sign-out-alt text-xl"></i>
-        </button>
+        <div class="flex items-center space-x-4">
+            <!-- Contenedor del botón de Cerrar Sesión con el efecto de hover y etiqueta debajo -->
+            <button id="logoutBtn" class="group flex flex-col items-center space-y-1 p-2 rounded-lg text-red-500 hover:text-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400" aria-label="Salir">
+                <!-- Se invierte el orden del ícono y el texto para que el ícono esté arriba -->
+                <i class="fas fa-sign-out-alt text-xl"></i>
+                <span class="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Salir</span>
+            </button>
+        </div>
     </nav>
 
     <!-- Contenedor principal para los botones del dashboard -->
-    <main class="flex-grow flex items-center justify-center p-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-4xl">
+    <main class="flex-grow flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800 transition-colors duration-300 rounded-xl m-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl">
 
             <!-- Botón de Vehículos -->
-            <button id="vehiculosBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <span class="block text-4xl font-extrabold mb-2">🚗</span>
-                <span class="block text-2xl font-bold">Vehículos</span>
+            <button id="vehiculosBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
+                <i class="fa-solid fa-car-side text-3xl mb-2"></i>
+                <span class="block text-xl font-bold">Vehículos</span>
             </button>
 
             <!-- Botón de Órdenes -->
-            <button id="ordenesBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <span class="block text-4xl font-extrabold mb-2">📋</span>
-                <span class="block text-2xl font-bold">Órdenes</span>
+            <button id="ordenesBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
+                <i class="fa-solid fa-clipboard-list text-3xl mb-2"></i>
+                <span class="block text-xl font-bold">Órdenes</span>
             </button>
 
             <!-- Botón de Buscar -->
-            <button class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <span class="block text-4xl font-extrabold mb-2">🔍</span>
-                <span class="block text-2xl font-bold">Buscar</span>
+            <button id="buscarBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
+                <i class="fa-solid fa-magnifying-glass text-3xl mb-2"></i>
+                <span class="block text-xl font-bold">Buscar</span>
             </button>
 
             <!-- Botón de Modificar -->
-            <button class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-8 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300">
-                <span class="block text-4xl font-extrabold mb-2">✏️</span>
-                <span class="block text-2xl font-bold">Modificar</span>
+            <button id="modificarBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
+                <i class="fa-solid fa-pen-to-square text-3xl mb-2"></i>
+                <span class="block text-xl font-bold">Modificar</span>
             </button>
-
         </div>
     </main>
     
-    <!-- Contenedor de mensajes (simula una alerta sin usar `alert()`) -->
-    <div id="messageBox" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center">
+    <!-- Contenedor de mensajes (alerta modal con animaciones) -->
+    <div id="messageBox" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
             <p id="messageText" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></p>
             <button onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 Entendido
@@ -79,53 +85,69 @@
     </div>
 
     <script>
-        /**
-         * Maneja los clics de los botones para redireccionar a otras páginas.
-         */
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // Botón de Inicio (nuevo)
-        document.getElementById('homeBtn').addEventListener('click', function() {
-            window.location.href = 'index.html';
-        });
+            // Mapeo de IDs de botones a URLs para una gestión más limpia
+            const buttonRoutes = {
+                'logoutBtn': 'index.html',
+                'vehiculosBtn': 'registerVeh.html',
+                'ordenesBtn': 'registerOrd.html'
+            };
 
-        // Botón Cerrar Sesión
-        document.getElementById('logoutBtn').addEventListener('click', function() {
-            window.location.href = 'index.html';
-        });
-
-        // Botón Vehículos
-        document.getElementById('vehiculosBtn').addEventListener('click', function() {
-            window.location.href = 'registerVeh.html';
-        });
-
-        // Botón Órdenes
-        document.getElementById('ordenesBtn').addEventListener('click', function() {
-            window.location.href = 'registerOrd.html';
-        });
-
-        // Manejador genérico para los botones de Buscar y Modificar
-        document.querySelectorAll('.menu-btn:not(#vehiculosBtn):not(#ordenesBtn)').forEach(button => {
-            button.addEventListener('click', function() {
-                const buttonName = this.querySelector('span:last-child').innerText;
-                showMessage(`Has presionado el botón de "${buttonName}".`);
+            // Manejador de clics genérico para los botones que redireccionan
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        window.location.href = buttonRoutes[id];
+                    });
+                }
             });
-        });
-        
-        /**
-         * Muestra un mensaje personalizado en el cuadro de diálogo.
-         * @param {string} message - El texto que se mostrará en el cuadro de mensaje.
-         */
-        function showMessage(message) {
-            document.getElementById('messageText').innerText = message;
-            document.getElementById('messageBox').classList.remove('hidden');
-        }
 
-        /**
-         * Cierra el cuadro de diálogo de mensaje.
-         */
-        function closeMessage() {
-            document.getElementById('messageBox').classList.add('hidden');
-        }
+            // Manejador de clics genérico para los botones que muestran un mensaje
+            document.querySelectorAll('.menu-btn:not(#vehiculosBtn):not(#ordenesBtn)').forEach(button => {
+                button.addEventListener('click', () => {
+                    const buttonName = button.querySelector('span').innerText;
+                    showMessage(`Has presionado el botón de "${buttonName}".`);
+                });
+            });
+
+            /**
+             * Muestra un mensaje personalizado en el cuadro de diálogo con animaciones.
+             * @param {string} message - El texto que se mostrará en el cuadro de mensaje.
+             */
+            function showMessage(message) {
+                const messageBox = document.getElementById('messageBox');
+                const messageText = document.getElementById('messageText');
+                const modalContent = messageBox.querySelector('div');
+
+                messageText.innerText = message;
+                messageBox.classList.remove('hidden');
+
+                // Forzar el redibujado para que las transiciones funcionen correctamente
+                void messageBox.offsetWidth;
+
+                // Animar el fade-in y el scale-in
+                messageBox.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }
+
+            // Asignar la función closeMessage al ámbito global para el onclick
+            window.closeMessage = function() {
+                const messageBox = document.getElementById('messageBox');
+                const modalContent = messageBox.querySelector('div');
+                
+                // Animar el fade-out y el scale-out
+                messageBox.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+
+                // Ocultar el modal una vez que la transición haya terminado
+                            setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 300);
+            };
+
+        });
     </script>
 </body>
 </html>
