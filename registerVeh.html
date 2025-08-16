@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Vehículos</title>
+    <!-- Incluye Tailwind CSS desde CDN para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga la fuente Inter de Google Fonts para un diseño limpio -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <!-- Incluye la biblioteca de íconos Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Barra de navegación superior con estilo personalizado, copiada del menú principal -->
+    <nav class="bg-gray-900 text-white p-4 shadow-md flex items-center justify-between">
+        
+        <!-- Contenedor del botón de Inicio con el efecto de hover y etiqueta debajo -->
+        <button id="homeBtn" class="group flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Ir a la página de inicio">
+            <i class="fas fa-home text-xl"></i>
+            <span class="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Inicio</span>
+        </button>
+
+        <!-- Título de la aplicación, centrado -->
+        <h1 class="text-xl sm:text-2xl font-bold flex-grow text-center">Registro de Vehículos</h1>
+
+        <div class="flex items-center space-x-4">
+            <!-- Contenedor del botón de Salir con el efecto de hover y etiqueta debajo -->
+            <button id="logoutBtn" class="group flex flex-col items-center space-y-1 p-2 rounded-lg text-red-500 hover:text-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400" aria-label="Salir">
+                <i class="fas fa-sign-out-alt text-xl"></i>
+                <span class="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Salir</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Contenedor principal para el formulario -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-md transition-colors duration-300">
+            <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Formulario de Registro</h2>
+            
+            <form id="vehicleForm" class="space-y-2">
+                <!-- Campo no editable para el ID del vehículo -->
+                <div>
+                    <label for="vehiculoId" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Vehículo ID</label>
+                    <input type="text" id="vehiculoId" name="vehiculoId" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-200 cursor-not-allowed">
+                </div>
+
+                <!-- Campo para la marca del vehículo -->
+                <div>
+                    <label for="marca" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Marca</label>
+                    <input type="text" id="marca" name="marca" required placeholder="Ej. Toyota" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-200">
+                </div>
+
+                <!-- Campo para el modelo del vehículo -->
+                <div>
+                    <label for="modelo" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Modelo</label>
+                    <input type="text" id="modelo" name="modelo" required placeholder="Ej. Corolla" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-200">
+                </div>
+                
+                <!-- Campo para el año del vehículo. Se cambió "anio" por "year". -->
+                <div>
+                    <label for="year" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Año</label>
+                    <input type="number" id="year" name="year" required min="1900" max="2100" placeholder="Ej. 2024" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-200">
+                </div>
+
+                <!-- Campo para la placa del vehículo -->
+                <div>
+                    <label for="placa" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Placa</label>
+                    <input type="text" id="placa" name="placa" required placeholder="Ej. ABC123" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-200">
+                </div>
+
+                <!-- Nuevo campo para la Persona de Contacto -->
+                <div>
+                    <label for="contacto" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Persona Contacto</label>
+                    <input type="text" id="contacto" name="contacto" placeholder="Ej. Juan Pérez" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 transition-colors duration-200">
+                </div>
+            </form>
+            
+            <!-- Botón de enviar el formulario fuera del contenedor del formulario con el margen aplicado -->
+            <button type="button" id="saveBtn" class="mt-8 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                Guardar Vehículo
+            </button>
+        </div>
+    </main>
+
+    <!-- Contenedor de mensajes (alerta modal con animaciones) -->
+    <div id="messageBox" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
+            <p id="messageText" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></p>
+            <div id="dataList" class="text-left mb-4 text-gray-700 dark:text-gray-300"></div>
+            <!-- Se actualiza el texto del botón -->
+            <button onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                Aceptar
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Función para generar un UUID corto de 5 caracteres alfanuméricos
+        function generateShortUUID() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789';
+            let result = '';
+            for (let i = 0; i < 5; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // Función para formatear la fecha y hora a dd/mm/aaaa hh:mm:ss
+        function formatDateTime(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0'); // Meses son 0-indexados
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asignar un UUID al campo de Vehiculo ID al cargar la página
+            document.getElementById('vehiculoId').value = generateShortUUID();
+
+            const buttonRoutes = {
+                'homeBtn': 'index.html',
+                'logoutBtn': 'index.html'
+            };
+
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        window.location.href = buttonRoutes[id];
+                    });
+                }
+            });
+
+            const saveBtn = document.getElementById('saveBtn');
+            saveBtn.addEventListener('click', async () => {
+
+                // Obtener el nombre de usuario de la sesión
+                let userReg = '';
+                const loggedInUser = sessionStorage.getItem('loggedInUser');
+                if (loggedInUser) {
+                    try {
+                        const user = JSON.parse(loggedInUser);
+                        userReg = user.Cliente_Nombre || 'Usuario Desconocido';
+                    } catch (e) {
+                        console.error('Error al analizar el JSON de usuario de la sesión:', e);
+                    }
+                }
+                
+                // 1. Recolectar los datos del formulario, incluyendo el nuevo campo UserReg
+                const vehicleData = {
+                    vehiculoId: document.getElementById('vehiculoId').value,
+                    marca: document.getElementById('marca').value,
+                    modelo: document.getElementById('modelo').value,
+                    year: document.getElementById('year').value,
+                    placa: document.getElementById('placa').value,
+                    contacto: document.getElementById('contacto').value,
+                    UserReg: userReg, // Nuevo campo del usuario de registro
+                    DataReg: formatDateTime(new Date()),
+                    Vehiculo_Estado: 'Activo'
+                };
+
+                // Comprobar si los campos requeridos están llenos antes de proceder
+                if (!vehicleData.marca || !vehicleData.modelo || !vehicleData.year || !vehicleData.placa) {
+                    showMessage('Por favor, rellena todos los campos obligatorios.');
+                    return;
+                }
+                
+                // Mostrar mensaje de "Cargando..." y deshabilitar el botón
+                showMessage('Cargando...');
+                saveBtn.disabled = true;
+
+                // URL de tu script de Google Apps Script
+                const GAS_REGISTER_VEH_URL = 'https://script.google.com/macros/s/AKfycbxEv68IX7TJ0CRAdGnrKAWd0cWh_R3VHNwztrzn2WlK52HL4_e6x-lmIg0-xvXFMxj6/exec';
+
+                try {
+                    const response = await fetch(GAS_REGISTER_VEH_URL, {
+                        method: 'POST',
+                        mode: 'no-cors', // Para evitar errores de CORS en un entorno de prueba
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(vehicleData),
+                    });
+
+                    // Aunque "no-cors" no permite ver la respuesta, la petición se envía.
+                    // Podemos asumir que si no hay un error de red, la petición fue enviada.
+                    console.log('Petición enviada al servidor de Google Apps Script.');
+                    
+                    // Re-habilitar el botón y mostrar el mensaje de éxito en el modal
+                    saveBtn.disabled = false;
+                    showMessage('Registro exitoso realizado:', vehicleData);
+
+                    // Restablece el formulario a sus valores iniciales
+                    document.getElementById('vehicleForm').reset();
+                    // Genera un nuevo UUID para el siguiente registro
+                    document.getElementById('vehiculoId').value = generateShortUUID();
+
+                } catch (error) {
+                    console.error('Error al enviar los datos:', error);
+                    saveBtn.disabled = false;
+                    showMessage('Ocurrió un error al intentar registrar el vehículo. Por favor, inténtalo de nuevo.');
+                }
+                
+            });
+
+            /**
+             * Muestra un mensaje personalizado en el cuadro de diálogo con animaciones.
+             * @param {string} message - El texto que se mostrará en el cuadro de mensaje.
+             * @param {object} data - (Opcional) Objeto con los datos a mostrar.
+             */
+            function showMessage(message, data = null) {
+                const messageBox = document.getElementById('messageBox');
+                const messageText = document.getElementById('messageText');
+                const dataList = document.getElementById('dataList');
+                const modalContent = messageBox.querySelector('div');
+
+                messageText.innerText = message;
+                
+                if (data) {
+                    dataList.innerHTML = '';
+                    for (const key in data) {
+                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        const li = document.createElement('div');
+                        li.innerHTML = `<strong class="font-bold">${label}:</strong> ${data[key]}`;
+                        dataList.appendChild(li);
+                    }
+                } else {
+                    dataList.innerHTML = '';
+                }
+
+                messageBox.classList.remove('hidden');
+
+                void messageBox.offsetWidth;
+
+                messageBox.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }
+
+            window.closeMessage = function() {
+                const messageBox = document.getElementById('messageBox');
+                const modalContent = messageBox.querySelector('div');
+                
+                messageBox.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 300);
+            };
+
+        });
+    </script>
+</body>
+</html>
