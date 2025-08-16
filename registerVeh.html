@@ -77,6 +77,13 @@
                                    class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800"
                                    placeholder="Ej. ABC123">
                         </div>
+                        <!-- Nuevo campo para Persona de Contacto -->
+                        <div>
+                            <label for="persona-contacto" class="block text-sm font-medium text-gray-700 mb-1">Persona de Contacto</label>
+                            <input type="text" id="persona-contacto"
+                                   class="input-focus-animation mt-1 block w-full px-4 py-2.5 bg-white border border-gray-300 rounded-lg shadow-sm placeholder-gray-400 text-gray-800"
+                                   placeholder="Persona contacto">
+                        </div>
                     </div>
 
                     <button type="submit" class="btn-animation w-full mt-8 flex items-center justify-center py-3.5 px-4 border border-transparent rounded-xl shadow-lg text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -129,7 +136,6 @@
 
         // Elementos del DOM
         const welcomeMessage = document.getElementById('welcome-message');
-        // const backToMenuButton = document.getElementById('back-to-menu-button'); // Se ha eliminado este botón
         const vehicleRegistrationForm = document.getElementById('vehicleRegistrationForm');
         const resultContainer = document.getElementById('result-container');
 
@@ -137,6 +143,7 @@
         const vehiculoModeloInput = document.getElementById('vehiculo-modelo');
         const vehiculoAnioInput = document.getElementById('vehiculo-anio');
         const vehiculoPlacaInput = document.getElementById('vehiculo-placa');
+        const personaContactoInput = document.getElementById('persona-contacto'); // Nuevo campo
 
         // Elementos del Modal de Registro Exitoso
         const registrationModal = document.getElementById('registration-modal');
@@ -212,6 +219,7 @@
                 if (type === 'success') { modalTitleElement.classList.add('text-green-700'); }
                 else if (type === 'error') { modalTitleElement.classList.add('text-red-700'); }
                 else if (type === 'info') { modalTitleElement.classList.add('text-blue-700'); }
+                else { modalTitleElement.classList.add('text-gray-700'); }
             }
             if (modalMessageElement) {
                 modalMessageElement.textContent = message;
@@ -250,6 +258,7 @@
                 <p class="text-sm"><strong>Modelo:</strong> ${vehicleData.Vehiculo_Modelo}</p>
                 <p class="text-sm"><strong>Año:</strong> ${vehicleData.Vehiculo_Año}</p>
                 <p class="text-sm"><strong>Placa:</strong> ${vehicleData.Vehiculo_Placa}</p>
+                <p class="text-sm"><strong>Persona de Contacto:</strong> ${vehicleData.Vehiculo_PersonaContacto}</p>
                 <p class="text-sm"><strong>ID Vehículo:</strong> ${vehicleData.Vehiculo_ID}</p>
                 <p class="text-sm"><strong>Cliente ID:</strong> ${vehicleData.Cliente_ID}</p>
             `;
@@ -269,6 +278,7 @@
             const modelo = vehiculoModeloInput.value.trim();
             const anio = vehiculoAnioInput.value.trim();
             const placa = vehiculoPlacaInput.value.trim();
+            const personaContacto = personaContactoInput.value.trim(); // Nuevo campo
 
             if (!marca || !modelo || !anio || !placa) {
                 showResult('Por favor, completa todos los campos del vehículo.', 'error');
@@ -292,6 +302,7 @@
                 Vehiculo_Modelo: modelo,
                 Vehiculo_Año: anio,
                 Vehiculo_Placa: placa,
+                Vehiculo_PersonaContacto: personaContacto, // Nuevo campo
                 Vehiculo_Estado: 'Activo',
                 Vehiculo_UsuarioReg: loggedInUser.Cliente_Nombre,
                 Vehiculo_Data_Reg: formatDateTime(new Date())
@@ -311,6 +322,7 @@
                         vehiculoModeloInput.value = '';
                         vehiculoAnioInput.value = '';
                         vehiculoPlacaInput.value = '';
+                        personaContactoInput.value = ''; // Limpiar el nuevo campo
                     } else {
                         showResult(`
                             <h3 class="text-xl font-bold text-red-700 mb-2">Error al Registrar Vehículo</h3>
