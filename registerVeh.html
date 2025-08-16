@@ -229,8 +229,15 @@
                 
                 if (data) {
                     dataList.innerHTML = '';
+                    // Se crea un objeto de mapeo para traducir las claves a etiquetas personalizadas
+                    const labelMap = {
+                        'vehiculoId': 'Vehículo ID',
+                        'year': 'Año',
+                        'Vehiculo_Estado': 'Condición'
+                    };
                     for (const key in data) {
-                        const label = key.charAt(0).toUpperCase() + key.slice(1);
+                        // Se verifica si la clave existe en el mapeo; de lo contrario, se usa el nombre original capitalizado
+                        const label = labelMap[key] || key.charAt(0).toUpperCase() + key.slice(1);
                         const li = document.createElement('div');
                         li.innerHTML = `<strong class="font-bold">${label}:</strong> ${data[key]}`;
                         dataList.appendChild(li);
