@@ -14,6 +14,15 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        /* Oculta los botones de incremento/decremento del input de tipo 'number' */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
@@ -67,9 +76,9 @@
                 </div>
 
                 <!-- Sección para OrdenesDet (Detalle de la Orden) -->
-                <div class="space-y-4">
+                <div class="space-y-2">
                     <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Detalle de la Orden</h3>
-                    <div id="detalleContainer" class="space-y-4">
+                    <div id="detalleContainer" class="space-y-2">
                         <!-- Aquí se agregarán dinámicamente las líneas de detalle -->
                     </div>
                     <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
@@ -136,54 +145,73 @@
                 }
             });
 
-            // Se cambia el valor inicial a 10 y el incremento a 10
             let detallePosIdCounter = 10;
 
-            // Función para añadir una nueva línea de detalle
             document.getElementById('addDetailBtn').addEventListener('click', () => {
                 const container = document.getElementById('detalleContainer');
                 const newRow = document.createElement('div');
                 newRow.className = 'bg-gray-300 dark:bg-gray-700 p-4 rounded-lg space-y-2 relative';
                 
-                // Botón para eliminar la línea de detalle
                 newRow.innerHTML = `
                     <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" onclick="removeDetail(this)">
                         <i class="fas fa-times-circle text-xl"></i>
                     </button>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Nueva estructura de 2 columnas para Posición y Tipo de Posición -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Posición</label>
-                            <!-- Se ajusta el ancho a w-12 para un look más compacto y para manejar números de 3 dígitos -->
-                            <input type="text" readonly class="orden-pos-id w-12 p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed" value="${detallePosIdCounter}">
+                            <input type="text" readonly class="orden-pos-id w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 text-center dark:text-gray-100 cursor-not-allowed" value="${detallePosIdCounter}">
                         </div>
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Tipo de Posición</label>
-                            <input type="text" class="orden-pos-tipo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. Lubricante">
+                            <!-- El tipo de posición por defecto es 'Servicio' ahora -->
+                            <select class="orden-pos-tipo w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="" disabled>Seleccione...</option>
+                                <option value="Repuesto">Repuesto</option>
+                                <option value="Servicio" selected>Servicio</option>
+                            </select>
+                        </div>
+                    </div>
+                    <!-- Nueva estructura de 3 columnas para Descripción, Presentación y NP -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Descripción de la Posición</label>
+                            <!-- El placeholder por defecto es 'Reparación Tren Delantero' -->
+                            <input type="text" class="orden-producto-tipo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. Reparación Tren Delantero">
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Tipo de Producto</label>
-                            <input type="text" class="orden-producto-tipo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. Aceite">
+                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Presentación</label>
+                            <input type="text" class="orden-producto-presentacion w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1 Litro">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Número de Parte (NP)</label>
+                            <input type="text" class="orden-producto-np w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1A2B3C">
                         </div>
                     </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Presentación</label>
-                        <input type="text" class="orden-producto-presentacion w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1 Litro">
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Estructura para Costo, Moneda, Cantidad y Subtotal Pos con los nuevos ajustes -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Costo</label>
-                            <input type="number" step="0.01" class="orden-producto-costo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="0.00">
+                            <input type="number" step="0.01" class="orden-producto-costo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right" placeholder="0,00">
                         </div>
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Moneda</label>
-                            <input type="text" class="orden-producto-moneda w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. USD">
+                            <select class="orden-producto-moneda w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                <option value="VED">VED</option>
+                                <option value="USD" selected>USD</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Cantidad</label>
-                            <input type="number" class="orden-producto-cantidad w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="0">
+                            <!-- Controles personalizados para la cantidad -->
+                            <div class="flex items-center">
+                                <button type="button" class="quantity-btn-minus bg-gray-400 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-l-lg hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors duration-200">-</button>
+                                <input type="number" class="orden-producto-cantidad w-full p-1 text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" value="1">
+                                <button type="button" class="quantity-btn-plus bg-gray-400 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-r-lg hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors duration-200">+</button>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Subtotal Pos</label>
+                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Total Pos</label>
                             <input type="text" readonly class="orden-subtotal-pos w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed" placeholder="0.00">
                         </div>
                     </div>
@@ -200,16 +228,54 @@
                     updateTotal();
                 }
             };
-            
+
             // Recalcula el total cuando un costo o cantidad cambia
             document.addEventListener('input', (event) => {
                 if (event.target.classList.contains('orden-producto-costo') || event.target.classList.contains('orden-producto-cantidad')) {
                     const row = event.target.closest('.bg-gray-300');
-                    const costo = parseFloat(row.querySelector('.orden-producto-costo').value) || 0;
+                    const costo = parseFloat(row.querySelector('.orden-producto-costo').value.replace(',', '.')) || 0;
                     const cantidad = parseInt(row.querySelector('.orden-producto-cantidad').value) || 0;
                     const subtotal = costo * cantidad;
                     row.querySelector('.orden-subtotal-pos').value = subtotal.toFixed(2);
                     updateTotal();
+                }
+            });
+
+            // Lógica para los botones de incremento/decremento y cambio de placeholder
+            document.addEventListener('click', (event) => {
+                if (event.target.classList.contains('quantity-btn-plus')) {
+                    const input = event.target.previousElementSibling;
+                    const currentValue = parseInt(input.value) || 0;
+                    input.value = currentValue + 1;
+                    const inputEvent = new Event('input', { bubbles: true });
+                    input.dispatchEvent(inputEvent);
+                } else if (event.target.classList.contains('quantity-btn-minus')) {
+                    const input = event.target.nextElementSibling;
+                    const currentValue = parseInt(input.value) || 0;
+                    if (currentValue > 1) {
+                        input.value = currentValue - 1;
+                    } else {
+                        input.value = 1;
+                    }
+                    const inputEvent = new Event('input', { bubbles: true });
+                    input.dispatchEvent(inputEvent);
+                }
+            });
+
+            // Lógica para cambiar el placeholder según el tipo de posición
+            document.addEventListener('change', (event) => {
+                if (event.target.classList.contains('orden-pos-tipo')) {
+                    const selectedValue = event.target.value;
+                    const row = event.target.closest('.bg-gray-300');
+                    const descripcionInput = row.querySelector('.orden-producto-tipo');
+                    
+                    if (selectedValue === 'Repuesto') {
+                        descripcionInput.placeholder = 'Ej. Bomba de Agua';
+                    } else if (selectedValue === 'Servicio') {
+                        descripcionInput.placeholder = 'Ej. Reparación Tren Delantero';
+                    } else {
+                        descripcionInput.placeholder = 'Ej. Bomba de Agua o Reparación Tren Delantero';
+                    }
                 }
             });
 
@@ -242,6 +308,7 @@
                         Orden_Pos_Tipo: row.querySelector('.orden-pos-tipo').value,
                         Orden_Producto_Tipo: row.querySelector('.orden-producto-tipo').value,
                         Orden_Producto_Presentacion: row.querySelector('.orden-producto-presentacion').value,
+                        Orden_Producto_NP: row.querySelector('.orden-producto-np').value,
                         Orden_Producto_Costo: row.querySelector('.orden-producto-costo').value,
                         Orden_Producto_Moneda: row.querySelector('.orden-producto-moneda').value,
                         Orden_Producto_Cantidad: row.querySelector('.orden-producto-cantidad').value,
