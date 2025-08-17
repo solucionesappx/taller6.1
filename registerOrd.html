@@ -66,8 +66,17 @@
                                 <i class="fas fa-check"></i>
                             </button>
                         </div>
+                        <div class="mt-2">
+                            <button type="button" id="saveBtn" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                                Guardar Orden Completa
+                            </button>
+                        </div>
+                        <div class="mt-2">
+                            <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
+                                <i class="fas fa-plus mr-2"></i>Añadir Producto
+                            </button>
+                        </div>                        
                     </div>
-
                 <!-- Contenedor del formulario con scrollable -->
                 <div class="flex-grow scrollable-form-container">
                     <form id="ordenForm" class="space-y-6">
@@ -124,17 +133,9 @@
                             <div id="detalleContainer" class="space-y-2">
                                 <!-- Aquí se agregarán dinámicamente las líneas de detalle -->
                             </div>
-                            <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
-                                <i class="fas fa-plus mr-2"></i>Añadir Producto
-                            </button>
                         </div>
                     </form>
                 </div>
-                
-                <!-- Botón de guardar la orden fuera del contenedor de scroll -->
-                <button type="button" id="saveBtn" class="mt-8 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                    Guardar Orden Completa
-                </button>
             </div>
 
             <!-- Segundo contenedor principal para otra información -->
