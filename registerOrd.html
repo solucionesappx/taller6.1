@@ -58,7 +58,8 @@
                         </div>
                         <div>
                             <label for="ordenFecha" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Fecha</label>
-                            <input type="text" id="ordenFecha" name="ordenFecha" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed">
+                            <!-- Se cambia el tipo de input a 'date' para el calendario -->
+                            <input type="date" id="ordenFecha" name="ordenFecha" required class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                         </div>
                         <div>
                             <label for="placa" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Placa del Vehículo</label>
@@ -69,9 +70,38 @@
                             <input type="text" id="contacto" name="contacto" placeholder="Ej. Juan Pérez" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                         </div>
                     </div>
-                    <div class="mt-4">
-                        <label for="ordenTotal" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total de la Orden</label>
-                        <input type="text" id="ordenTotal" name="ordenTotal" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed text-2xl font-bold">
+                    <!-- Campos para los totales por moneda -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div>
+                            <label for="ordenTotal_USD" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden USD</label>
+                            <div class="relative flex items-center">
+                                <!-- Se cambia el color del texto a negro puro para ambos modos -->
+                                <input type="text" id="ordenTotal_USD" name="ordenTotal_USD" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-900 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
+                                <button type="button" id="convertUSD" class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-1" aria-label="Convertir a otra moneda">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="ordenTotal_VED" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden VED</label>
+                            <div class="relative flex items-center">
+                                <!-- Se cambia el color del texto a negro puro para ambos modos -->
+                                <input type="text" id="ordenTotal_VED" name="ordenTotal_VED" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-900 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
+                                <button type="button" id="convertVED" class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-1" aria-label="Convertir a otra moneda">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label id="finalTotalLabel" for="ordenTotal_Final" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden Final</label>
+                            <div class="relative flex items-center">
+                                <input type="text" id="ordenTotal_Final" name="ordenTotal_Final" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
+                                <!-- Nuevo botón para confirmar el valor -->
+                                <button type="button" id="confirmTotalBtn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 ml-1" aria-label="Confirmar valor de la orden">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -96,11 +126,40 @@
 
     <!-- Contenedor de mensajes (alerta modal con animaciones) -->
     <div id="messageBox" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center relative transform transition-transform duration-300 scale-95">
+            <!-- Botón de cerrar para unificar el diseño -->
+            <button type="button" onclick="closeMessage()" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" aria-label="Cerrar modal">
+                <i class="fas fa-times-circle text-xl"></i>
+            </button>
             <p id="messageText" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></p>
             <div id="dataList" class="text-left mb-4 text-gray-700 dark:text-gray-300 overflow-y-auto max-h-60"></div>
             <button onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 Aceptar
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal para el cálculo de conversión de moneda -->
+    <div id="conversionModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center relative transform transition-transform duration-300 scale-95">
+            <!-- Botón para cerrar el modal -->
+            <button type="button" onclick="closeConversionModal()" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" aria-label="Cerrar modal">
+                <i class="fas fa-times-circle text-xl"></i>
+            </button>
+            <h3 id="conversionTitle" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></h3>
+            <div class="space-y-4">
+                <div class="flex items-center justify-between">
+                    <label id="baseCurrencyLabel" class="text-gray-700 dark:text-gray-300 font-medium"></label>
+                    <input type="text" id="baseCurrencyInput" readonly class="w-2/3 p-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed text-center">
+                </div>
+                <div class="flex items-center justify-between">
+                    <label id="targetCurrencyLabel" class="text-gray-700 dark:text-gray-300 font-medium"></label>
+                    <!-- Campo editable con borde y placeholder -->
+                    <input type="number" step="0.01" id="targetCurrencyInput" class="w-2/3 p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center" placeholder="Ej: 1,00">
+                </div>
+            </div>
+            <button onclick="calculateAndCloseConversionModal()" class="mt-6 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                Convertir
             </button>
         </div>
     </div>
@@ -116,20 +175,42 @@
             return result;
         }
 
-        // Función para formatear la fecha
-        function formatDateTime(date) {
-            const day = String(date.getDate()).padStart(2, '0');
-            const month = String(date.getMonth() + 1).padStart(2, '0');
+        // Se ha modificado para que la fecha se muestre en el formato yyyy-mm-dd
+        // ya que es el formato requerido por el input type="date"
+        function formatDate(date) {
             const year = date.getFullYear();
-            const hours = String(date.getHours()).padStart(2, '0');
-            const minutes = String(date.getMinutes()).padStart(2, '0');
-            const seconds = String(date.getSeconds()).padStart(2, '0');
-            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        // Nueva función para formatear la fecha a dd.mm.yyyy para la visualización y guardado
+        function formatDisplayDate(dateString) {
+            if (!dateString) return '';
+            const [year, month, day] = dateString.split('-');
+            return `${day}.${month}.${year}`;
+        }
+
+        /**
+         * Formatea un número a un formato de moneda con separador de miles '.' y decimales ','.
+         * @param {number} value - El número a formatear.
+         * @returns {string} El número formateado como cadena.
+         */
+        function formatNumber(value) {
+            if (isNaN(value)) {
+                return '0,00';
+            }
+            // Utiliza Intl.NumberFormat para formatear con la configuración local de Venezuela
+            const formatter = new Intl.NumberFormat('es-VE', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+            return formatter.format(value);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('ordenId').value = generateShortUUID();
-            document.getElementById('ordenFecha').value = formatDateTime(new Date());
+            document.getElementById('ordenFecha').value = formatDate(new Date());
 
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
@@ -211,13 +292,17 @@
                             </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Total Pos</label>
-                            <input type="text" readonly class="orden-subtotal-pos w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed" placeholder="0.00">
+                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Total Posición</label>
+                            <!-- Se cambia el color del texto a negro puro para ambos modos -->
+                            <input type="text" readonly class="orden-subtotal-pos w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 dark:text-gray-900 cursor-not-allowed" placeholder="0,00">
                         </div>
                     </div>
                 `;
                 container.appendChild(newRow);
                 detallePosIdCounter += 10;
+
+                // Llama a la función para actualizar los totales al agregar una nueva línea
+                updateTotalsByCurrency();
             });
 
             // Función para eliminar una línea de detalle
@@ -225,48 +310,32 @@
                 const row = button.closest('.bg-gray-300');
                 if (row) {
                     row.remove();
-                    updateTotal();
+                    updateTotalsByCurrency();
                 }
             };
 
-            // Recalcula el total cuando un costo o cantidad cambia
+            // Recalcula el total cuando un costo, cantidad o moneda cambia
             document.addEventListener('input', (event) => {
-                if (event.target.classList.contains('orden-producto-costo') || event.target.classList.contains('orden-producto-cantidad')) {
-                    const row = event.target.closest('.bg-gray-300');
+                const target = event.target;
+                if (target.classList.contains('orden-producto-costo') || target.classList.contains('orden-producto-cantidad')) {
+                    const row = target.closest('.bg-gray-300');
                     const costo = parseFloat(row.querySelector('.orden-producto-costo').value.replace(',', '.')) || 0;
                     const cantidad = parseInt(row.querySelector('.orden-producto-cantidad').value) || 0;
                     const subtotal = costo * cantidad;
-                    row.querySelector('.orden-subtotal-pos').value = subtotal.toFixed(2);
-                    updateTotal();
+                    row.querySelector('.orden-subtotal-pos').value = formatNumber(subtotal);
+                    updateTotalsByCurrency();
                 }
             });
 
-            // Lógica para los botones de incremento/decremento y cambio de placeholder
-            document.addEventListener('click', (event) => {
-                if (event.target.classList.contains('quantity-btn-plus')) {
-                    const input = event.target.previousElementSibling;
-                    const currentValue = parseInt(input.value) || 0;
-                    input.value = currentValue + 1;
-                    const inputEvent = new Event('input', { bubbles: true });
-                    input.dispatchEvent(inputEvent);
-                } else if (event.target.classList.contains('quantity-btn-minus')) {
-                    const input = event.target.nextElementSibling;
-                    const currentValue = parseInt(input.value) || 0;
-                    if (currentValue > 1) {
-                        input.value = currentValue - 1;
-                    } else {
-                        input.value = 1;
-                    }
-                    const inputEvent = new Event('input', { bubbles: true });
-                    input.dispatchEvent(inputEvent);
-                }
-            });
-
-            // Lógica para cambiar el placeholder según el tipo de posición
             document.addEventListener('change', (event) => {
-                if (event.target.classList.contains('orden-pos-tipo')) {
-                    const selectedValue = event.target.value;
-                    const row = event.target.closest('.bg-gray-300');
+                const target = event.target;
+                if (target.classList.contains('orden-producto-moneda')) {
+                    updateTotalsByCurrency();
+                }
+                // Lógica para cambiar el placeholder según el tipo de posición
+                if (target.classList.contains('orden-pos-tipo')) {
+                    const selectedValue = target.value;
+                    const row = target.closest('.bg-gray-300');
                     const descripcionInput = row.querySelector('.orden-producto-tipo');
                     
                     if (selectedValue === 'Repuesto') {
@@ -279,13 +348,68 @@
                 }
             });
 
-            // Función para actualizar el total de la orden
-            function updateTotal() {
-                let total = 0;
-                document.querySelectorAll('.orden-subtotal-pos').forEach(input => {
-                    total += parseFloat(input.value) || 0;
+            // Lógica para los botones de incremento/decremento
+            document.addEventListener('click', (event) => {
+                const target = event.target;
+                if (target.classList.contains('quantity-btn-plus')) {
+                    const input = target.previousElementSibling;
+                    const currentValue = parseInt(input.value) || 0;
+                    input.value = currentValue + 1;
+                    const inputEvent = new Event('input', { bubbles: true });
+                    input.dispatchEvent(inputEvent);
+                } else if (target.classList.contains('quantity-btn-minus')) {
+                    const input = target.nextElementSibling;
+                    const currentValue = parseInt(input.value) || 0;
+                    if (currentValue > 1) {
+                        input.value = currentValue - 1;
+                    } else {
+                        input.value = 1;
+                    }
+                    const inputEvent = new Event('input', { bubbles: true });
+                    input.dispatchEvent(inputEvent);
+                }
+            });
+
+            /**
+             * Función para actualizar los totales por moneda de la orden y el total final si solo hay una moneda.
+             */
+            function updateTotalsByCurrency() {
+                let totalUSD = 0;
+                let totalVED = 0;
+                
+                document.querySelectorAll('#detalleContainer > div').forEach(row => {
+                    const costo = parseFloat(row.querySelector('.orden-producto-costo').value.replace(',', '.')) || 0;
+                    const cantidad = parseInt(row.querySelector('.orden-producto-cantidad').value) || 0;
+                    const moneda = row.querySelector('.orden-producto-moneda').value;
+                    const subtotal = costo * cantidad;
+
+                    if (moneda === 'USD') {
+                        totalUSD += subtotal;
+                    } else if (moneda === 'VED') {
+                        totalVED += subtotal;
+                    }
+                    
+                    row.querySelector('.orden-subtotal-pos').value = formatNumber(subtotal);
                 });
-                document.getElementById('ordenTotal').value = total.toFixed(2);
+                
+                document.getElementById('ordenTotal_USD').value = formatNumber(totalUSD);
+                document.getElementById('ordenTotal_VED').value = formatNumber(totalVED);
+
+                // Lógica para actualizar el total final si solo hay una moneda
+                const finalTotalInput = document.getElementById('ordenTotal_Final');
+                const finalTotalLabel = document.getElementById('finalTotalLabel');
+
+                if (totalUSD > 0 && totalVED === 0) {
+                    finalTotalInput.value = formatNumber(totalUSD);
+                    finalTotalLabel.innerHTML = `Total Orden Final <strong>(USD)</strong>`;
+                } else if (totalVED > 0 && totalUSD === 0) {
+                    finalTotalInput.value = formatNumber(totalVED);
+                    finalTotalLabel.innerHTML = `Total Orden Final <strong>(VED)</strong>`;
+                } else {
+                    // Si hay ambas monedas, el total final se reinicia
+                    finalTotalInput.value = '0,00';
+                    finalTotalLabel.innerHTML = `Total Orden Final`;
+                }
             }
 
             // Función para guardar la orden
@@ -294,8 +418,11 @@
                     Orden_ID: document.getElementById('ordenId').value,
                     Vehiculo_Placa: document.getElementById('placa').value,
                     Vehiculo_PersonaContacto: document.getElementById('contacto').value,
-                    Orden_Fecha: document.getElementById('ordenFecha').value,
-                    Orden_Total: document.getElementById('ordenTotal').value
+                    // Se formatea la fecha antes de guardarla para que se muestre como dd.mm.yyyy
+                    Orden_Fecha: formatDisplayDate(document.getElementById('ordenFecha').value),
+                    Orden_Total_USD: document.getElementById('ordenTotal_USD').value,
+                    Orden_Total_VED: document.getElementById('ordenTotal_VED').value,
+                    Orden_Total_Final: document.getElementById('ordenTotal_Final').value,
                 };
 
                 const ordenDet = [];
@@ -337,6 +464,7 @@
                 const messageText = document.getElementById('messageText');
                 const dataList = document.getElementById('dataList');
                 const modalContent = messageBox.querySelector('div');
+                const acceptBtn = messageBox.querySelector('button');
 
                 messageText.innerText = message;
                 
@@ -357,7 +485,8 @@
                                 dataList.appendChild(li);
                                 value.forEach((item, index) => {
                                     const itemDiv = document.createElement('div');
-                                    itemDiv.innerHTML = `<strong class="text-sm">Item ${index + 1}:</strong>`;
+                                    // Se ha cambiado "Item" a "Pos"
+                                    itemDiv.innerHTML = `<strong class="text-sm">Pos ${index + 1}:</strong>`;
                                     dataList.appendChild(itemDiv);
                                     formatData(item, `${key}_${index}`);
                                 });
@@ -368,14 +497,14 @@
                         }
                     };
                     formatData(data);
+                    // No cambiamos el texto del botón Aceptar para mantener su función
                 } else {
                     dataList.innerHTML = '';
+                    acceptBtn.textContent = 'Cerrar'; 
                 }
 
                 messageBox.classList.remove('hidden');
-
                 void messageBox.offsetWidth;
-
                 messageBox.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
             }
@@ -392,6 +521,121 @@
                 }, 300);
             };
 
+            let currentConversionCurrency = '';
+
+            // Lógica para abrir el modal de conversión
+            document.getElementById('convertUSD').addEventListener('click', () => {
+                openConversionModal('VED');
+            });
+
+            document.getElementById('convertVED').addEventListener('click', () => {
+                openConversionModal('USD');
+            });
+
+            function openConversionModal(currency) {
+                const modal = document.getElementById('conversionModal');
+                const title = document.getElementById('conversionTitle');
+                const baseLabel = document.getElementById('baseCurrencyLabel');
+                const targetLabel = document.getElementById('targetCurrencyLabel');
+                const baseInput = document.getElementById('baseCurrencyInput');
+                const targetInput = document.getElementById('targetCurrencyInput');
+                
+                currentConversionCurrency = currency;
+                
+                if (currency === 'VED') {
+                    title.innerText = 'Convertir a VED';
+                    baseLabel.innerText = '1,00 USD';
+                    targetLabel.innerText = 'Valor en VED:';
+                    baseInput.value = '1,00';
+                    targetInput.value = ''; // Campo editable para el usuario
+                } else {
+                    title.innerText = 'Convertir a USD';
+                    baseLabel.innerText = '1,00 VED';
+                    targetLabel.innerText = 'Valor en USD:';
+                    baseInput.value = '1,00';
+                    targetInput.value = ''; // Campo editable para el usuario
+                }
+
+                modal.classList.remove('hidden', 'opacity-0');
+                modal.querySelector('div').classList.remove('scale-95');
+            }
+
+            // Nuevo botón de "Convertir"
+            window.calculateAndCloseConversionModal = function() {
+                const modal = document.getElementById('conversionModal');
+                const modalContent = modal.querySelector('div');
+                const rateInput = document.getElementById('targetCurrencyInput');
+                const rate = parseFloat(rateInput.value.replace(',', '.')) || 0;
+                
+                if (rate > 0) {
+                    calculateGrandTotal(rate);
+                }
+
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            };
+
+            // Botón para cerrar el modal sin calcular
+            window.closeConversionModal = function() {
+                const modal = document.getElementById('conversionModal');
+                const modalContent = modal.querySelector('div');
+                
+                modal.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                }, 300);
+            };
+            
+            /**
+             * Calcula el total de la orden sumando ambas monedas y actualiza la etiqueta.
+             * @param {number} rate - El tipo de cambio para la conversión.
+             */
+            function calculateGrandTotal(rate) {
+                const totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(',', '.')) || 0;
+                const totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(',', '.')) || 0;
+                const finalTotalInput = document.getElementById('ordenTotal_Final');
+                const finalTotalLabel = document.getElementById('finalTotalLabel');
+
+                let finalTotal = 0;
+                let finalCurrency = '';
+
+                if (currentConversionCurrency === 'VED') {
+                    finalTotal = (totalUSD * rate) + totalVED;
+                    finalCurrency = 'VED';
+                } else {
+                    finalTotal = totalUSD + (totalVED / rate);
+                    finalCurrency = 'USD';
+                }
+                
+                finalTotalInput.value = formatNumber(finalTotal);
+                finalTotalLabel.innerHTML = `Total Orden Final <strong>(${finalCurrency})</strong>`;
+            }
+
+            // Agrega un listener para el nuevo botón "Confirmar Valor"
+            document.getElementById('confirmTotalBtn').addEventListener('click', () => {
+                // Obtiene el texto de la etiqueta del total final
+                const finalTotalLabelText = document.getElementById('finalTotalLabel').innerText;
+                const totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(',', '.')) || 0;
+                const totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(',', '.')) || 0;
+
+                // Si existen ambas monedas Y la etiqueta del total final no tiene una moneda definida
+                if (totalUSD > 0 && totalVED > 0 && !finalTotalLabelText.includes('(USD)') && !finalTotalLabelText.includes('(VED)')) {
+                    // Muestra el mensaje de advertencia y guía al usuario
+                    showMessage('Debe convertir a una sola moneda. Por favor, use los botones de conversión para indicar el tipo de cambio.', null);
+                } else {
+                    // Si solo hay una moneda o ya se realizó una conversión, actualiza el total final
+                    updateTotalsByCurrency();
+                }
+            });
+
+            // Llama a la función de actualización de totales al cargar la página
+            updateTotalsByCurrency();
         });
     </script>
 </body>
