@@ -23,6 +23,12 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
+        /* Estilos para el contenedor del formulario con scroll */
+        .scrollable-form-container {
+            max-height: calc(100vh - 120px); /* Ajusta la altura máxima para permitir el scroll, considerando la altura de la barra de navegación y el padding */
+            overflow-y: auto; /* Habilita el scroll vertical */
+            padding: 1rem; /* Añade padding para mejor visualización */
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
@@ -44,80 +50,84 @@
 
     <!-- Contenedor principal para el formulario -->
     <main class="flex-grow flex items-center justify-center p-4">
-        <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-4xl transition-colors duration-300">
+        <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full max-w-4xl transition-colors duration-300 flex flex-col">
+            <!-- Título del formulario que ahora está separado del contenedor desplazable -->
             <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Formulario de Órdenes</h2>
             
-            <form id="ordenForm" class="space-y-6">
-                <!-- Sección para OrdenesCab (Cabecera de la Orden) -->
-                <div class="space-y-2">
-                    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Datos de la Cabecera</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="ordenId" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Orden ID</label>
-                            <input type="text" id="ordenId" name="ordenId" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed">
+            <!-- Contenedor del formulario con scrollable -->
+            <div class="flex-grow scrollable-form-container">
+                <form id="ordenForm" class="space-y-6">
+                    <!-- Sección para OrdenesCab (Cabecera de la Orden) -->
+                    <div class="space-y-2">
+                        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Datos de la Cabecera</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="ordenId" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Orden ID</label>
+                                <input type="text" id="ordenId" name="ordenId" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed">
+                            </div>
+                            <div>
+                                <label for="ordenFecha" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Fecha</label>
+                                <!-- Se cambia el tipo de input a 'date' para el calendario -->
+                                <input type="date" id="ordenFecha" name="ordenFecha" required class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            </div>
+                            <div>
+                                <label for="placa" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Placa del Vehículo</label>
+                                <input type="text" id="placa" name="placa" required placeholder="Ej. ABC123" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            </div>
+                            <div>
+                                <label for="contacto" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Persona de Contacto</label>
+                                <input type="text" id="contacto" name="contacto" placeholder="Ej. Juan Pérez" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            </div>
                         </div>
-                        <div>
-                            <label for="ordenFecha" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Fecha</label>
-                            <!-- Se cambia el tipo de input a 'date' para el calendario -->
-                            <input type="date" id="ordenFecha" name="ordenFecha" required class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                        </div>
-                        <div>
-                            <label for="placa" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Placa del Vehículo</label>
-                            <input type="text" id="placa" name="placa" required placeholder="Ej. ABC123" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                        </div>
-                        <div>
-                            <label for="contacto" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Persona de Contacto</label>
-                            <input type="text" id="contacto" name="contacto" placeholder="Ej. Juan Pérez" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        <!-- Campos para los totales por moneda -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <div>
+                                <label for="ordenTotal_USD" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden USD</label>
+                                <div class="relative flex items-center">
+                                    <!-- Se cambia el color del texto a negro puro para ambos modos -->
+                                    <input type="text" id="ordenTotal_USD" name="ordenTotal_USD" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-900 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
+                                    <button type="button" id="convertUSD" class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-1" aria-label="Convertir a otra moneda">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="ordenTotal_VED" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden VED</label>
+                                <div class="relative flex items-center">
+                                    <!-- Se cambia el color del texto a negro puro para ambos modos -->
+                                    <input type="text" id="ordenTotal_VED" name="ordenTotal_VED" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-900 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
+                                    <button type="button" id="convertVED" class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-1" aria-label="Convertir a otra moneda">
+                                        <i class="fas fa-exchange-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label id="finalTotalLabel" for="ordenTotal_Final" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden Final</label>
+                                <div class="relative flex items-center">
+                                    <input type="text" id="ordenTotal_Final" name="ordenTotal_Final" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
+                                    <!-- Nuevo botón para confirmar el valor -->
+                                    <button type="button" id="confirmTotalBtn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 ml-1" aria-label="Confirmar valor de la orden">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <!-- Campos para los totales por moneda -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label for="ordenTotal_USD" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden USD</label>
-                            <div class="relative flex items-center">
-                                <!-- Se cambia el color del texto a negro puro para ambos modos -->
-                                <input type="text" id="ordenTotal_USD" name="ordenTotal_USD" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-900 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
-                                <button type="button" id="convertUSD" class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-1" aria-label="Convertir a otra moneda">
-                                    <i class="fas fa-exchange-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label for="ordenTotal_VED" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden VED</label>
-                            <div class="relative flex items-center">
-                                <!-- Se cambia el color del texto a negro puro para ambos modos -->
-                                <input type="text" id="ordenTotal_VED" name="ordenTotal_VED" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-900 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
-                                <button type="button" id="convertVED" class="absolute right-0 top-1/2 -translate-y-1/2 bg-indigo-500 hover:bg-indigo-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 ml-1" aria-label="Convertir a otra moneda">
-                                    <i class="fas fa-exchange-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div>
-                            <label id="finalTotalLabel" for="ordenTotal_Final" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Total Orden Final</label>
-                            <div class="relative flex items-center">
-                                <input type="text" id="ordenTotal_Final" name="ordenTotal_Final" readonly class="w-full p-1 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed text-2xl font-bold" placeholder="0,00">
-                                <!-- Nuevo botón para confirmar el valor -->
-                                <button type="button" id="confirmTotalBtn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-r-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400 ml-1" aria-label="Confirmar valor de la orden">
-                                    <i class="fas fa-check"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
 
-                <!-- Sección para OrdenesDet (Detalle de la Orden) -->
-                <div class="space-y-2">
-                    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Detalle de la Orden</h3>
-                    <div id="detalleContainer" class="space-y-2">
-                        <!-- Aquí se agregarán dinámicamente las líneas de detalle -->
+                    <!-- Sección para OrdenesDet (Detalle de la Orden) -->
+                    <div class="space-y-2">
+                        <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Detalle de la Orden</h3>
+                        <div id="detalleContainer" class="space-y-2">
+                            <!-- Aquí se agregarán dinámicamente las líneas de detalle -->
+                        </div>
+                        <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
+                            <i class="fas fa-plus mr-2"></i>Añadir Producto
+                        </button>
                     </div>
-                    <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
-                        <i class="fas fa-plus mr-2"></i>Añadir Producto
-                    </button>
-                </div>
-            </form>
+                </form>
+            </div>
             
-            <!-- Botón de guardar la orden -->
+            <!-- Botón de guardar la orden fuera del contenedor de scroll -->
             <button type="button" id="saveBtn" class="mt-8 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 Guardar Orden Completa
             </button>
