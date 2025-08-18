@@ -84,11 +84,11 @@
                                     <input type="date" id="ordenFecha" name="ordenFecha" required class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                                 </div>
                                 <div>
-                                    <label for="placa" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Placa del Vehículo</label>
+                                    <label for="placa" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Placa del Vehículo <span class="text-red-500">*</span></label>
                                     <input type="text" id="placa" name="placa" required placeholder="Ej. ABC123" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                                 </div>
                                 <div>
-                                    <label for="contacto" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Persona de Contacto</label>
+                                    <label for="contacto" class="block text-gray-700 dark:text-gray-300 font-medium mb-2">Persona de Contacto <span class="text-red-500">*</span></label>
                                     <input type="text" id="contacto" name="contacto" placeholder="Ej. Juan Pérez" class="w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                                 </div>
                             </div>
@@ -171,7 +171,7 @@
             </button>
             <p id="messageText" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></p>
             <div id="dataList" class="text-left mb-4 text-gray-700 dark:text-gray-300 overflow-y-auto max-h-60 hidden"></div>
-            <button onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <button id="messageOkBtn" onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
                 Aceptar
             </button>
         </div>
@@ -184,25 +184,30 @@
             <button type="button" onclick="closeConversionModal()" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" aria-label="Cerrar modal">
                 <i class="fas fa-times-circle text-xl"></i>
             </button>
-            <h3 id="conversionTitle" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></h3>
+            <h3 id="conversionTitle" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Establecer Tasa de Cambio</h3>
             <div class="space-y-4">
                 <div class="flex items-center justify-between">
                     <label id="baseCurrencyLabel" class="text-gray-700 dark:text-gray-300 font-medium"></label>
                     <input type="text" id="baseCurrencyInput" readonly class="w-2/3 p-2 rounded-lg bg-gray-300 dark:bg-gray-700 text-gray-900 dark:text-gray-100 cursor-not-allowed text-center">
                 </div>
                 <div class="flex items-center justify-between">
-                    <label id="targetCurrencyLabel" class="text-gray-700 dark:text-gray-300 font-medium"></label>
+                    <label id="targetCurrencyLabel" class="text-gray-700 dark:text-gray-300 font-medium">Valor de 1 USD en VED</label>
                     <!-- Campo editable con borde y placeholder -->
-                    <input type="number" step="0.01" id="targetCurrencyInput" class="w-2/3 p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center" placeholder="Ej: 1,00">
+                    <input type="number" step="0.01" id="targetCurrencyInput" class="w-2/3 p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center" placeholder="Ej: 100,25">
                 </div>
             </div>
-            <button onclick="calculateAndCloseConversionModal()" class="mt-6 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                Convertir
+            <!-- Nuevo botón para confirmar el cálculo -->
+            <button type="button" id="acceptConversionBtn" class="mt-6 w-full bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                Aceptar
             </button>
         </div>
     </div>
 
     <script>
+        // URL de tu script de Google Apps Script.
+        // REEMPLAZA esta URL con la tuya después de implementar el script de GAS.
+        const GAS_REGISTER_ORD_URL = 'https://script.google.com/macros/s/AKfycbwXYK4Ir__FygUSlgCtvn3JcenkfbXpDqy6r8S8gSKF9xx5BgDCWclUKtYVfpPYS-e3bw/exec';
+        
         // Función para generar un UUID corto
         function generateShortUUID() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789';
@@ -264,6 +269,22 @@
 
         // Variable global para manejar el estado del modal de conversión
         let conversionModalState = {};
+        
+        // Función para reiniciar el formulario
+        function resetForm() {
+            // Limpiar el array de detalles
+            orderDetails = [];
+            // Limpiar los detalles de conversión
+            conversionDetails = null;
+            // Reiniciar los campos de la cabecera del formulario
+            document.getElementById('ordenForm').reset();
+            // Generar un nuevo ID y fecha
+            document.getElementById('ordenId').value = generateShortUUID();
+            document.getElementById('ordenFecha').value = formatDate(new Date());
+            // Actualizar los totales y renderizar el primer detalle
+            updateTotalsByCurrency();
+            addNewDetail();
+        }
 
         /**
          * Genera y muestra el resumen de la orden en el contenedor de información adicional.
@@ -294,7 +315,7 @@
             let orderHtml = `<div class="flex-grow scrollable-form-container">`;
             orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>ID de Orden:</strong> ${orderData.id}</p>`;
             orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Fecha:</strong> ${orderData.fecha}</p>`;
-            orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Placa:</strong> ${orderData.placa}</p>`;
+            orderHtml += `<p class="text-700 dark:text-gray-300 text-lg"><strong>Placa:</strong> ${orderData.placa}</p>`;
             if (orderData.contacto) {
                 orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Contacto:</strong> ${orderData.contacto}</p>`;
             }
@@ -303,10 +324,9 @@
             
             // Agrega los detalles de la conversión si existen
             if (conversionDetails) {
-                const convertedFromAmount = formatNumber(conversionDetails.from === 'USD' ? orderData.total_USD.replace(/\./g, '').replace(',', '.') : orderData.total_VED.replace(/\./g, '').replace(',', '.'));
-                const convertedToAmount = formatNumber(conversionDetails.convertedValue);
-                const rate = formatNumber(conversionDetails.rate);
-                
+                // Se ha corregido la lógica para mostrar el valor original sin formatear
+                const convertedFromAmount = conversionDetails.from === 'USD' ? orderDetails.reduce((sum, item) => sum + (item.moneda === 'USD' ? item.costo * item.cantidad : 0), 0) : orderDetails.reduce((sum, item) => sum + (item.moneda === 'VED' ? item.costo * item.cantidad : 0), 0);
+
                 orderHtml += `
                     <div class="mt-4 p-4 border-l-4 border-indigo-500 bg-gray-300 dark:bg-gray-700 rounded-lg">
                         <p class="text-gray-700 dark:text-gray-300">
@@ -314,9 +334,9 @@
                             <span class="font-bold">Conversión Aplicada:</span>
                         </p>
                         <ul class="list-none list-inside text-sm mt-1 text-gray-700 dark:text-gray-300">
-                            <li>De: <span class="font-semibold">${convertedFromAmount} ${conversionDetails.from}</span></li>
-                            <li>A: <span class="font-semibold">${convertedToAmount} ${conversionDetails.to}</span></li>
-                            <li>Tasa de Cambio: <span class="font-semibold">${rate} ${conversionDetails.to}/${conversionDetails.from}</span></li>
+                            <li>De: <span class="font-semibold">${formatNumber(convertedFromAmount)} ${conversionDetails.from}</span></li>
+                            <li>A: <span class="font-semibold">${formatNumber(conversionDetails.convertedValue)} ${conversionDetails.to}</span></li>
+                            <li>Tasa de Cambio: <span class="font-semibold">${formatNumber(conversionDetails.rate)} VED/USD</span></li>
                         </ul>
                     </div>
                 `;
@@ -346,11 +366,9 @@
         // Función para mostrar el modal de conversión
         function showConversionModal(baseCurrency) {
             const modal = document.getElementById('conversionModal');
-            const title = document.getElementById('conversionTitle');
-            const baseLabel = document.getElementById('baseCurrencyLabel');
             const baseInput = document.getElementById('baseCurrencyInput');
-            const targetLabel = document.getElementById('targetCurrencyLabel');
             const targetInput = document.getElementById('targetCurrencyInput');
+            const baseLabel = document.getElementById('baseCurrencyLabel');
 
             modal.classList.remove('hidden', 'opacity-0');
             modal.classList.add('flex');
@@ -358,29 +376,23 @@
                 modal.classList.remove('opacity-0');
                 modal.querySelector('.transform').classList.remove('scale-95');
             }, 10);
+            
+            // Lógica para mostrar la moneda base
+            if (baseCurrency === 'USD') {
+                baseLabel.innerText = 'Total USD';
+                baseInput.value = document.getElementById('ordenTotal_USD').value;
+                conversionModalState.from = 'USD';
+                conversionModalState.to = 'VED';
+            } else if (baseCurrency === 'VED') {
+                baseLabel.innerText = 'Total VED';
+                baseInput.value = document.getElementById('ordenTotal_VED').value;
+                conversionModalState.from = 'VED';
+                conversionModalState.to = 'USD';
+            }
 
             // Almacena los totales actuales antes de abrir el modal
             conversionModalState.totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace('.', '').replace(',', '.')) || 0;
             conversionModalState.totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace('.', '').replace(',', '.')) || 0;
-            
-            // Lógica para mostrar la moneda base y la de destino
-            if (baseCurrency === 'USD') {
-                title.innerText = 'Convertir USD a VED';
-                baseLabel.innerText = 'Total USD';
-                targetLabel.innerText = 'Valor de 1 USD en VED';
-                baseInput.value = document.getElementById('ordenTotal_USD').value;
-                targetInput.placeholder = 'Ej: 36,00'; // Valor del tipo de cambio
-                conversionModalState.from = 'USD';
-                conversionModalState.to = 'VED';
-            } else if (baseCurrency === 'VED') {
-                title.innerText = 'Convertir VED a USD';
-                baseLabel.innerText = 'Total VED';
-                targetLabel.innerText = 'Valor de 1 VED en USD';
-                baseInput.value = document.getElementById('ordenTotal_VED').value;
-                targetInput.placeholder = 'Ej: 0,027'; // Valor del tipo de cambio
-                conversionModalState.from = 'VED';
-                conversionModalState.to = 'USD';
-            }
         }
 
         // Función para cerrar el modal de conversión
@@ -393,36 +405,39 @@
                 document.getElementById('targetCurrencyInput').value = '';
             }, 300);
         }
-
-        // Función para calcular y cerrar el modal de conversión
+        
+        // Nueva función para manejar la lógica de cálculo y cierre del modal
         function calculateAndCloseConversionModal() {
             const targetInput = document.getElementById('targetCurrencyInput');
             const totalFinalInput = document.getElementById('ordenTotal_Final');
             const finalTotalLabel = document.getElementById('finalTotalLabel');
-            
+
             const conversionValue = parseFloat(targetInput.value.replace('.', '').replace(',', '.')) || 0;
             let finalValue = 0;
             let finalCurrency = '';
             let convertedPartialValue = 0;
-
+            
             if (conversionValue > 0) {
+                // Se usa el valor de la Tasa de Cambio como el valor del USD en VED, como se solicitó
+                const TC_USD_a_VED = conversionValue;
+                
                 if (conversionModalState.from === 'USD') {
-                    // Lógica corregida: convierte USD a VED y lo suma al total VED
-                    convertedPartialValue = conversionModalState.totalUSD * conversionValue;
+                    // Lógica: Total USD * TC (USD a VED)
+                    convertedPartialValue = conversionModalState.totalUSD * TC_USD_a_VED;
                     finalValue = convertedPartialValue + conversionModalState.totalVED;
                     finalCurrency = 'VED';
                 } else if (conversionModalState.from === 'VED') {
-                    // Lógica corregida: convierte VED a USD y lo suma al total USD
-                    convertedPartialValue = conversionModalState.totalVED / conversionValue;
+                    // Lógica: Total VED / TC (USD a VED)
+                    convertedPartialValue = conversionModalState.totalVED / TC_USD_a_VED;
                     finalValue = convertedPartialValue + conversionModalState.totalUSD;
                     finalCurrency = 'USD';
                 }
-                
+
                 // Almacena los detalles de la conversión
                 conversionDetails = {
                     from: conversionModalState.from,
                     to: finalCurrency,
-                    rate: conversionValue,
+                    rate: TC_USD_a_VED,
                     convertedValue: convertedPartialValue
                 };
                 
@@ -440,13 +455,27 @@
         /**
          * Muestra un mensaje modal.
          * @param {string} message - El mensaje a mostrar.
+         * @param {string} type - Tipo de mensaje ('success', 'error', etc.) para determinar el comportamiento.
          */
-        function showMessage(message) {
+        function showMessage(message, type = 'info') {
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
             
             messageText.innerText = message;
             
+            // Si es un mensaje de éxito, cambia el comportamiento del botón de Aceptar
+            if (type === 'success') {
+                const messageOkBtn = document.getElementById('messageOkBtn');
+                messageOkBtn.onclick = () => {
+                    closeMessage();
+                    resetForm();
+                };
+            } else {
+                // Restablece el comportamiento por defecto del botón
+                const messageOkBtn = document.getElementById('messageOkBtn');
+                messageOkBtn.onclick = closeMessage;
+            }
+
             // Muestra el modal
             messageBox.classList.remove('hidden', 'opacity-0');
             messageBox.classList.add('flex');
@@ -688,12 +717,15 @@
             const personaContacto = document.getElementById('contacto').value;
             const ordenFecha = formatDisplayDate(document.getElementById('ordenFecha').value);
             const ordenTotal = document.getElementById('ordenTotal_Final').value;
+            // Se extrae la moneda del label del total final
+            const ordenTotalMoneda = document.getElementById('finalTotalLabel').innerText.match(/\(([^)]+)\)/)?.[1] || '';
             const ordenDataReg = formatDateTime(new Date()); // Obtiene la fecha y hora de registro
 
             // Mapea los detalles del array global 'orderDetails' a la estructura JSON requerida
             const orderDetailsJSON = orderDetails.map(detail => {
                 return {
                     "Orden_Pos_ID": detail.id,
+                    "Vehiculo_Placa": vehiculoPlaca,
                     "Vehiculo_PersonaContacto": personaContacto, // Se toma de la cabecera
                     "Orden_Producto_Tipo": detail.tipo,
                     "Orden_Producto_Presentacion": detail.presentacion,
@@ -712,6 +744,7 @@
                 "Vehiculo_PersonaContacto": personaContacto,
                 "Orden_Fecha": ordenFecha,
                 "Orden_Total": parseFloat(ordenTotal.replace(/\./g, '').replace(',', '.')), // Convierte el total a número
+                "Orden_Moneda_Final": ordenTotalMoneda, // Nuevo campo de la moneda final
                 "Orden_UsuarioReg": userReg, // Campo del usuario registrado
                 "Orden_DataReg": ordenDataReg, // Campo de la fecha y hora de registro
                 "Detalles_Orden": orderDetailsJSON
@@ -773,10 +806,6 @@
         // *******************************************************************
 
         document.addEventListener('DOMContentLoaded', () => {
-            // URL de tu script de Google Apps Script.
-            // REEMPLAZA esta URL con la tuya después de implementar el script de GAS.
-            const GAS_REGISTER_ORD_URL = 'https://script.google.com/macros/s/AKfycbwXYK4Ir__FygUSlgCtvn3JcenkfbXpDqy6r8S8gSKF9xx5BgDCWclUKtYVfpPYS-e3bw/exec';
-
             // Inicialización de la página
             document.getElementById('ordenId').value = generateShortUUID();
             document.getElementById('ordenFecha').value = formatDate(new Date());
@@ -803,8 +832,29 @@
             // Lógica para el botón de Guardar
             const saveBtn = document.getElementById('saveBtn');
             saveBtn.addEventListener('click', async () => {
+                const placaInput = document.getElementById('placa');
+                const contactoInput = document.getElementById('contacto');
                 const totalFinalInput = document.getElementById('ordenTotal_Final');
                 const finalTotalLabel = document.getElementById('finalTotalLabel');
+
+                // Validaciones de campos obligatorios
+                if (!placaInput.value.trim()) {
+                    showMessage('El campo "Placa del Vehículo" es obligatorio.');
+                    placaInput.focus();
+                    return;
+                }
+
+                if (!contactoInput.value.trim()) {
+                    showMessage('El campo "Persona de Contacto" es obligatorio.');
+                    contactoInput.focus();
+                    return;
+                }
+                
+                // Si el total final no está definido, significa que la conversión no se ha realizado
+                if (!totalFinalInput.value || !finalTotalLabel.innerText.includes('(')) {
+                    showMessage('Debe confirmar el valor final de la orden. Por favor, use el botón de confirmación de valor o los botones de conversión si es necesario.');
+                    return;
+                }
                 
                 // Obtener el nombre de usuario de la sesión
                 let userReg = '';
@@ -818,12 +868,6 @@
                     }
                 }
                 
-                // Si el total final no está definido, significa que la conversión no se ha realizado
-                if (!totalFinalInput.value || !finalTotalLabel.innerText.includes('(')) {
-                    showMessage('Debe confirmar el valor final de la orden. Por favor, use el botón de confirmación de valor o los botones de conversión si es necesario.');
-                    return;
-                }
-                
                 const orderDataJSON = generateOrderJSON(userReg);
                 console.log("Datos de la Orden en formato JSON:", JSON.stringify(orderDataJSON, null, 2));
                 
@@ -831,16 +875,7 @@
                 try {
                     showMessage('Enviando datos de la orden...');
                     await sendDataToGAS(GAS_REGISTER_ORD_URL, orderDataJSON);
-                    showMessage('¡Orden guardada exitosamente!');
-                    
-                    // Limpiar el formulario para una nueva orden
-                    orderDetails = [];
-                    conversionDetails = null;
-                    document.getElementById('ordenForm').reset();
-                    document.getElementById('ordenId').value = generateShortUUID();
-                    document.getElementById('ordenFecha').value = formatDate(new Date());
-                    updateTotalsByCurrency();
-                    renderDetails();
+                    showMessage('¡Orden guardada exitosamente!', 'success');
                 } catch (error) {
                     showMessage('Error al guardar la orden. Por favor, intente de nuevo.');
                     console.error('Error al guardar la orden:', error);
@@ -854,7 +889,12 @@
             document.getElementById('convertVED').addEventListener('click', () => {
                 showConversionModal('VED');
             });
-
+            
+            // Lógica del nuevo botón de Aceptar en el modal de conversión
+            document.getElementById('acceptConversionBtn').addEventListener('click', () => {
+                calculateAndCloseConversionModal();
+            });
+            
             // Lógica para la actualización de subtotales y totales en tiempo real
             document.getElementById('ordenForm').addEventListener('input', (event) => {
                 const target = event.target;
