@@ -428,26 +428,22 @@
             let convertedPartialValue = 0;
             
             if (conversionValue > 0) {
-                // Se usa el valor de la Tasa de Cambio como el valor del USD en VED, como se solicitó
-                const TC_USD_a_VED = conversionValue;
+                const TasaCambio = conversionValue;
                 
                 if (conversionModalState.from === 'USD') {
-                    // Lógica: Total USD * TC (USD a VED)
-                    convertedPartialValue = conversionModalState.totalUSD * TC_USD_a_VED;
+                    convertedPartialValue = conversionModalState.totalUSD * TasaCambio;
                     finalValue = convertedPartialValue + conversionModalState.totalVED;
                     finalCurrency = 'VED';
                 } else if (conversionModalState.from === 'VED') {
-                    // Lógica: Total VED / TC (USD a VED)
-                    convertedPartialValue = conversionModalState.totalVED / TC_USD_a_VED;
+                    convertedPartialValue = conversionModalState.totalVED / TasaCambio;
                     finalValue = convertedPartialValue + conversionModalState.totalUSD;
                     finalCurrency = 'USD';
                 }
 
-                // Almacena los detalles de la conversión
                 conversionDetails = {
                     from: conversionModalState.from,
                     to: finalCurrency,
-                    rate: TC_USD_a_VED,
+                    rate: TasaCambio,
                     convertedValue: convertedPartialValue
                 };
                 
@@ -455,11 +451,11 @@
                 finalTotalLabel.innerHTML = `Total Orden Final <strong>(${finalCurrency})</strong>`;
             } else {
                 showMessage('El valor de conversión no es válido.');
-                conversionDetails = null; // Limpia la conversión si el valor es inválido
+                conversionDetails = null;
             }
             
             closeConversionModal();
-            renderOrderSummary(); // Llama a la función para actualizar el resumen
+            renderOrderSummary();
         }
 
         /**
@@ -473,7 +469,6 @@
             
             messageText.innerText = message;
             
-            // Si es un mensaje de éxito, cambia el comportamiento del botón de Aceptar
             if (type === 'success') {
                 const messageOkBtn = document.getElementById('messageOkBtn');
                 messageOkBtn.onclick = () => {
@@ -481,12 +476,10 @@
                     resetForm();
                 };
             } else {
-                // Restablece el comportamiento por defecto del botón
                 const messageOkBtn = document.getElementById('messageOkBtn');
                 messageOkBtn.onclick = closeMessage;
             }
 
-            // Muestra el modal
             messageBox.classList.remove('hidden', 'opacity-0');
             messageBox.classList.add('flex');
             setTimeout(() => {
@@ -509,21 +502,15 @@
         function removeDetail(button) {
             const detailRow = button.closest('.relative');
             const posId = parseInt(detailRow.querySelector('.orden-pos-id').value);
-            // Elimina el elemento del array
             orderDetails = orderDetails.filter(d => d.id !== posId);
-            // Elimina el elemento del DOM
             detailRow.remove();
-            // Re-indexa los IDs para mantener el correlativo
             let currentId = 10;
             orderDetails.forEach(d => {
                 d.id = currentId;
                 currentId += 10;
             });
-            // Recalcula los totales
             updateTotalsByCurrency();
-            // Re-renderiza los detalles para que los IDs se vean correctos
             renderDetails();
-            // Actualiza el resumen de la orden
             renderOrderSummary();
         }
 
@@ -558,29 +545,24 @@
             const finalTotalInput = document.getElementById('ordenTotal_Final');
             const finalTotalLabel = document.getElementById('finalTotalLabel');
             
-            // Lógica mejorada para la totalización final
             if (totalUSD > 0 && totalVED === 0) {
-                // Si solo hay USD, el total final es en USD
                 finalTotalInput.value = formatNumber(totalUSD);
                 finalTotalLabel.innerHTML = 'Total Orden Final <strong>(USD)</strong>';
-                conversionDetails = null; // Limpiar detalles de conversión
+                conversionDetails = null;
             } else if (totalUSD === 0 && totalVED > 0) {
-                // Si solo hay VED, el total final es en VED
                 finalTotalInput.value = formatNumber(totalVED);
                 finalTotalLabel.innerHTML = 'Total Orden Final <strong>(VED)</strong>';
-                conversionDetails = null; // Limpiar detalles de conversión
+                conversionDetails = null;
             } else if (totalUSD === 0 && totalVED === 0) {
-                // Si no hay detalles, el total final se vacía
                 finalTotalInput.value = '';
                 finalTotalLabel.innerHTML = 'Total Orden Final';
-                conversionDetails = null; // Limpiar detalles de conversión
+                conversionDetails = null;
             } else {
-                // Si hay una mezcla de monedas, el total final se deja para la conversión
                 finalTotalInput.value = '';
                 finalTotalLabel.innerHTML = 'Total Orden Final';
             }
 
-            renderOrderSummary(); // Llama a la función para actualizar el resumen
+            renderOrderSummary();
         }
         
         // Función para crear la fila de detalle de la orden
@@ -698,13 +680,12 @@
                 return {
                     "Orden_Pos_ID": detail.id,
                     "Vehiculo_Placa": vehiculoPlaca,
-                    "Vehiculo_PersonaContacto": personaContacto, // Se toma de la cabecera
+                    "Vehiculo_PersonaContacto": personaContacto,
                     "Orden_Producto_Tipo": detail.tipo,
                     "Orden_Producto_Presentacion": detail.presentacion,
                     "Orden_Producto_Costo": detail.costo,
                     "Orden_Producto_Moneda": detail.moneda,
                     "Orden_Producto_Cantidad": detail.cantidad,
-                    // Asegúrate de que el subtotal es un número, no un string formateado
                     "Orden_Subtotal_Pos": parseFloat(detail.subtotal)
                 };
             });
@@ -715,10 +696,12 @@
                 "Vehiculo_Placa": vehiculoPlaca,
                 "Vehiculo_PersonaContacto": personaContacto,
                 "Orden_Fecha": ordenFecha,
-                "Orden_Total": parseFloat(ordenTotal.replace(/\./g, '').replace(',', '.')), // Convierte el total a número
-                "Orden_Moneda_Final": ordenTotalMoneda, // Nuevo campo de la moneda final
-                "Orden_UsuarioReg": userReg, // Campo del usuario registrado
-                "Orden_DataReg": ordenDataReg, // Campo de la fecha y hora de registro
+                "Orden_Total": parseFloat(ordenTotal.replace(/\./g, '').replace(',', '.')),
+                "Orden_Moneda_Final": ordenTotalMoneda,
+                // Campo nuevo para la Tasa de Cambio
+                "Orden_TasaCambio": conversionDetails ? conversionDetails.rate : null,
+                "Orden_UsuarioReg": userReg,
+                "Orden_DataReg": ordenDataReg,
                 "Detalles_Orden": orderDetailsJSON
             };
             
@@ -740,35 +723,21 @@
          * @returns {Promise<object>} Una promesa que se resuelve con la respuesta JSON del servidor o se rechaza si hay un error.
          */
         async function sendDataToGAS(gasWebappUrl, data) {
-            // Definimos las opciones de la solicitud HTTP.
             const options = {
                 method: 'POST',
-                // 'no-cors' es esencial para evitar problemas de seguridad con CORS,
-                // ya que los scripts de GAS se ejecutan en un dominio diferente.
                 mode: 'no-cors',
-                // Convertimos el objeto de datos a una cadena JSON.
                 body: JSON.stringify(data),
                 headers: {
-                    // Indicamos que el cuerpo de la solicitud es de tipo JSON.
                     'Content-Type': 'application/json',
                 },
             };
 
             try {
-                // Realizamos la solicitud POST a la URL de la web app.
                 const response = await fetch(gasWebappUrl, options);
                 console.log('Respuesta del servidor GAS:', response);
-
-                // Ya que usamos 'mode: no-cors', el objeto de respuesta no es transparente
-                // y no podemos acceder directamente a su cuerpo.
-                // Si el script de GAS está configurado para devolver una respuesta
-                // estructurada, deberás manejarla en el lado del servidor.
-                // Aquí, simplemente devolvemos la respuesta.
                 return response;
             } catch (error) {
-                // Capturamos y mostramos cualquier error de red o de la solicitud.
                 console.error('Error al enviar los datos a Google Apps Script:', error);
-                // Lanzamos el error para que pueda ser manejado por la función que llama.
                 throw error;
             }
         }
@@ -816,22 +785,19 @@
                 const container = document.getElementById('detalleContainer');
                 container.appendChild(newRow);
                 
-                // Lógica para desplazar el contenedor y enfocar el campo de descripción
                 const scrollableContainer = document.querySelector('.scrollable-form-container');
                 if (scrollableContainer) {
-                    // Desplaza el contenedor para que el nuevo elemento sea visible
                     scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
                 }
                 
-                // Enfoca el campo de 'Descripción de la Posición'
                 const descripcionInput = newRow.querySelector('.orden-producto-tipo');
                 if (descripcionInput) {
                     descripcionInput.focus();
                 }
 
                 addQuantityButtonListeners(newRow);
-                updateTotalsByCurrency(); // Se llama a esta función para que actualice los totales al agregar un nuevo item.
-                renderOrderSummary(); // Llama a la función para actualizar el resumen
+                updateTotalsByCurrency();
+                renderOrderSummary();
             });
 
             // Lógica para el botón de Guardar
@@ -842,7 +808,6 @@
                 const totalFinalInput = document.getElementById('ordenTotal_Final');
                 const finalTotalLabel = document.getElementById('finalTotalLabel');
 
-                // Validaciones de campos obligatorios
                 if (!placaInput.value.trim()) {
                     showMessage('El campo "Placa del Vehículo" es obligatorio.');
                     placaInput.focus();
@@ -855,13 +820,11 @@
                     return;
                 }
                 
-                // Si el total final no está definido, significa que la conversión no se ha realizado
                 if (!totalFinalInput.value || !finalTotalLabel.innerText.includes('(')) {
                     showMessage('Debe confirmar el valor final de la orden. Por favor, use el botón de confirmación de valor o los botones de conversión si es necesario.');
                     return;
                 }
                 
-                // Obtener el nombre de usuario de la sesión
                 let userReg = '';
                 const loggedInUser = sessionStorage.getItem('loggedInUser');
                 if (loggedInUser) {
@@ -876,7 +839,6 @@
                 const orderDataJSON = generateOrderJSON(userReg);
                 console.log("Datos de la Orden en formato JSON:", JSON.stringify(orderDataJSON, null, 2));
                 
-                // *** Aquí se agrega la llamada a la nueva función utilizando la constante ***
                 try {
                     showMessage('Enviando datos de la orden...');
                     await sendDataToGAS(GAS_REGISTER_ORD_URL, orderDataJSON);
@@ -895,12 +857,10 @@
                 showConversionModal('VED');
             });
             
-            // Lógica del nuevo botón de Aceptar en el modal de conversión
             document.getElementById('acceptConversionBtn').addEventListener('click', () => {
                 calculateAndCloseConversionModal();
             });
             
-            // Lógica para la actualización de subtotales y totales en tiempo real
             document.getElementById('ordenForm').addEventListener('input', (event) => {
                 const target = event.target;
                 const parentRow = target.closest('.relative');
@@ -919,7 +879,6 @@
                         const npInput = parentRow.querySelector('.orden-producto-np');
                         const tipoSelect = parentRow.querySelector('.orden-pos-tipo');
 
-                        // Actualiza los datos en el array
                         detail.descripcion = descripcionInput.value;
                         detail.presentacion = presentacionInput.value;
                         detail.np = npInput.value;
@@ -928,20 +887,16 @@
                         detail.costo = parseFloat(costInput.value) || 0;
                         detail.cantidad = parseInt(quantityInput.value) || 0;
                         
-                        // Calcula el subtotal y lo actualiza
                         const subtotal = (detail.costo * detail.cantidad).toFixed(2);
                         detail.subtotal = subtotal;
                         subtotalInput.value = formatNumber(parseFloat(subtotal));
 
-                        // Actualiza los totales globales
                         updateTotalsByCurrency();
                     }
                 }
             });
 
-            // Agrega un listener para el nuevo botón "Confirmar Valor"
             document.getElementById('confirmTotalBtn').addEventListener('click', () => {
-                // Si la orden tiene detalles, actualiza el total
                 if (orderDetails.length > 0) {
                     updateTotalsByCurrency();
                 } else {
@@ -949,7 +904,6 @@
                 }
             });
             
-            // Llama a la función de actualización de totales al cargar la página
             updateTotalsByCurrency();
         });
     </script>
