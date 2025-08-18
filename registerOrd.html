@@ -269,6 +269,20 @@
 
         // Variable global para manejar el estado del modal de conversión
         let conversionModalState = {};
+
+        // Elimina todos los detalles de la orden
+        function removeAllDetails() {
+            // Limpia el array de detalles de la orden
+            orderDetails = [];
+            // Limpia el contenedor del DOM
+            document.getElementById('orderDetailsContainer').innerHTML = '';
+            // Reinicia el contador de ID
+            orderIdCounter = 0;
+            // Actualiza los totales
+            updateTotalsByCurrency();
+            // Muestra un mensaje de éxito
+            showMessage('Todos los productos y servicios han sido eliminados.');
+        }
         
         // Función para reiniciar el formulario
         function resetForm() {
@@ -283,7 +297,7 @@
             document.getElementById('ordenFecha').value = formatDate(new Date());
             // Actualizar los totales y renderizar el primer detalle
             updateTotalsByCurrency();
-            deleteDetail(index);
+            removeAllDetails();
             addNewDetail();
         }
 
