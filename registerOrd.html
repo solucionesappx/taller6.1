@@ -128,10 +128,13 @@
                         </div>
 
                         <!-- Sección para OrdenesDet (Detalle de la Orden) -->
-                        <div class="space-y-2">
-                            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Detalle de la Orden</h3>
-                            <div id="detalleContainer" class="space-y-2">
-                                <!-- Aquí se agregarán dinámicamente las líneas de detalle -->
+                        <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col">
+                            <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Información de la Orden Guardada</h2>
+                            <!-- Contenedor donde se inyectará la información de la orden guardada -->
+                            <div id="savedOrderContainer" class="flex-grow scrollable-form-container space-y-6">
+                                <p class="text-gray-700 dark:text-gray-300 text-lg text-center">
+                                    Aquí se mostrarán los datos de la última orden guardada.
+                                </p>
                             </div>
                         </div>
                     </form>
@@ -449,6 +452,71 @@
                 }
             }
 
+            // Función para mostrar los datos de la orden guardada en el segundo contenedor. Ahora funciona como una vista previa en tiempo real.
+            // @param {object} data - Objeto con los datos de la orden a mostrar.
+            function displaySavedOrderData(data) {
+                const container = document.getElementById('savedOrderContainer');
+                // Si no hay detalles, muestra el mensaje de inicio
+                if (data['Detalle de la Orden'].length === 0) {
+                     container.innerHTML = `<p class="text-gray-700 dark:text-gray-300 text-lg text-center">
+                        Aquí se mostrarán los datos de la última orden guardada.
+                     </p>`;
+                     return;
+                }
+
+                container.innerHTML = ''; // Limpia el contenido anterior
+                
+                const formatData = (obj, isHeader = true) => {
+                    const div = document.createElement('div');
+                    div.className = isHeader ? 'space-y-2' : 'space-y-2 pl-4 border-l-2 border-gray-400 dark:border-gray-600';
+                    let html = '';
+                    for (const key in obj) {
+                        const value = obj[key];
+                        // Formatea la clave para que sea más legible (ej. 'Orden_ID' -> 'Orden ID')
+                        const label = key.replace(/_/g, ' ');
+                        
+                        if (Array.isArray(value)) {
+                            // Si es un array (detalle de la orden), crea una lista
+                            html += `
+                                <div class="bg-gray-300 dark:bg-gray-700 p-4 rounded-lg">
+                                    <h4 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100">${label}</h4>
+                                    ${value.map((item, index) => `
+                                        <div class="space-y-1 mb-4 last:mb-0">
+                                            <h5 class="font-semibold text-gray-700 dark:text-gray-200">Posición ${index + 1}:</h5>
+                                            <div class="space-y-1 pl-4 border-l-2 border-gray-400 dark:border-gray-600">
+                                                ${Object.entries(item).map(([itemKey, itemValue]) => `
+                                                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                                                        <strong class="font-medium">${itemKey.replace(/_/g, ' ')}:</strong> ${itemValue}
+                                                    </p>
+                                                `).join('')}
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            `;
+                        } else {
+                             // Si es un objeto, muestra las propiedades
+                            html += `
+                                <p class="text-gray-700 dark:text-gray-300">
+                                    <strong class="font-medium">${label}:</strong> ${value}
+                                </p>
+                            `;
+                        }
+                    }
+                    div.innerHTML = html;
+                    return div;
+                };
+
+                // Formatea y añade la cabecera
+                const headerSection = formatData(data['Cabecera de la Orden']);
+                headerSection.className = 'p-4 rounded-lg bg-gray-300 dark:bg-gray-700'; // Estilo para la cabecera
+                container.appendChild(headerSection);
+
+                // Formatea y añade el detalle
+                const detailSection = formatData(data['Detalle de la Orden'], false);
+                container.appendChild(detailSection);
+            }
+            
             // Función para guardar la orden
             document.getElementById('saveBtn').addEventListener('click', () => {
                 const ordenCab = {
