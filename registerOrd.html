@@ -142,21 +142,9 @@
             </div>
 
             <!-- Segundo contenedor principal para la información adicional y el resumen de la orden -->
+            <!-- Este contenedor ahora se renderizará de manera dinámica -->
             <div id="savedOrderContainer" class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col">
-                <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Información Adicional</h2>
-                <div class="flex-grow scrollable-form-container">
-                    <p class="text-gray-700 dark:text-gray-300 text-lg">
-                        Una vez que guarde la orden, el resumen de la misma aparecerá aquí para su revisión.
-                    </p>
-                    <div class="mt-4 p-4 border rounded-lg border-gray-400 dark:border-gray-600">
-                        <h4 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Historial de Órdenes Recientes</h4>
-                        <ul class="list-disc list-inside space-y-2">
-                            <li class="text-gray-700 dark:text-gray-300">Orden ID: 3X5V2 - Completada</li>
-                            <li class="text-gray-700 dark:text-gray-300">Orden ID: 7A9W1 - Pendiente</li>
-                            <li class="text-gray-700 dark:text-gray-300">Orden ID: 2Y4Z8 - En Proceso</li>
-                        </ul>
-                    </div>
-                </div>
+                <!-- El contenido de este contenedor se generará dinámicamente por JavaScript -->
             </div>
 
         </div>
@@ -289,7 +277,7 @@
             // Limpiar el array de detalles
             orderDetails = [];
             // Limpia el contenedor del DOM
-            document.getElementById('orderDetailsContainer').innerHTML = '';
+            document.getElementById('detalleContainer').innerHTML = '';
             // Limpiar los detalles de conversión
             conversionDetails = null;
             // Reiniciar los campos de la cabecera del formulario
@@ -299,10 +287,6 @@
             document.getElementById('ordenFecha').value = formatDate(new Date());
             // Actualizar los totales y renderizar el primer detalle
             updateTotalsByCurrency();
-            // Reinicia el contador de ID
-            orderIdCounter = 10;
-            // removeAllDetails();
-            addNewDetail();
         }
 
         /**
@@ -311,8 +295,9 @@
          */
         function renderOrderSummary() {
             const savedOrderContainer = document.getElementById('savedOrderContainer');
-            savedOrderContainer.innerHTML = ''; // Limpiar el contenido anterior
-
+            // Limpia todo el contenido del contenedor de resumen.
+            savedOrderContainer.innerHTML = '';
+            
             // Datos de la cabecera
             const orderData = {
                 id: document.getElementById('ordenId').value,
@@ -326,12 +311,11 @@
                 details: orderDetails
             };
 
-            const titleElement = document.createElement('h2');
-            titleElement.className = 'text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6';
-            titleElement.innerText = 'Información de la Orden';
-            savedOrderContainer.appendChild(titleElement);
-
-            let orderHtml = `<div class="flex-grow scrollable-form-container">`;
+            let orderHtml = `<h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Resumen de la Orden</h2>
+                            <div class="flex-grow scrollable-form-container">`;
+            
+            orderHtml += `<div class="mt-2 p-4 border rounded-lg border-gray-400 dark:border-gray-600">
+                            <h4 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Detalles de la Orden</h4>`;
             orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>ID de Orden:</strong> ${orderData.id}</p>`;
             orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Fecha:</strong> ${orderData.fecha}</p>`;
             orderHtml += `<p class="text-700 dark:text-gray-300 text-lg"><strong>Placa:</strong> ${orderData.placa}</p>`;
@@ -376,10 +360,17 @@
                 });
                 orderHtml += `</div>`;
             } else {
-                orderHtml += `<p class="text-gray-500">No hay productos ni servicios registrados.</p>`;
+                orderHtml = `
+                    <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Resumen de la Orden</h2>
+                    <div class="flex-grow scrollable-form-container">
+                        <p class="text-gray-700 dark:text-gray-300 text-lg">
+                            Una vez que guarde la orden, el resumen de la misma aparecerá aquí para su revisión.
+                        </p>
+                    </div>
+                `;
             }
-            orderHtml += `</div>`; // Cierra el div con scrollable
-            savedOrderContainer.innerHTML += orderHtml;
+            
+            savedOrderContainer.innerHTML = orderHtml;
         }
 
         // Función para mostrar el modal de conversión
@@ -410,8 +401,8 @@
             }
 
             // Almacena los totales actuales antes de abrir el modal
-            conversionModalState.totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace('.', '').replace(',', '.')) || 0;
-            conversionModalState.totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace('.', '').replace(',', '.')) || 0;
+            conversionModalState.totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(/\./g, '').replace(',', '.')) || 0;
+            conversionModalState.totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(/\./g, '').replace(',', '.')) || 0;
         }
 
         // Función para cerrar el modal de conversión
@@ -519,13 +510,13 @@
             const detailRow = button.closest('.relative');
             const posId = parseInt(detailRow.querySelector('.orden-pos-id').value);
             // Elimina el elemento del array
-            orderDetails = orderDetails.filter(detail => detail.id !== posId);
+            orderDetails = orderDetails.filter(d => d.id !== posId);
             // Elimina el elemento del DOM
             detailRow.remove();
             // Re-indexa los IDs para mantener el correlativo
             let currentId = 10;
-            orderDetails.forEach(detail => {
-                detail.id = currentId;
+            orderDetails.forEach(d => {
+                d.id = currentId;
                 currentId += 10;
             });
             // Recalcula los totales
@@ -681,44 +672,6 @@
             });
         }
 
-        // Nueva función para añadir un detalle.
-        // Se ha extraído la lógica del evento 'click' para poder llamarla al cargar la página.
-        function addNewDetail() {
-            const newId = orderDetails.length > 0 ? orderDetails[orderDetails.length - 1].id + 10 : 10;
-            const newDetailData = {
-                id: newId,
-                tipo: 'Servicio',
-                descripcion: '',
-                presentacion: '',
-                np: '',
-                costo: 0,
-                moneda: 'USD',
-                cantidad: 1,
-                subtotal: 0
-            };
-            
-            orderDetails.push(newDetailData);
-            const newRow = createDetailRow(newDetailData);
-            const container = document.getElementById('detalleContainer');
-            container.appendChild(newRow);
-            
-            // Lógica para desplazar el contenedor y enfocar el campo de descripción
-            const scrollableContainer = document.querySelector('.scrollable-form-container');
-            if (scrollableContainer) {
-                // Desplaza el contenedor para que el nuevo elemento sea visible
-                scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
-            }
-            
-            // Enfoca el campo de 'Descripción de la Posición'
-            const descripcionInput = newRow.querySelector('.orden-producto-tipo');
-            if (descripcionInput) {
-                descripcionInput.focus();
-            }
-
-            addQuantityButtonListeners(newRow);
-            updateTotalsByCurrency(); // Se llama a esta función para que actualice los totales al agregar un nuevo item.
-            renderOrderSummary(); // Llama a la función para actualizar el resumen
-        }
         
         // *******************************************************************
         // Lógica agregada para generar y mostrar el JSON de la orden
@@ -845,7 +798,40 @@
 
             // Lógica para añadir un nuevo producto/servicio
             document.getElementById('addDetailBtn').addEventListener('click', () => {
-               addNewDetail();
+                const newId = orderDetails.length > 0 ? orderDetails[orderDetails.length - 1].id + 10 : 10;
+                const newDetailData = {
+                    id: newId,
+                    tipo: 'Servicio',
+                    descripcion: '',
+                    presentacion: '',
+                    np: '',
+                    costo: 0,
+                    moneda: 'USD',
+                    cantidad: 1,
+                    subtotal: 0
+                };
+                
+                orderDetails.push(newDetailData);
+                const newRow = createDetailRow(newDetailData);
+                const container = document.getElementById('detalleContainer');
+                container.appendChild(newRow);
+                
+                // Lógica para desplazar el contenedor y enfocar el campo de descripción
+                const scrollableContainer = document.querySelector('.scrollable-form-container');
+                if (scrollableContainer) {
+                    // Desplaza el contenedor para que el nuevo elemento sea visible
+                    scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
+                }
+                
+                // Enfoca el campo de 'Descripción de la Posición'
+                const descripcionInput = newRow.querySelector('.orden-producto-tipo');
+                if (descripcionInput) {
+                    descripcionInput.focus();
+                }
+
+                addQuantityButtonListeners(newRow);
+                updateTotalsByCurrency(); // Se llama a esta función para que actualice los totales al agregar un nuevo item.
+                renderOrderSummary(); // Llama a la función para actualizar el resumen
             });
 
             // Lógica para el botón de Guardar
@@ -965,8 +951,6 @@
             
             // Llama a la función de actualización de totales al cargar la página
             updateTotalsByCurrency();
-            // Llama a la nueva función para añadir la primera posición automáticamente
-            // addNewDetail();
         });
     </script>
 </body>
