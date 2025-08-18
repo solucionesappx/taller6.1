@@ -457,40 +457,31 @@
          * @param {string} message - El mensaje a mostrar.
          * @param {string} type - Tipo de mensaje ('success', 'error', etc.) para determinar el comportamiento.
          */
-        function showMessage(title, text, listData = [], showButton = true) {
+        function showMessage(message, type = 'info') {
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
-            const dataList = document.getElementById('dataList');
-            const messageOkBtn = document.getElementById('messageOkBtn');
             
-            messageText.innerHTML = `<strong>${title}</strong><br>${text}`;
-            dataList.innerHTML = '';
-
-            if (listData.length > 0) {
-                dataList.classList.remove('hidden');
-                listData.forEach(item => {
-                    const li = document.createElement('li');
-                    li.textContent = item;
-                    dataList.appendChild(li);
-                });
+            messageText.innerText = message;
+            
+            // Si es un mensaje de éxito, cambia el comportamiento del botón de Aceptar
+            if (type === 'success') {
+                const messageOkBtn = document.getElementById('messageOkBtn');
+                messageOkBtn.onclick = () => {
+                    closeMessage();
+                    resetForm();
+                };
             } else {
-                dataList.classList.add('hidden');
+                // Restablece el comportamiento por defecto del botón
+                const messageOkBtn = document.getElementById('messageOkBtn');
+                messageOkBtn.onclick = closeMessage;
             }
 
-            // Controla la visibilidad del botón Aceptar
-            if (showButton) {
-                messageOkBtn.classList.remove('hidden');
-            } else {
-                messageOkBtn.classList.add('hidden');
-            }
-
+            // Muestra el modal
             messageBox.classList.remove('hidden', 'opacity-0');
-            messageBox.classList.add('flex', 'opacity-100');
-
+            messageBox.classList.add('flex');
             setTimeout(() => {
-                const modal = messageBox.querySelector('div');
-                modal.classList.remove('scale-95');
-                modal.classList.add('scale-100');
+                messageBox.classList.remove('opacity-0');
+                messageBox.querySelector('.transform').classList.remove('scale-95');
             }, 10);
         }
 
