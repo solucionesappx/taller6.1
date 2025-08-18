@@ -25,9 +25,9 @@
         }
         /* Estilos para el contenedor del formulario con scroll */
         .scrollable-form-container {
-            max-height: calc(100vh - 120px); /* Ajusta la altura máxima para permitir el scroll, considerando la altura de la barra de navegación y el padding */
-            overflow-y: auto; /* Habilita el scroll vertical */
-            padding: 1rem; /* Añade padding para mejor visualización */
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding: 1rem;
         }
     </style>
 </head>
@@ -66,16 +66,6 @@
                                 <i class="fas fa-check"></i>
                             </button>
                         </div>
-                        <div class="mt-2">
-                            <button type="button" id="saveBtn" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                                Guardar Orden Completa
-                            </button>
-                        </div>
-                        <div class="mt-2">
-                            <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
-                                <i class="fas fa-plus mr-2"></i>Añadir Producto
-                            </button>
-                        </div>                        
                     </div>
                 <!-- Contenedor del formulario con scrollable -->
                 <div class="flex-grow scrollable-form-container">
@@ -126,23 +116,33 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Sección para los detalles de la orden -->
+                        <div class="space-y-2">
+                            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2">Detalle de la Orden</h3>
+                        </div>
 
-                        <!-- Sección para OrdenesDet (Detalle de la Orden) -->
-                        <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col">
-                            <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Información de la Orden Guardada</h2>
-                            <!-- Contenedor donde se inyectará la información de la orden guardada -->
-                            <div id="savedOrderContainer" class="flex-grow scrollable-form-container space-y-6">
-                                <p class="text-gray-700 dark:text-gray-300 text-lg text-center">
-                                    Aquí se mostrarán los datos de la última orden guardada.
-                                </p>
-                            </div>
+                        <!-- Contenedor donde se inyectarán los detalles de la orden -->
+                        <div id="detalleContainer" class="space-y-4">
+                            <!-- Los detalles de la orden se añadirán aquí dinámicamente -->
                         </div>
                     </form>
+                    <!-- El botón para añadir un nuevo producto se ha movido aquí, al final del contenedor con scroll. -->
+                    <div class="mt-4">
+                        <button type="button" id="addDetailBtn" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-400">
+                            <i class="fas fa-plus mr-2"></i>Añadir Producto
+                        </button>
+                    </div>
+                </div>
+                <div class="mt-2">
+                    <button type="button" id="saveBtn" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                        Guardar Orden Completa
+                    </button>
                 </div>
             </div>
 
             <!-- Segundo contenedor principal para otra información -->
-            <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col">
+            <div id="savedOrderContainer" class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col">
                 <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Información Adicional</h2>
                 <div class="flex-grow scrollable-form-container">
                     <p class="text-gray-700 dark:text-gray-300 text-lg">
@@ -248,15 +248,333 @@
             return formatter.format(value);
         }
 
+        // Variable para almacenar los detalles de la orden
+        let orderDetails = [];
+
+        // Variable global para manejar el estado del modal de conversión
+        let conversionModalState = {};
+
+        // Función para mostrar el modal de conversión
+        function showConversionModal(baseCurrency) {
+            const modal = document.getElementById('conversionModal');
+            const title = document.getElementById('conversionTitle');
+            const baseLabel = document.getElementById('baseCurrencyLabel');
+            const baseInput = document.getElementById('baseCurrencyInput');
+            const targetLabel = document.getElementById('targetCurrencyLabel');
+            const targetInput = document.getElementById('targetCurrencyInput');
+
+            modal.classList.remove('hidden', 'opacity-0');
+            modal.classList.add('flex');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                modal.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+            
+            // Lógica para mostrar la moneda base y la de destino
+            if (baseCurrency === 'USD') {
+                title.innerText = 'Convertir USD a VED';
+                baseLabel.innerText = 'Total USD';
+                targetLabel.innerText = 'Valor VED';
+                baseInput.value = document.getElementById('ordenTotal_USD').value;
+                targetInput.placeholder = 'Ej: 10,00'; // Valor del tipo de cambio
+                conversionModalState.from = 'USD';
+                conversionModalState.to = 'VED';
+            } else if (baseCurrency === 'VED') {
+                title.innerText = 'Convertir VED a USD';
+                baseLabel.innerText = 'Total VED';
+                targetLabel.innerText = 'Valor USD';
+                baseInput.value = document.getElementById('ordenTotal_VED').value;
+                targetInput.placeholder = 'Ej: 1.000,00'; // Valor del tipo de cambio
+                conversionModalState.from = 'VED';
+                conversionModalState.to = 'USD';
+            }
+        }
+
+        // Función para cerrar el modal de conversión
+        function closeConversionModal() {
+            const modal = document.getElementById('conversionModal');
+            modal.classList.add('opacity-0');
+            modal.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.getElementById('targetCurrencyInput').value = '';
+            }, 300);
+        }
+
+        // Función para calcular y cerrar el modal de conversión
+        function calculateAndCloseConversionModal() {
+            const targetInput = document.getElementById('targetCurrencyInput');
+            const totalFinalInput = document.getElementById('ordenTotal_Final');
+            const finalTotalLabel = document.getElementById('finalTotalLabel');
+            
+            const conversionValue = parseFloat(targetInput.value.replace('.', '').replace(',', '.')) || 0;
+            const baseValue = parseFloat(document.getElementById(`ordenTotal_${conversionModalState.from}`).value.replace('.', '').replace(',', '.')) || 0;
+            
+            let finalValue = 0;
+            let finalCurrency = '';
+
+            if (conversionValue > 0) {
+                if (conversionModalState.from === 'USD') {
+                    finalValue = baseValue * conversionValue;
+                    finalCurrency = 'VED';
+                } else if (conversionModalState.from === 'VED') {
+                    finalValue = baseValue / conversionValue;
+                    finalCurrency = 'USD';
+                }
+                
+                totalFinalInput.value = formatNumber(finalValue);
+                finalTotalLabel.innerHTML = `Total Orden Final <strong>(${finalCurrency})</strong>`;
+            } else {
+                showMessage('El valor de conversión no es válido.', null);
+            }
+            
+            closeConversionModal();
+        }
+
+        /**
+         * Muestra un mensaje modal con la lista de productos y la información de la orden.
+         * @param {string} message - El mensaje a mostrar.
+         * @param {Object} orderData - Los datos de la orden a mostrar en la lista.
+         */
+        function showMessage(message, orderData) {
+            const messageBox = document.getElementById('messageBox');
+            const messageText = document.getElementById('messageText');
+            const dataList = document.getElementById('dataList');
+            
+            messageText.innerText = message;
+            dataList.innerHTML = ''; // Limpia la lista anterior
+
+            if (orderData) {
+                // Genera la lista de detalles
+                let orderHtml = `<h4 class="text-xl font-semibold mb-2">Datos de la Orden</h4>`;
+                orderHtml += `<p><strong>ID:</strong> ${orderData.id}</p>`;
+                orderHtml += `<p><strong>Fecha:</strong> ${orderData.fecha}</p>`;
+                orderHtml += `<p><strong>Placa:</strong> ${orderData.placa}</p>`;
+                if (orderData.contacto) {
+                    orderHtml += `<p><strong>Contacto:</strong> ${orderData.contacto}</p>`;
+                }
+                orderHtml += `<p><strong>Total USD:</strong> ${orderData.total_USD}</p>`;
+                orderHtml += `<p><strong>Total VED:</strong> ${orderData.total_VED}</p>`;
+                orderHtml += `<h4 class="text-xl font-semibold mt-4 mb-2">Productos/Servicios</h4>`;
+                
+                if (orderData.details && orderData.details.length > 0) {
+                    orderHtml += `<ul>`;
+                    orderData.details.forEach(detail => {
+                        orderHtml += `<li><strong>Posición ${detail.id}:</strong> ${detail.descripcion} - ${detail.cantidad} unid. (${detail.moneda})</li>`;
+                        orderHtml += `<li>Costo unitario: ${formatNumber(parseFloat(detail.costo_unitario))} ${detail.moneda}</li>`;
+                        orderHtml += `<li>Subtotal: ${formatNumber(parseFloat(detail.subtotal))} ${detail.moneda}</li>`;
+                    });
+                    orderHtml += `</ul>`;
+                } else {
+                    orderHtml += `<p class="text-gray-500">No hay productos ni servicios registrados.</p>`;
+                }
+                dataList.innerHTML = orderHtml;
+            }
+
+            // Muestra el modal
+            messageBox.classList.remove('hidden', 'opacity-0');
+            messageBox.classList.add('flex');
+            setTimeout(() => {
+                messageBox.classList.remove('opacity-0');
+                messageBox.querySelector('.transform').classList.remove('scale-95');
+            }, 10);
+        }
+
+        // Función para cerrar el modal de mensaje
+        function closeMessage() {
+            const messageBox = document.getElementById('messageBox');
+            messageBox.classList.add('opacity-0');
+            messageBox.querySelector('.transform').classList.add('scale-95');
+            setTimeout(() => {
+                messageBox.classList.add('hidden');
+            }, 300);
+        }
+
+        // Función para eliminar un detalle de la orden
+        function removeDetail(button) {
+            const detailRow = button.closest('.relative');
+            const posId = parseInt(detailRow.querySelector('.orden-pos-id').value);
+            // Elimina el elemento del array
+            orderDetails = orderDetails.filter(detail => detail.id !== posId);
+            // Elimina el elemento del DOM
+            detailRow.remove();
+            // Re-indexa los IDs para mantener el correlativo
+            let currentId = 10;
+            orderDetails.forEach(detail => {
+                detail.id = currentId;
+                currentId += 10;
+            });
+            // Recalcula los totales
+            updateTotalsByCurrency();
+            // Re-renderiza los detalles para que los IDs se vean correctos
+            renderDetails();
+        }
+
+        // Función para renderizar los detalles de la orden desde el array
+        function renderDetails() {
+            const container = document.getElementById('detalleContainer');
+            container.innerHTML = '';
+            orderDetails.forEach(detail => {
+                const newRow = createDetailRow(detail);
+                container.appendChild(newRow);
+                addQuantityButtonListeners(newRow);
+            });
+        }
+
+        // Función para actualizar los totales por moneda
+        function updateTotalsByCurrency() {
+            let totalUSD = 0;
+            let totalVED = 0;
+            
+            orderDetails.forEach(detail => {
+                const subtotal = detail.costo * detail.cantidad;
+                if (detail.moneda === 'USD') {
+                    totalUSD += subtotal;
+                } else if (detail.moneda === 'VED') {
+                    totalVED += subtotal;
+                }
+            });
+
+            document.getElementById('ordenTotal_USD').value = formatNumber(totalUSD);
+            document.getElementById('ordenTotal_VED').value = formatNumber(totalVED);
+
+            const finalTotalLabel = document.getElementById('finalTotalLabel');
+            const totalFinalInput = document.getElementById('ordenTotal_Final');
+            
+            // Si solo hay una moneda, se establece como el total final
+            if (totalUSD > 0 && totalVED === 0) {
+                totalFinalInput.value = formatNumber(totalUSD);
+                finalTotalLabel.innerHTML = 'Total Orden Final <strong>(USD)</strong>';
+            } else if (totalUSD === 0 && totalVED > 0) {
+                totalFinalInput.value = formatNumber(totalVED);
+                finalTotalLabel.innerHTML = 'Total Orden Final <strong>(VED)</strong>';
+            } else {
+                totalFinalInput.value = '';
+                finalTotalLabel.innerHTML = `Total Orden Final`;
+            }
+        }
+        
+        // Función para crear la fila de detalle de la orden
+        function createDetailRow(data) {
+            const newRow = document.createElement('div');
+            newRow.className = 'bg-gray-300 dark:bg-gray-700 p-4 rounded-lg space-y-2 relative';
+            newRow.innerHTML = `
+                <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" onclick="removeDetail(this)">
+                    <i class="fas fa-times-circle text-xl"></i>
+                </button>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Posición</label>
+                        <input type="text" readonly class="orden-pos-id w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 text-center dark:text-gray-100 cursor-not-allowed" value="${data.id}">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Tipo de Posición</label>
+                        <select class="orden-pos-tipo w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            <option value="Repuesto" ${data.tipo === 'Repuesto' ? 'selected' : ''}>Repuesto</option>
+                            <option value="Servicio" ${data.tipo === 'Servicio' ? 'selected' : ''}>Servicio</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Descripción de la Posición</label>
+                        <input type="text" class="orden-producto-tipo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. Reparación Tren Delantero" value="${data.descripcion}">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Presentación</label>
+                        <input type="text" class="orden-producto-presentacion w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1 Litro" value="${data.presentacion}">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Número de Parte (NP)</label>
+                        <input type="text" class="orden-producto-np w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1A2B3C" value="${data.np}">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Costo</label>
+                        <!-- Campo editable Costo con justificación a la derecha y placeholder -->
+                        <input type="number" step="0.01" class="orden-costo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right" placeholder="0,00" value="${data.costo > 0 ? data.costo : ''}">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Moneda</label>
+                        <select class="orden-moneda w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
+                            <option value="USD" ${data.moneda === 'USD' ? 'selected' : ''}>USD</option>
+                            <option value="VED" ${data.moneda === 'VED' ? 'selected' : ''}>VED</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Cantidad</label>
+                        <!-- Campo Cantidad con justificación al centro y botones de control -->
+                        <div class="flex items-center space-x-2">
+                            <button type="button" class="quantity-btn decrease bg-gray-400 dark:bg-gray-600 text-white p-1 rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-500 dark:hover:bg-gray-700 transition-colors duration-200">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <input type="number" step="1" class="orden-cantidad w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center" placeholder="1" value="${data.cantidad}">
+                            <button type="button" class="quantity-btn increase bg-gray-400 dark:bg-gray-600 text-white p-1 rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-500 dark:hover:bg-gray-700 transition-colors duration-200">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Subtotal Pos</label>
+                        <input type="text" readonly class="orden-subtotal w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 text-center dark:text-gray-100 cursor-not-allowed" placeholder="0,00" value="${formatNumber(data.subtotal)}">
+                    </div>
+                </div>
+            `;
+            return newRow;
+        }
+        
+        // Función para agregar listeners a los botones de cantidad
+        function addQuantityButtonListeners(row) {
+            const quantityButtons = row.querySelectorAll('.quantity-btn');
+            quantityButtons.forEach(btn => {
+                btn.addEventListener('click', (event) => {
+                    const input = event.target.closest('div').querySelector('.orden-cantidad');
+                    let currentValue = parseInt(input.value) || 0;
+                    if (btn.classList.contains('increase')) {
+                        currentValue++;
+                    } else if (btn.classList.contains('decrease') && currentValue > 1) {
+                        currentValue--;
+                    }
+                    input.value = currentValue;
+                    // Dispara un evento de input para actualizar los totales
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                });
+            });
+        }
+
+        // Nueva función para añadir un detalle.
+        // Se ha extraído la lógica del evento 'click' para poder llamarla al cargar la página.
+        function addNewDetail() {
+            const newId = orderDetails.length > 0 ? orderDetails[orderDetails.length - 1].id + 10 : 10;
+            const newDetailData = {
+                id: newId,
+                tipo: 'Servicio',
+                descripcion: '',
+                presentacion: '',
+                np: '',
+                costo: 0,
+                moneda: 'USD',
+                cantidad: 1,
+                subtotal: 0
+            };
+            
+            orderDetails.push(newDetailData);
+            const newRow = createDetailRow(newDetailData);
+            document.getElementById('detalleContainer').appendChild(newRow);
+            addQuantityButtonListeners(newRow);
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+            // Inicialización de la página
             document.getElementById('ordenId').value = generateShortUUID();
             document.getElementById('ordenFecha').value = formatDate(new Date());
 
+            // Redirección de botones de la barra de navegación
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
                 'logoutBtn': 'index.html'
             };
-
             Object.keys(buttonRoutes).forEach(id => {
                 const button = document.getElementById(id);
                 if (button) {
@@ -266,481 +584,128 @@
                 }
             });
 
-            let detallePosIdCounter = 10;
-
+            // Lógica para añadir un nuevo producto/servicio
             document.getElementById('addDetailBtn').addEventListener('click', () => {
-                const container = document.getElementById('detalleContainer');
-                const newRow = document.createElement('div');
-                newRow.className = 'bg-gray-300 dark:bg-gray-700 p-4 rounded-lg space-y-2 relative';
-                
-                newRow.innerHTML = `
-                    <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" onclick="removeDetail(this)">
-                        <i class="fas fa-times-circle text-xl"></i>
-                    </button>
-                    <!-- Nueva estructura de 2 columnas para Posición y Tipo de Posición -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Posición</label>
-                            <input type="text" readonly class="orden-pos-id w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 text-center dark:text-gray-100 cursor-not-allowed" value="${detallePosIdCounter}">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Tipo de Posición</label>
-                            <!-- El tipo de posición por defecto es 'Servicio' ahora -->
-                            <select class="orden-pos-tipo w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                                <option value="" disabled>Seleccione...</option>
-                                <option value="Repuesto">Repuesto</option>
-                                <option value="Servicio" selected>Servicio</option>
-                            </select>
-                        </div>
-                    </div>
-                    <!-- Nueva estructura de 3 columnas para Descripción, Presentación y NP -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Descripción de la Posición</label>
-                            <!-- El placeholder por defecto es 'Reparación Tren Delantero' -->
-                            <input type="text" class="orden-producto-tipo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. Reparación Tren Delantero">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Presentación</label>
-                            <input type="text" class="orden-producto-presentacion w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1 Litro">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Número de Parte (NP)</label>
-                            <input type="text" class="orden-producto-np w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1A2B3C">
-                        </div>
-                    </div>
-                    <!-- Estructura para Costo, Moneda, Cantidad y Subtotal Pos con los nuevos ajustes -->
-                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Costo</label>
-                            <input type="number" step="0.01" class="orden-producto-costo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right" placeholder="0,00">
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Moneda</label>
-                            <select class="orden-producto-moneda w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 text-center focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                                <option value="VED">VED</option>
-                                <option value="USD" selected>USD</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Cantidad</label>
-                            <!-- Controles personalizados para la cantidad -->
-                            <div class="flex items-center">
-                                <button type="button" class="quantity-btn-minus bg-gray-400 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-l-lg hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors duration-200">-</button>
-                                <input type="number" class="orden-producto-cantidad w-full p-1 text-center bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" value="1">
-                                <button type="button" class="quantity-btn-plus bg-gray-400 dark:bg-gray-600 text-gray-800 dark:text-gray-200 px-3 py-1 rounded-r-lg hover:bg-gray-500 dark:hover:bg-gray-500 transition-colors duration-200">+</button>
-                            </div>
-                        </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Total Posición</label>
-                            <!-- Se cambia el color del texto a negro puro para ambos modos -->
-                            <input type="text" readonly class="orden-subtotal-pos w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 dark:text-gray-900 cursor-not-allowed" placeholder="0,00">
-                        </div>
-                    </div>
-                `;
-                container.appendChild(newRow);
-                detallePosIdCounter += 10;
-
-                // Llama a la función para actualizar los totales al agregar una nueva línea
-                updateTotalsByCurrency();
+                addNewDetail();
             });
 
-            // Función para eliminar una línea de detalle
-            window.removeDetail = (button) => {
-                const row = button.closest('.bg-gray-300');
-                if (row) {
-                    row.remove();
-                    updateTotalsByCurrency();
-                }
-            };
-
-            // Recalcula el total cuando un costo, cantidad o moneda cambia
-            document.addEventListener('input', (event) => {
-                const target = event.target;
-                if (target.classList.contains('orden-producto-costo') || target.classList.contains('orden-producto-cantidad')) {
-                    const row = target.closest('.bg-gray-300');
-                    const costo = parseFloat(row.querySelector('.orden-producto-costo').value.replace(',', '.')) || 0;
-                    const cantidad = parseInt(row.querySelector('.orden-producto-cantidad').value) || 0;
-                    const subtotal = costo * cantidad;
-                    row.querySelector('.orden-subtotal-pos').value = formatNumber(subtotal);
-                    updateTotalsByCurrency();
-                }
-            });
-
-            document.addEventListener('change', (event) => {
-                const target = event.target;
-                if (target.classList.contains('orden-producto-moneda')) {
-                    updateTotalsByCurrency();
-                }
-                // Lógica para cambiar el placeholder según el tipo de posición
-                if (target.classList.contains('orden-pos-tipo')) {
-                    const selectedValue = target.value;
-                    const row = target.closest('.bg-gray-300');
-                    const descripcionInput = row.querySelector('.orden-producto-tipo');
-                    
-                    if (selectedValue === 'Repuesto') {
-                        descripcionInput.placeholder = 'Ej. Bomba de Agua';
-                    } else if (selectedValue === 'Servicio') {
-                        descripcionInput.placeholder = 'Ej. Reparación Tren Delantero';
-                    } else {
-                        descripcionInput.placeholder = 'Ej. Bomba de Agua o Reparación Tren Delantero';
-                    }
-                }
-            });
-
-            // Lógica para los botones de incremento/decremento
-            document.addEventListener('click', (event) => {
-                const target = event.target;
-                if (target.classList.contains('quantity-btn-plus')) {
-                    const input = target.previousElementSibling;
-                    const currentValue = parseInt(input.value) || 0;
-                    input.value = currentValue + 1;
-                    const inputEvent = new Event('input', { bubbles: true });
-                    input.dispatchEvent(inputEvent);
-                } else if (target.classList.contains('quantity-btn-minus')) {
-                    const input = target.nextElementSibling;
-                    const currentValue = parseInt(input.value) || 0;
-                    if (currentValue > 1) {
-                        input.value = currentValue - 1;
-                    } else {
-                        input.value = 1;
-                    }
-                    const inputEvent = new Event('input', { bubbles: true });
-                    input.dispatchEvent(inputEvent);
-                }
-            });
-
-            /**
-             * Función para actualizar los totales por moneda de la orden y el total final si solo hay una moneda.
-             */
-            function updateTotalsByCurrency() {
-                let totalUSD = 0;
-                let totalVED = 0;
-                
-                document.querySelectorAll('#detalleContainer > div').forEach(row => {
-                    const costo = parseFloat(row.querySelector('.orden-producto-costo').value.replace(',', '.')) || 0;
-                    const cantidad = parseInt(row.querySelector('.orden-producto-cantidad').value) || 0;
-                    const moneda = row.querySelector('.orden-producto-moneda').value;
-                    const subtotal = costo * cantidad;
-
-                    if (moneda === 'USD') {
-                        totalUSD += subtotal;
-                    } else if (moneda === 'VED') {
-                        totalVED += subtotal;
-                    }
-                    
-                    row.querySelector('.orden-subtotal-pos').value = formatNumber(subtotal);
-                });
-                
-                document.getElementById('ordenTotal_USD').value = formatNumber(totalUSD);
-                document.getElementById('ordenTotal_VED').value = formatNumber(totalVED);
-
-                // Lógica para actualizar el total final si solo hay una moneda
-                const finalTotalInput = document.getElementById('ordenTotal_Final');
-                const finalTotalLabel = document.getElementById('finalTotalLabel');
-
-                if (totalUSD > 0 && totalVED === 0) {
-                    finalTotalInput.value = formatNumber(totalUSD);
-                    finalTotalLabel.innerHTML = `Total Orden Final <strong>(USD)</strong>`;
-                } else if (totalVED > 0 && totalUSD === 0) {
-                    finalTotalInput.value = formatNumber(totalVED);
-                    finalTotalLabel.innerHTML = `Total Orden Final <strong>(VED)</strong>`;
-                } else {
-                    // Si hay ambas monedas, el total final se reinicia
-                    finalTotalInput.value = '0,00';
-                    finalTotalLabel.innerHTML = `Total Orden Final`;
-                }
-            }
-
-            // Función para mostrar los datos de la orden guardada en el segundo contenedor. Ahora funciona como una vista previa en tiempo real.
-            // @param {object} data - Objeto con los datos de la orden a mostrar.
-            function displaySavedOrderData(data) {
-                const container = document.getElementById('savedOrderContainer');
-                // Si no hay detalles, muestra el mensaje de inicio
-                if (data['Detalle de la Orden'].length === 0) {
-                     container.innerHTML = `<p class="text-gray-700 dark:text-gray-300 text-lg text-center">
-                        Aquí se mostrarán los datos de la última orden guardada.
-                     </p>`;
-                     return;
-                }
-
-                container.innerHTML = ''; // Limpia el contenido anterior
-                
-                const formatData = (obj, isHeader = true) => {
-                    const div = document.createElement('div');
-                    div.className = isHeader ? 'space-y-2' : 'space-y-2 pl-4 border-l-2 border-gray-400 dark:border-gray-600';
-                    let html = '';
-                    for (const key in obj) {
-                        const value = obj[key];
-                        // Formatea la clave para que sea más legible (ej. 'Orden_ID' -> 'Orden ID')
-                        const label = key.replace(/_/g, ' ');
-                        
-                        if (Array.isArray(value)) {
-                            // Si es un array (detalle de la orden), crea una lista
-                            html += `
-                                <div class="bg-gray-300 dark:bg-gray-700 p-4 rounded-lg">
-                                    <h4 class="text-lg font-bold mb-2 text-gray-800 dark:text-gray-100">${label}</h4>
-                                    ${value.map((item, index) => `
-                                        <div class="space-y-1 mb-4 last:mb-0">
-                                            <h5 class="font-semibold text-gray-700 dark:text-gray-200">Posición ${index + 1}:</h5>
-                                            <div class="space-y-1 pl-4 border-l-2 border-gray-400 dark:border-gray-600">
-                                                ${Object.entries(item).map(([itemKey, itemValue]) => `
-                                                    <p class="text-sm text-gray-700 dark:text-gray-300">
-                                                        <strong class="font-medium">${itemKey.replace(/_/g, ' ')}:</strong> ${itemValue}
-                                                    </p>
-                                                `).join('')}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                            `;
-                        } else {
-                             // Si es un objeto, muestra las propiedades
-                            html += `
-                                <p class="text-gray-700 dark:text-gray-300">
-                                    <strong class="font-medium">${label}:</strong> ${value}
-                                </p>
-                            `;
-                        }
-                    }
-                    div.innerHTML = html;
-                    return div;
-                };
-
-                // Formatea y añade la cabecera
-                const headerSection = formatData(data['Cabecera de la Orden']);
-                headerSection.className = 'p-4 rounded-lg bg-gray-300 dark:bg-gray-700'; // Estilo para la cabecera
-                container.appendChild(headerSection);
-
-                // Formatea y añade el detalle
-                const detailSection = formatData(data['Detalle de la Orden'], false);
-                container.appendChild(detailSection);
-            }
-            
-            // Función para guardar la orden
+            // Lógica para el botón de Guardar
             document.getElementById('saveBtn').addEventListener('click', () => {
-                const ordenCab = {
-                    Orden_ID: document.getElementById('ordenId').value,
-                    Vehiculo_Placa: document.getElementById('placa').value,
-                    Vehiculo_PersonaContacto: document.getElementById('contacto').value,
-                    // Se formatea la fecha antes de guardarla para que se muestre como dd.mm.yyyy
-                    Orden_Fecha: formatDisplayDate(document.getElementById('ordenFecha').value),
-                    Orden_Total_USD: document.getElementById('ordenTotal_USD').value,
-                    Orden_Total_VED: document.getElementById('ordenTotal_VED').value,
-                    Orden_Total_Final: document.getElementById('ordenTotal_Final').value,
-                };
-
-                const ordenDet = [];
-                document.querySelectorAll('#detalleContainer .bg-gray-300').forEach(row => {
-                    const detalle = {
-                        Orden_ID: ordenCab.Orden_ID,
-                        Vehiculo_Placa: ordenCab.Vehiculo_Placa,
-                        Orden_Pos_ID: row.querySelector('.orden-pos-id').value,
-                        Vehiculo_PersonaContacto: ordenCab.Vehiculo_PersonaContacto,
-                        Orden_Pos_Tipo: row.querySelector('.orden-pos-tipo').value,
-                        Orden_Producto_Tipo: row.querySelector('.orden-producto-tipo').value,
-                        Orden_Producto_Presentacion: row.querySelector('.orden-producto-presentacion').value,
-                        Orden_Producto_NP: row.querySelector('.orden-producto-np').value,
-                        Orden_Producto_Costo: row.querySelector('.orden-producto-costo').value,
-                        Orden_Producto_Moneda: row.querySelector('.orden-producto-moneda').value,
-                        Orden_Producto_Cantidad: row.querySelector('.orden-producto-cantidad').value,
-                        Orden_Subtotal_Pos: row.querySelector('.orden-subtotal-pos').value
-                    };
-                    ordenDet.push(detalle);
-                });
-
-                const dataToShow = {
-                    'Cabecera de la Orden': ordenCab,
-                    'Detalle de la Orden': ordenDet
-                };
-                showMessage('Orden Guardada Exitosamente:', dataToShow);
-
-                console.log('OrdenCab:', ordenCab);
-                console.log('OrdenDet:', ordenDet);
-            });
-
-            /**
-             * Muestra un mensaje personalizado en el cuadro de diálogo con animaciones.
-             * @param {string} message - El texto que se mostrará en el cuadro de mensaje.
-             * @param {object} data - (Opcional) Objeto con los datos a mostrar.
-             */
-            function showMessage(message, data = null) {
-                const messageBox = document.getElementById('messageBox');
-                const messageText = document.getElementById('messageText');
-                const dataList = document.getElementById('dataList');
-                const modalContent = messageBox.querySelector('div');
-                const acceptBtn = messageBox.querySelector('button');
-
-                messageText.innerText = message;
-                
-                if (data) {
-                    dataList.innerHTML = '';
-                    const formatData = (obj, parentKey = '') => {
-                        for (const key in obj) {
-                            const value = obj[key];
-                            const label = key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-                            
-                            const li = document.createElement('div');
-                            if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-                                li.innerHTML = `<strong class="font-bold text-lg">${label}:</strong>`;
-                                dataList.appendChild(li);
-                                formatData(value, key);
-                            } else if (Array.isArray(value)) {
-                                li.innerHTML = `<strong class="font-bold text-lg">${label}:</strong>`;
-                                dataList.appendChild(li);
-                                value.forEach((item, index) => {
-                                    const itemDiv = document.createElement('div');
-                                    // Se ha cambiado "Item" a "Pos"
-                                    itemDiv.innerHTML = `<strong class="text-sm">Pos ${index + 1}:</strong>`;
-                                    dataList.appendChild(itemDiv);
-                                    formatData(item, `${key}_${index}`);
-                                });
-                            } else {
-                                li.innerHTML = `<span class="block px-2"><strong class="font-bold">${label}:</strong> ${value}</span>`;
-                                dataList.appendChild(li);
-                            }
-                        }
-                    };
-                    formatData(data);
-                    // No cambiamos el texto del botón Aceptar para mantener su función
-                } else {
-                    dataList.innerHTML = '';
-                    acceptBtn.textContent = 'Cerrar'; 
-                }
-
-                messageBox.classList.remove('hidden');
-                void messageBox.offsetWidth;
-                messageBox.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
-            }
-
-            window.closeMessage = function() {
-                const messageBox = document.getElementById('messageBox');
-                const modalContent = messageBox.querySelector('div');
-                
-                messageBox.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-
-                setTimeout(() => {
-                    messageBox.classList.add('hidden');
-                }, 300);
-            };
-
-            let currentConversionCurrency = '';
-
-            // Lógica para abrir el modal de conversión
-            document.getElementById('convertUSD').addEventListener('click', () => {
-                openConversionModal('VED');
-            });
-
-            document.getElementById('convertVED').addEventListener('click', () => {
-                openConversionModal('USD');
-            });
-
-            function openConversionModal(currency) {
-                const modal = document.getElementById('conversionModal');
-                const title = document.getElementById('conversionTitle');
-                const baseLabel = document.getElementById('baseCurrencyLabel');
-                const targetLabel = document.getElementById('targetCurrencyLabel');
-                const baseInput = document.getElementById('baseCurrencyInput');
-                const targetInput = document.getElementById('targetCurrencyInput');
-                
-                currentConversionCurrency = currency;
-                
-                if (currency === 'VED') {
-                    title.innerText = 'Convertir a VED';
-                    baseLabel.innerText = '1,00 USD';
-                    targetLabel.innerText = 'Valor en VED:';
-                    baseInput.value = '1,00';
-                    targetInput.value = ''; // Campo editable para el usuario
-                } else {
-                    title.innerText = 'Convertir a USD';
-                    baseLabel.innerText = '1,00 VED';
-                    targetLabel.innerText = 'Valor en USD:';
-                    baseInput.value = '1,00';
-                    targetInput.value = ''; // Campo editable para el usuario
-                }
-
-                modal.classList.remove('hidden', 'opacity-0');
-                modal.querySelector('div').classList.remove('scale-95');
-            }
-
-            // Nuevo botón de "Convertir"
-            window.calculateAndCloseConversionModal = function() {
-                const modal = document.getElementById('conversionModal');
-                const modalContent = modal.querySelector('div');
-                const rateInput = document.getElementById('targetCurrencyInput');
-                const rate = parseFloat(rateInput.value.replace(',', '.')) || 0;
-                
-                if (rate > 0) {
-                    calculateGrandTotal(rate);
-                }
-
-                modal.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-            };
-
-            // Botón para cerrar el modal sin calcular
-            window.closeConversionModal = function() {
-                const modal = document.getElementById('conversionModal');
-                const modalContent = modal.querySelector('div');
-                
-                modal.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-            };
-            
-            /**
-             * Calcula el total de la orden sumando ambas monedas y actualiza la etiqueta.
-             * @param {number} rate - El tipo de cambio para la conversión.
-             */
-            function calculateGrandTotal(rate) {
-                const totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(',', '.')) || 0;
-                const totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(',', '.')) || 0;
-                const finalTotalInput = document.getElementById('ordenTotal_Final');
+                const totalFinalInput = document.getElementById('ordenTotal_Final');
                 const finalTotalLabel = document.getElementById('finalTotalLabel');
-
-                let finalTotal = 0;
-                let finalCurrency = '';
-
-                if (currentConversionCurrency === 'VED') {
-                    finalTotal = (totalUSD * rate) + totalVED;
-                    finalCurrency = 'VED';
-                } else {
-                    finalTotal = totalUSD + (totalVED / rate);
-                    finalCurrency = 'USD';
-                }
                 
-                finalTotalInput.value = formatNumber(finalTotal);
-                finalTotalLabel.innerHTML = `Total Orden Final <strong>(${finalCurrency})</strong>`;
-            }
+                // Si el total final no está definido, significa que la conversión no se ha realizado
+                if (!totalFinalInput.value || !finalTotalLabel.innerText.includes('(')) {
+                    showMessage('Debe confirmar el valor final de la orden. Por favor, use el botón de confirmación de valor o los botones de conversión si es necesario.', null);
+                    return;
+                }
+
+                const orderData = {
+                    id: document.getElementById('ordenId').value,
+                    fecha: formatDisplayDate(document.getElementById('ordenFecha').value),
+                    placa: document.getElementById('placa').value,
+                    contacto: document.getElementById('contacto').value,
+                    total_USD: document.getElementById('ordenTotal_USD').value,
+                    total_VED: document.getElementById('ordenTotal_VED').value,
+                    total_final: totalFinalInput.value,
+                    moneda_final: finalTotalLabel.innerText.match(/\(([^)]+)\)/)[1],
+                    details: orderDetails
+                };
+
+                // Actualiza el contenedor de "Información de la Orden Guardada"
+                const savedOrderContainer = document.getElementById('savedOrderContainer');
+                savedOrderContainer.innerHTML = '';
+                const titleElement = document.createElement('h2');
+                titleElement.className = 'text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6';
+                titleElement.innerText = 'Información de la Orden Guardada';
+                savedOrderContainer.appendChild(titleElement);
+                
+                let orderHtml = `<p><strong>ID:</strong> ${orderData.id}</p>`;
+                orderHtml += `<p><strong>Fecha:</strong> ${orderData.fecha}</p>`;
+                orderHtml += `<p><strong>Placa:</strong> ${orderData.placa}</p>`;
+                if (orderData.contacto) {
+                    orderHtml += `<p><strong>Contacto:</strong> ${orderData.contacto}</p>`;
+                }
+                orderHtml += `<p><strong>Total USD:</strong> ${orderData.total_USD}</p>`;
+                orderHtml += `<p><strong>Total VED:</strong> ${orderData.total_VED}</p>`;
+                orderHtml += `<p class="mt-4 text-2xl font-bold text-indigo-600 dark:text-indigo-400">Total Final: ${orderData.total_final} (${orderData.moneda_final})</p>`;
+                orderHtml += `<h4 class="text-xl font-semibold mt-4 mb-2">Productos/Servicios</h4>`;
+                
+                if (orderData.details && orderData.details.length > 0) {
+                    orderHtml += `<ul class="list-disc list-inside space-y-2">`;
+                    orderData.details.forEach(detail => {
+                        orderHtml += `<li><strong>Posición ${detail.id}:</strong> ${detail.descripcion} - ${detail.cantidad} unid. (${detail.moneda})</li>`;
+                    });
+                    orderHtml += `</ul>`;
+                } else {
+                    orderHtml += `<p class="text-gray-500">No hay productos ni servicios registrados.</p>`;
+                }
+                savedOrderContainer.innerHTML += orderHtml;
+                
+                showMessage('Orden guardada correctamente.', orderData);
+            });
+
+            // Lógica para la conversión
+            document.getElementById('convertUSD').addEventListener('click', () => {
+                showConversionModal('USD');
+            });
+            document.getElementById('convertVED').addEventListener('click', () => {
+                showConversionModal('VED');
+            });
+
+            // Lógica para la actualización de subtotales y totales en tiempo real
+            document.getElementById('ordenForm').addEventListener('input', (event) => {
+                const target = event.target;
+                const parentRow = target.closest('.relative');
+
+                if (parentRow) {
+                    const posId = parseInt(parentRow.querySelector('.orden-pos-id').value);
+                    const detail = orderDetails.find(d => d.id === posId);
+                    
+                    if (detail) {
+                        const costInput = parentRow.querySelector('.orden-costo');
+                        const currencySelect = parentRow.querySelector('.orden-moneda');
+                        const quantityInput = parentRow.querySelector('.orden-cantidad');
+                        const subtotalInput = parentRow.querySelector('.orden-subtotal');
+                        const descripcionInput = parentRow.querySelector('.orden-producto-tipo');
+                        const presentacionInput = parentRow.querySelector('.orden-producto-presentacion');
+                        const npInput = parentRow.querySelector('.orden-producto-np');
+                        const tipoSelect = parentRow.querySelector('.orden-pos-tipo');
+
+                        // Actualiza los datos en el array
+                        detail.descripcion = descripcionInput.value;
+                        detail.presentacion = presentacionInput.value;
+                        detail.np = npInput.value;
+                        detail.tipo = tipoSelect.value;
+                        detail.moneda = currencySelect.value;
+                        detail.costo = parseFloat(costInput.value) || 0;
+                        detail.cantidad = parseInt(quantityInput.value) || 0;
+                        
+                        // Calcula el subtotal y lo actualiza
+                        const subtotal = (detail.costo * detail.cantidad).toFixed(2);
+                        detail.subtotal = subtotal;
+                        subtotalInput.value = formatNumber(parseFloat(subtotal));
+
+                        // Actualiza los totales globales
+                        updateTotalsByCurrency();
+                    }
+                }
+            });
 
             // Agrega un listener para el nuevo botón "Confirmar Valor"
             document.getElementById('confirmTotalBtn').addEventListener('click', () => {
-                // Obtiene el texto de la etiqueta del total final
-                const finalTotalLabelText = document.getElementById('finalTotalLabel').innerText;
-                const totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(',', '.')) || 0;
-                const totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(',', '.')) || 0;
-
-                // Si existen ambas monedas Y la etiqueta del total final no tiene una moneda definida
-                if (totalUSD > 0 && totalVED > 0 && !finalTotalLabelText.includes('(USD)') && !finalTotalLabelText.includes('(VED)')) {
-                    // Muestra el mensaje de advertencia y guía al usuario
-                    showMessage('Debe convertir a una sola moneda. Por favor, use los botones de conversión para indicar el tipo de cambio.', null);
-                } else {
-                    // Si solo hay una moneda o ya se realizó una conversión, actualiza el total final
+                // Si la orden tiene detalles, actualiza el total
+                if (orderDetails.length > 0) {
                     updateTotalsByCurrency();
+                } else {
+                    showMessage('No hay productos ni servicios registrados en la orden para confirmar un valor.', null);
                 }
             });
-
+            
             // Llama a la función de actualización de totales al cargar la página
             updateTotalsByCurrency();
+            // Llama a la nueva función para añadir la primera posición automáticamente
+            addNewDetail();
         });
     </script>
 </body>
