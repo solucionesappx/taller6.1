@@ -277,7 +277,7 @@
             // Limpia el contenedor del DOM
             document.getElementById('orderDetailsContainer').innerHTML = '';
             // Reinicia el contador de ID
-            orderIdCounter = 0;
+            orderIdCounter = 10;
             // Actualiza los totales
             updateTotalsByCurrency();
             // Muestra un mensaje de éxito
@@ -288,6 +288,8 @@
         function resetForm() {
             // Limpiar el array de detalles
             orderDetails = [];
+            // Limpia el contenedor del DOM
+            document.getElementById('orderDetailsContainer').innerHTML = '';
             // Limpiar los detalles de conversión
             conversionDetails = null;
             // Reiniciar los campos de la cabecera del formulario
@@ -297,7 +299,9 @@
             document.getElementById('ordenFecha').value = formatDate(new Date());
             // Actualizar los totales y renderizar el primer detalle
             updateTotalsByCurrency();
-            removeAllDetails();
+            // Reinicia el contador de ID
+            orderIdCounter = 10;
+            // removeAllDetails();
             addNewDetail();
         }
 
