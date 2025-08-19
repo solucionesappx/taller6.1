@@ -85,7 +85,47 @@
     </div>
 
     <script>
+        // --- NUEVO: URL del Google Apps Script para registrarl Historial ---
+        // Asegúrate de que esta URL sea la correcta para tu Google Apps Script Web App.
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+
+        // --- NUEVA FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
+        /**
+         * Registra un evento en la hoja de historial del Google Sheet.
+         * @param {string} cliente_id - El ID del cliente.
+         * @param {string} nombre - El nombre del cliente.
+         * @param {string} action - La acción a registrar (ej. 'Visita a Menú').
+         */
+        async function registerHistory(cliente_id, nombre, action) {
+            console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.success) {
+                    console.log("Registro de historial exitoso:", data.message);
+                } else {
+                    console.error("Fallo al registrar historial:", data.message);
+                }
+            } catch (error) {
+                console.error("Error al conectar para registrar historial:", error);
+            }
+        }
+    
         document.addEventListener('DOMContentLoaded', () => {
+            // --- NUEVO: LÓGICA PARA EL REGISTRO DE HISTORIAL ---
+            // Intenta obtener los datos del usuario de sessionStorage
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+            // Si hay un usuario logueado, registra la visita a esta página
+            if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
+            } else {
+                // Si no hay un usuario logueado, se redirige al inicio para evitar el acceso no autorizado
+                console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
+                window.location.href = 'index.html';
+            }
+            // --- FIN DE LA NUEVA LÓGICA ---
 
             // Mapeo de IDs de botones a URLs para una gestión más limpia
             const buttonRoutes = {
@@ -142,7 +182,7 @@
                 modalContent.classList.add('scale-95');
 
                 // Ocultar el modal una vez que la transición haya terminado
-                            setTimeout(() => {
+                setTimeout(() => {
                     messageBox.classList.add('hidden');
                 }, 300);
             };
