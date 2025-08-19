@@ -85,11 +85,10 @@
     </div>
 
     <script>
-        // --- NUEVO: URL del Google Apps Script para registrarl Historial ---
-        // Asegúrate de que esta URL sea la correcta para tu Google Apps Script Web App.
+        // --- NUEVO: URL del Google Apps Script ---
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
-        // --- NUEVA FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
+        // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
         /**
          * Registra un evento en la hoja de historial del Google Sheet.
          * @param {string} cliente_id - El ID del cliente.
@@ -113,23 +112,20 @@
         }
     
         document.addEventListener('DOMContentLoaded', () => {
-            // --- NUEVO: LÓGICA PARA EL REGISTRO DE HISTORIAL ---
-            // Intenta obtener los datos del usuario de sessionStorage
+            // --- LÓGICA PARA EL REGISTRO DE HISTORIAL DE VISITA ---
             const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
-            // Si hay un usuario logueado, registra la visita a esta página
             if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                // Registrar la visita a esta página
                 registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
             } else {
-                // Si no hay un usuario logueado, se redirige al inicio para evitar el acceso no autorizado
                 console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
                 window.location.href = 'index.html';
             }
-            // --- FIN DE LA NUEVA LÓGICA ---
-
+            
             // Mapeo de IDs de botones a URLs para una gestión más limpia
             const buttonRoutes = {
-                'logoutBtn': 'index.html',
+                // 'logoutBtn' se manejará de forma especial para registrar la salida
                 'vehiculosBtn': 'registerVeh.html',
                 'ordenesBtn': 'registerOrd.html'
             };
@@ -143,6 +139,25 @@
                     });
                 }
             });
+
+            // --- NUEVO: Manejador de clic para el botón de salir ---
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    // Obtener los datos del usuario antes de eliminar la sesión
+                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                    if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                        // Registrar la acción de 'Salida de la App'
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                    }
+                    
+                    // Opcional: limpiar la sesión
+                    sessionStorage.removeItem('loggedInUser');
+
+                    // Redirigir a la página de inicio
+                    window.location.href = 'index.html';
+                });
+            }
 
             // Manejador de clics genérico para los botones que muestran un mensaje
             document.querySelectorAll('.menu-btn:not(#vehiculosBtn):not(#ordenesBtn)').forEach(button => {
