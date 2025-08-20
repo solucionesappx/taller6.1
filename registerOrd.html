@@ -770,36 +770,19 @@
             document.getElementById('ordenFecha').value = formatDate(new Date());
 
             // Redirección de botones de la barra de navegación
-            //const buttonRoutes = {
-            //    'homeBtn': 'menu_app.html',
-            //    'logoutBtn': 'index.html'
-            //};
-            //Object.keys(buttonRoutes).forEach(id => {
-            //    const button = document.getElementById(id);
-            //    if (button) {
-            //        button.addEventListener('click', () => {
-            //            window.location.href = buttonRoutes[id];
-            //        });
-            //    }
-            //});
+            const buttonRoutes = {
+                'homeBtn': 'menu_app.html',
+                'logoutBtn': 'index.html'
+            };
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        window.location.href = buttonRoutes[id];
+                    });
+                }
+            });
             
-            // --- Lógica de salida actualizada ---
-            logoutBtn.addEventListener('click', () => {
-            //    window.location.href = 'index.html'; // Redirige a la página de inicio de sesión
-            //});
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async () => {
-                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                    if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        // Se utiliza 'await' para esperar a que el registro de salida se complete
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
-                    }
-                    sessionStorage.removeItem('loggedInUser');
-                    window.location.href = 'index.html';
-                });
-            }
-
             // Lógica para añadir un nuevo producto/servicio
             document.getElementById('addDetailBtn').addEventListener('click', () => {
                 const newId = orderDetails.length > 0 ? orderDetails[orderDetails.length - 1].id + 10 : 10;
