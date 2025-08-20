@@ -200,7 +200,7 @@
 
       <script>
         // --- URL del Google Apps Script ---
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+        const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
         // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
         /**
@@ -211,7 +211,7 @@
          */
         async function registerHistory(cliente_id, nombre, action) {
             console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
-            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+            const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -321,7 +321,40 @@
             // Actualizar los totales y renderizar el primer detalle
             updateTotalsByCurrency();
         }
+            // --- LÓGICA PARA EL REGISTRO DE HISTORIAL DE VISITA ---
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
+            if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                // Registrar la visita a esta página
+            //    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
+            } else {
+                console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
+                window.location.href = 'index.html';
+            }            
+
+            // --- Lógica del botón de salida ---
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    // Obtenemos los datos del usuario logueado desde sessionStorage
+                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+                    // Verificamos que los datos del usuario existan antes de registrarlos.
+                    if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                        // Esperamos a que el registro de salida se complete.
+                        // Esta función `registerHistory` debe estar definida en tu código.
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                    }
+
+                    // Limpiamos los datos del usuario de sessionStorage.
+                    // Esto es crucial para que la sesión se cierre correctamente.
+                    sessionStorage.removeItem('loggedInUser');
+
+                    // Finalmente, redirigimos al usuario a la página de inicio.
+                    window.location.href = 'index.html';
+                });
+            }      
+          
         /**
          * Genera y muestra el resumen de la orden en el contenedor de información adicional.
          * Esta función ahora se llama cada vez que se actualiza el array de `orderDetails`.
