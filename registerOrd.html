@@ -198,7 +198,33 @@
         </div>
     </div>
 
-    <script>
+      <script>
+        // --- URL del Google Apps Script ---
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+
+        // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
+        /**
+         * Registra un evento en la hoja de historial del Google Sheet.
+         * @param {string} cliente_id - El ID del cliente.
+         * @param {string} nombre - El nombre del cliente.
+         * @param {string} action - La acción a registrar (ej. 'Visita a Menú').
+         */
+        async function registerHistory(cliente_id, nombre, action) {
+            console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.success) {
+                    console.log("Registro de historial exitoso:", data.message);
+                } else {
+                    console.error("Fallo al registrar historial:", data.message);
+                }
+            } catch (error) {
+                console.error("Error al conectar para registrar historial:", error);
+            }
+        }
+          
         // URL de tu script de Google Apps Script.
         // REEMPLAZA esta URL con la tuya después de implementar el script de GAS.
         const GAS_REGISTER_ORD_URL = 'https://script.google.com/macros/s/AKfycbwXYK4Ir__FygUSlgCtvn3JcenkfbXpDqy6r8S8gSKF9xx5BgDCWclUKtYVfpPYS-e3bw/exec';
