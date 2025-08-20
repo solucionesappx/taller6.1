@@ -52,37 +52,31 @@
                     <button id="homeBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-home text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Inicio</span>
-                    </a>
                 </li>
                 <li class="flex-1">
                     <button id="vehiculosBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-car text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Vehículo</span>
-                    </a>
                 </li>
                 <li class="flex-1">
                     <button id="ordenesBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-tools text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Servicios</span>
-                    </a>
                 </li>
                 <li class="flex-1">
                     <button id="buscarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-search text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Búsqueda</span>
-                    </a>
                 </li>
                 <li class="flex-1">
                     <button id="modificarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-search text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Modificar</span>
-                    </a>
                 </li>
                 <li class="flex-1">
                     <button id="logoutBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-sign-out-alt text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Salir</span>
-                    </a>
                 </li>
             </ul>
         </div>
@@ -240,6 +234,27 @@
     </div>
 
       <script>
+
+            // Definición de las rutas para todos los botones.
+            const buttonRoutes = {
+                'homeBtn': 'menu_app.html',
+                'vehiculosBtn': 'registerVeh.html',  
+                'ordenesBtn': 'registerOrd.html',      
+                'buscarBtn': 'buscarDat.html',        
+                'modificarBtn': 'modificarDat.html'   
+            };
+
+            // Se utiliza 'Object.keys' para manejar la lógica de navegación simple.
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        window.location.href = buttonRoutes[id];
+                    });
+                }
+            });
+          
+          
         // --- URL del Google Apps Script ---
         const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
@@ -373,28 +388,49 @@
                 window.location.href = 'index.html';
             }            
 
-            // --- Lógica del botón de salida ---
+            // --- Función para manejar el registro de historial y la redirección ---
+            const handleButtonClick = async (id, action) => {
+                const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                    // Registra la acción del usuario antes de navegar.
+                    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
+                }
+                // Redirige al usuario a la URL correspondiente.
+                window.location.href = buttonRoutes[id];
+            };
+
+            // --- Aplicar la lógica a los botones de navegación ---
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        // Se usa el ID del botón para determinar la acción a registrar.
+                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Acceso a Vehículos'.
+                        const actionMap = {
+                            'homeBtn': 'Acceso al Menú Principal',
+                            'vehiculosBtn': 'Acceso a Vehículos',
+                            'ordenesBtn': 'Acceso a Órdenes',
+                            'buscarBtn': 'Acceso a Búsqueda',
+                            'modificarBtn': 'Acceso a Modificación'
+                        };
+                        const action = actionMap[id];
+                        handleButtonClick(id, action);
+                    });
+                }
+            });
+
+            // --- Lógica del botón de salida (logoutBtn) ---
             const logoutBtn = document.getElementById('logoutBtn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', async () => {
-                    // Obtenemos los datos del usuario logueado desde sessionStorage
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-
-                    // Verificamos que los datos del usuario existan antes de registrarlos.
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        // Esperamos a que el registro de salida se complete.
-                        // Esta función `registerHistory` debe estar definida en tu código.
                         registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
-
-                    // Limpiamos los datos del usuario de sessionStorage.
-                    // Esto es crucial para que la sesión se cierre correctamente.
                     sessionStorage.removeItem('loggedInUser');
-
-                    // Finalmente, redirigimos al usuario a la página de inicio.
                     window.location.href = 'index.html';
                 });
-            }      
+            }        
           
         /**
          * Genera y muestra el resumen de la orden en el contenedor de información adicional.
