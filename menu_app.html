@@ -3,42 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Menú Principal</title>
+    <title>Registro de Órdenes</title>
     <!-- Incluye Tailwind CSS desde CDN para un diseño moderno y responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Carga la fuente Inter de Google Fonts para un diseño limpio -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Incluye la biblioteca de íconos Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Un gris muy suave para el fondo de la página */
+        }
+        /* Estilos personalizados para la barra de navegación */
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0; 
+            transition: all 0.2s ease-in-out;
+            font-weight: 600;
+        }
+        /* Oculta los botones de incremento/decremento del input de tipo 'number' */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* Estilos para el contenedor del formulario con scroll */
+        .scrollable-form-container {
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding: 1rem;
         }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Barra de navegación superior con estilo personalizado -->
-    <nav class="bg-gray-900 text-white p-4 shadow-md flex items-center justify-between">
-        
-        <!-- Contenedor del botón de Inicio con el efecto de hover y etiqueta debajo -->
-        <button id="homeBtn" class="group flex flex-col items-center space-y-1 p-2 rounded-lg hover:bg-white hover:bg-opacity-10 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white" aria-label="Ir a la página de inicio">
-            <i class="fas fa-home text-xl"></i>
-            <span class="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Inicio</span>
-        </button>
-
-        <!-- Título de la aplicación, centrado -->
-        <h1 class="text-xl sm:text-2xl font-bold flex-grow text-center">Menú Principal</h1>
-
-        <div class="flex items-center space-x-4">
-            <!-- Contenedor del botón de Cerrar Sesión con el efecto de hover y etiqueta debajo -->
-            <button id="logoutBtn" class="group flex flex-col items-center space-y-1 p-2 rounded-lg text-red-500 hover:text-red-600 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-400" aria-label="Salir">
-                <!-- Se invierte el orden del ícono y el texto para que el ícono esté arriba -->
-                <i class="fas fa-sign-out-alt text-xl"></i>
-                <span class="text-xs font-semibold opacity-0 group-hover:opacity-100 transition-opacity duration-300">Salir</span>
-            </button>
+    <!-- Nueva barra de navegación integrada -->
+    <nav class="fixed top-0 left-0 w-full bg-gray-100 text-gray-800 shadow-lg z-50">
+        <div class="container mx-auto px-4 py-2">
+            <ul class="flex justify-around items-center list-none p-0 m-0">
+                <li class="flex-1">
+                    <button id="homeBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-home text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Inicio</span>
+                </li>
+                <li class="flex-1">
+                    <button id="vehiculosBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-car text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Vehículo</span>
+                </li>
+                <li class="flex-1">
+                    <button id="ordenesBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-tools text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Servicios</span>
+                </li>
+                <li class="flex-1">
+                    <button id="buscarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-search text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Búsqueda</span>
+                </li>
+                <li class="flex-1">
+                    <button id="modificarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-edit text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Modificar</span>
+                </li>
+                <li class="flex-1">
+                   <button id="logoutBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Salir</span>
+                </li>
+            </ul>
         </div>
-    </nav>
+    </nav>    
 
     <!-- Contenedor principal para los botones del dashboard -->
     <main class="flex-grow flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800 transition-colors duration-300 rounded-xl m-4">
