@@ -391,7 +391,9 @@
             
             // Limpia el input del valor convertido al abrir el modal
             convertedValueInput.value = '';
-
+            
+           // Establecer el foco en el campo de texto después de la transición
+            convertedValueInput.focus();
             modal.classList.remove('hidden', 'opacity-0');
             modal.classList.add('flex');
             setTimeout(() => {
@@ -416,8 +418,7 @@
             conversionModalState.totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(/\./g, '').replace(',', '.')) || 0;
             conversionModalState.totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(/\./g, '').replace(',', '.')) || 0;
         }
-           // Establecer el foco en el campo de texto después de la transición
-           convertedValueInput.focus();
+
         // Función para cerrar el modal de conversión
         function closeConversionModal() {
             const modal = document.getElementById('conversionModal');
