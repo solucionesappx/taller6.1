@@ -239,8 +239,8 @@
         </div>
     </div>
 
-      <script>
-//logíca boton pastebtn
+    // incio lógica pastebtn
+<script>
     const pasteBtn = document.getElementById('pasteBtn');
     const placaInput = document.getElementById('placa');
     const contactoInput = document.getElementById('contacto');
@@ -250,7 +250,7 @@
         // Lógica de showMessage...
     }
 
-        pasteBtn.addEventListener('click', async () => {
+    pasteBtn.addEventListener('click', async () => {
         // Leer el contenido del portapapeles
         try {
             const clipboardText = await navigator.clipboard.readText();
@@ -280,9 +280,10 @@
             console.error('Error al leer del portapapeles:', err);
             showMessage('Error: No se pudo leer del portapapeles.');
         }
-    });      
-
-        // fin lógina pastebtn
+    });
+// fin logica pastebtn
+    
+</script>
           
             // Definición de las rutas para todos los botones.
             const buttonRoutes = {
