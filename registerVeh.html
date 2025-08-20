@@ -66,12 +66,12 @@
                 <li class="flex-1">
                     <button id="buscarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-search text-lg"></i>
-                        <span class="mt-1 text-xs sm:text-sm">Búsqueda</span>
+                        <span class="mt-1 text-xs sm:text-sm">Buscar</span>
                 </li>
                 <li class="flex-1">
-                    <button id="modificarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                    <button id="EditarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-edit text-lg"></i>
-                        <span class="mt-1 text-xs sm:text-sm">Modificar</span>
+                        <span class="mt-1 text-xs sm:text-sm">Editar</span>
                 </li>
                 <li class="flex-1">
                    <button id="logoutBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
@@ -202,7 +202,7 @@
                 'vehiculosBtn': 'registerVeh.html',  
                 'ordenesBtn': 'registerOrd.html',      
                 'buscarBtn': 'buscarDat.html',        
-                'modificarBtn': 'modificarDat.html'   
+                'EditarBtn': 'EditarDat.html'   
             };
 
             // Se utiliza 'Object.keys' para manejar la lógica de navegación simple.
@@ -320,8 +320,8 @@
                             'homeBtn': 'Menú Principal',
                             'vehiculosBtn': 'Vehículos',
                             'ordenesBtn': 'Órdenes',
-                            'buscarBtn': 'Búsqueda',
-                            'modificarBtn': 'Modificar'
+                            'buscarBtn': 'Buscar',
+                            'EditarBtn': 'Editar'
                         };
                         const action = actionMap[id];
                         handleButtonClick(id, action);
