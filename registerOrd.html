@@ -385,7 +385,7 @@
 
             if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
                 // Registrar la visita a esta página
-                registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
+                // registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
             } else {
                 console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
                 window.location.href = 'index.html';
