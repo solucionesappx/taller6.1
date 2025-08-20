@@ -409,14 +409,14 @@
                 const button = document.getElementById(id);
                 if (button) {
                     button.addEventListener('click', () => {
-                        // Se usa el ID del botón para determinar la acción a registrar.
-                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Acceso a Vehículos'.
+                        // Se usa el ID del botón para determinar la acción a registrar en Historia.
+                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Vehículos'.
                         const actionMap = {
-                            'homeBtn': 'Acceso al Menú Principal',
-                            'vehiculosBtn': 'Acceso a Vehículos',
-                            'ordenesBtn': 'Acceso a Órdenes',
-                            'buscarBtn': 'Acceso a Búsqueda',
-                            'modificarBtn': 'Acceso a Modificación'
+                            'homeBtn': 'Menú Principal',
+                            'vehiculosBtn': 'Vehículos',
+                            'ordenesBtn': 'Órdenes',
+                            'buscarBtn': 'Búsqueda',
+                            'modificarBtn': 'Modificar'
                         };
                         const action = actionMap[id];
                         handleButtonClick(id, action);
