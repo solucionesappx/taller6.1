@@ -127,6 +127,25 @@
     </div>
 
     <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Inicialización de la página
+            document.getElementById('ordenId').value = generateShortUUID();
+            document.getElementById('ordenFecha').value = formatDate(new Date());
+
+            // Redirección de botones de la barra de navegación
+            const buttonRoutes = {
+                'homeBtn': 'menu_app.html',
+                'logoutBtn': 'index.html'
+            };
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        window.location.href = buttonRoutes[id];
+                    });
+                }
+            });
+        
         // --- URL del Google Apps Script ---
         const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
