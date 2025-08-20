@@ -40,11 +40,19 @@
             overflow-y: auto;
             padding: 1rem;
         }
+        /* Estilos para los botones del menú principal */
+        .menu-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
     </style>
 </head>
 <body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Nueva barra de navegación integrada -->
+    <!-- Barra de navegación principal -->
     <nav class="fixed top-0 left-0 w-full bg-gray-100 text-gray-800 shadow-lg z-50">
         <div class="container mx-auto px-4 py-2">
             <ul class="flex justify-around items-center list-none p-0 m-0">
@@ -82,38 +90,21 @@
         </div>
     </nav>    
 
-    <!-- Contenedor principal para los botones del dashboard -->
+    <!-- Contenedor principal para los botones del dashboard.
+         Se han eliminado los botones duplicados para evitar conflictos. -->
     <main class="flex-grow flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800 transition-colors duration-300 rounded-xl m-4">
+        <!-- Puedes usar este espacio para mostrar el contenido dinámico de la página, 
+             como un dashboard, un formulario o una lista de órdenes. -->
+        <h1 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200">
+            Bienvenido al Menú Principal
+        </h1>
+        
+        <!-- Aquí podrías incluir los botones del dashboard si lo deseas, pero asegurándote de que no tengan el mismo ID que los de la barra de navegación -->
+        <!-- Ejemplo:
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl">
-
-            <!-- Botón de Vehículos -->
-            <button id="vehiculosBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
-                <i class="fa-solid fa-car-side text-3xl mb-2"></i>
-                <span class="block text-xl font-bold">Vehículos</span>
-            </button>
-
-            <!-- Botón de Órdenes -->
-            <button id="ordenesBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
-                <i class="fa-solid fa-clipboard-list text-3xl mb-2"></i>
-                <span class="block text-xl font-bold">Órdenes</span>
-            </button>
-
-            <!-- Botón de Buscar -->
-            <button id="buscarBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
-                <i class="fa-solid fa-magnifying-glass text-3xl mb-2"></i>
-                <span class="block text-xl font-bold">Buscar</span>
-            </button>
-
-            <!-- Botón de Modificar -->
-            <button id="modificarBtn" class="menu-btn bg-white dark:bg-gray-800 text-indigo-600 dark:text-indigo-400 p-6 rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                <!-- Se reemplaza el emoji por un ícono de Font Awesome para consistencia -->
-                <i class="fa-solid fa-pen-to-square text-3xl mb-2"></i>
-                <span class="block text-xl font-bold">Modificar</span>
-            </button>
+            <button class="menu-btn bg-white ...">...</button>
         </div>
+        -->
     </main>
     
     <!-- Contenedor de mensajes (alerta modal con animaciones) -->
@@ -128,109 +119,83 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicialización de la página
-            document.getElementById('ordenId').value = generateShortUUID();
-            document.getElementById('ordenFecha').value = formatDate(new Date());
 
-            // Redirección de botones de la barra de navegación
+            // --- Lógica del menú y redirección ---
+            
+            // Definición de las rutas para todos los botones.
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
-                'logoutBtn': 'index.html'
+                'vehiculosBtn': 'vehiculos.html',
+                'ordenesBtn': 'ordenes.html',
+                'buscarBtn': 'buscar.html',
+                'modificarBtn': 'modificar.html'
             };
-            Object.keys(buttonRoutes).forEach(id => {
-                const button = document.getElementById(id);
-                if (button) {
-                    button.addEventListener('click', () => {
-                        window.location.href = buttonRoutes[id];
-                    });
-                }
-            });
-        
-        // --- URL del Google Apps Script ---
-        const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
-        // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
-        /**
-         * Registra un evento en la hoja de historial del Google Sheet.
-         * @param {string} cliente_id - El ID del cliente.
-         * @param {string} nombre - El nombre del cliente.
-         * @param {string} action - La acción a registrar (ej. 'Visita a Menú').
-         */
-        async function registerHistory(cliente_id, nombre, action) {
-            console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
-            const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-                if (data.success) {
-                    console.log("Registro de historial exitoso:", data.message);
-                } else {
-                    console.error("Fallo al registrar historial:", data.message);
+            // URL del Google Apps Script para registrar el historial.
+            const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+
+            // Función para registrar un evento en la hoja de historial del Google Sheet.
+            async function registerHistory(cliente_id, nombre, action) {
+                console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+                const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log("Registro de historial exitoso:", data.message);
+                    } else {
+                        console.error("Fallo al registrar historial:", data.message);
+                    }
+                } catch (error) {
+                    console.error("Error al conectar para registrar historial:", error);
                 }
-            } catch (error) {
-                console.error("Error al conectar para registrar historial:", error);
             }
-        }
-    
-            // --- LÓGICA PARA EL REGISTRO DE HISTORIAL DE VISITA ---
-            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
-            if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                // Registrar la visita a esta página
-                // registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
-            } else {
-                console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
-                window.location.href = 'index.html';
-            }            
-
-            // --- Función para manejar el registro de historial y la redirección ---
+            // Función para manejar el registro de historial y la redirección.
             const handleButtonClick = async (id, action) => {
                 const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                 if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                    // Registra la acción del usuario antes de navegar.
-                    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
+                    await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
                 }
-                // Redirige al usuario a la URL correspondiente.
                 window.location.href = buttonRoutes[id];
             };
 
-            // --- Aplicar la lógica a los botones de navegación ---
+            // Mapa de acciones a registrar en el historial.
+            const actionMap = {
+                'homeBtn': 'Acceso a Menú Principal',
+                'vehiculosBtn': 'Acceso a Vehículos',
+                'ordenesBtn': 'Acceso a Servicios',
+                'buscarBtn': 'Acceso a Búsqueda',
+                'modificarBtn': 'Acceso a Modificación'
+            };
+
+            // Aplicar la lógica a los botones de navegación.
             Object.keys(buttonRoutes).forEach(id => {
                 const button = document.getElementById(id);
                 if (button) {
                     button.addEventListener('click', () => {
-                        // Se usa el ID del botón para determinar la acción a registrar en Historia.
-                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Vehículos'.
-                        const actionMap = {
-                            'homeBtn': 'Menú Principal',
-                            'vehiculosBtn': 'Vehículos',
-                            'ordenesBtn': 'Órdenes',
-                            'buscarBtn': 'Búsqueda',
-                            'modificarBtn': 'Modificar'
-                        };
                         const action = actionMap[id];
                         handleButtonClick(id, action);
                     });
                 }
             });
 
-            // --- Lógica del botón de salida (logoutBtn) ---
+            // Lógica del botón de salida (logoutBtn).
             const logoutBtn = document.getElementById('logoutBtn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', async () => {
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
                     sessionStorage.removeItem('loggedInUser');
                     window.location.href = 'index.html';
                 });
-            }     
-  
-            /**
-             * Muestra un mensaje personalizado en el cuadro de diálogo con animaciones.
-             * @param {string} message - El texto que se mostrará en el cuadro de mensaje.
-             */
+            }
+
+            // --- LÓGICA DEL POPUP DE MENSAJE ---
+            
+            // Función para mostrar un mensaje personalizado en el cuadro de diálogo con animaciones.
             function showMessage(message) {
                 const messageBox = document.getElementById('messageBox');
                 const messageText = document.getElementById('messageText');
@@ -247,7 +212,7 @@
                 modalContent.classList.remove('scale-95');
             }
 
-            // Asignar la función closeMessage al ámbito global para el onclick
+            // Asignar la función closeMessage al ámbito global para el onclick.
             window.closeMessage = function() {
                 const messageBox = document.getElementById('messageBox');
                 const modalContent = messageBox.querySelector('div');
@@ -256,7 +221,7 @@
                 messageBox.classList.add('opacity-0');
                 modalContent.classList.add('scale-95');
 
-                // Ocultar el modal una vez que la transición haya terminado
+                // Ocultar el modal una vez que la transición haya terminado.
                 setTimeout(() => {
                     messageBox.classList.add('hidden');
                 }, 300);
