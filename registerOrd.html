@@ -239,52 +239,6 @@
         </div>
     </div>
 
-    // incio lógica pastebtn
-<script>
-    const pasteBtn = document.getElementById('pasteBtn');
-    const placaInput = document.getElementById('placa');
-    const contactoInput = document.getElementById('contacto');
-
-    // Función para mostrar mensajes en la ventana modal
-    function showMessage(message, data = null) {
-        // Lógica de showMessage...
-    }
-
-    pasteBtn.addEventListener('click', async () => {
-        // Leer el contenido del portapapeles
-        try {
-            const clipboardText = await navigator.clipboard.readText();
-            
-            // Intentar parsear el texto como JSON
-            let parsedData;
-            try {
-                parsedData = JSON.parse(clipboardText);
-            } catch (e) {
-                // El texto no es un JSON válido, muestra un mensaje y termina
-                showMessage('El contenido del portapapeles no es un JSON válido.');
-                return;
-            }
-
-            // Verificar si el JSON tiene las claves esperadas
-            if (parsedData.placa && parsedData.contacto) {
-                // Se detectó el formato JSON de vehículo, llenar los campos
-                placaInput.value = parsedData.placa;
-                contactoInput.value = parsedData.contacto;
-                showMessage('Datos de vehículo pegados correctamente.');
-            } else {
-                // No es un JSON con las claves esperadas, no hacer nada
-                showMessage('El contenido del portapapeles no tiene el formato esperado.');
-            }
-
-        } catch (err) {
-            console.error('Error al leer del portapapeles:', err);
-            showMessage('Error: No se pudo leer del portapapeles.');
-        }
-    });
-// fin logica pastebtn
-    
-</script>
-          
             // Definición de las rutas para todos los botones.
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
