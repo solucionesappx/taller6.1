@@ -102,6 +102,44 @@
     </div>
 
     <script>
+        // --- URL del Google Apps Script ---
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+
+        // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
+        /**
+         * Registra un evento en la hoja de historial del Google Sheet.
+         * @param {string} cliente_id - El ID del cliente.
+         * @param {string} nombre - El nombre del cliente.
+         * @param {string} action - La acción a registrar (ej. 'Visita a Menú').
+         */
+        async function registerHistory(cliente_id, nombre, action) {
+            console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                if (data.success) {
+                    console.log("Registro de historial exitoso:", data.message);
+                } else {
+                    console.error("Fallo al registrar historial:", data.message);
+                }
+            } catch (error) {
+                console.error("Error al conectar para registrar historial:", error);
+            }
+        }
+    
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- LÓGICA PARA EL REGISTRO DE HISTORIAL DE VISITA ---
+            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+
+            if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                // Registrar la visita a esta página
+            //    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
+            } else {
+                console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
+                window.location.href = 'index.html';
+            }
+        
         // Función para generar un UUID corto de 5 caracteres alfanuméricos
         function generateShortUUID() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789';
