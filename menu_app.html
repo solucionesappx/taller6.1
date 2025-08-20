@@ -142,7 +142,7 @@
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser) {
                         // Se utiliza 'await' para esperar a que el registro se complete antes de la redirección
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Órdenes');
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Órdenes');
                     }
                     window.location.href = 'registerOrd.html';
                 });
@@ -156,7 +156,7 @@
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser) {
                         // Se utiliza 'await' para esperar a que el registro se complete antes de mostrar el mensaje
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, `Click en ${buttonName}`);
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, `Click en ${buttonName}`);
                     }
                     showMessage(`Has presionado el botón de "${buttonName}".`);
                 });
@@ -169,7 +169,7 @@
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
                         // Se utiliza 'await' para esperar a que el registro de salida se complete
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
                     sessionStorage.removeItem('loggedInUser');
                     window.location.href = 'index.html';
