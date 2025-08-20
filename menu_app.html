@@ -85,7 +85,7 @@
     </div>
 
     <script>
-        // --- URL del Google Apps Script ---
+        // --- NUEVO: URL del Google Apps Script ---
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
         // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
@@ -112,65 +112,60 @@
         }
     
         document.addEventListener('DOMContentLoaded', () => {
+            // --- LÓGICA PARA EL REGISTRO DE HISTORIAL DE VISITA ---
             const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
-            if (!loggedInUser || !loggedInUser.Cliente_ID || !loggedInUser.Cliente_Nombre) {
+            if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                // Registrar la visita a esta página
+                registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
+            } else {
                 console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
                 window.location.href = 'index.html';
             }
             
-            // --- ACTUALIZADO: Manejadores de eventos para cada botón con registro de historial ---
+            // Mapeo de IDs de botones a URLs para una gestión más limpia
+            const buttonRoutes = {
+                // 'logoutBtn' se manejará de forma especial para registrar la salida
+                'vehiculosBtn': 'registerVeh.html',
+                'ordenesBtn': 'registerOrd.html'
+            };
 
-            const vehiculosBtn = document.getElementById('vehiculosBtn');
-            if (vehiculosBtn) {
-                vehiculosBtn.addEventListener('click', () => {
-                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                    if (loggedInUser) {
-                        // Registra la acción de 'Visita a Vehículos' antes de la redirección
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Vehículos');
-                    }
-                    window.location.href = 'registerVeh.html';
-                });
-            }
-
-            const ordenesBtn = document.getElementById('ordenesBtn');
-            if (ordenesBtn) {
-                ordenesBtn.addEventListener('click', () => {
-                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                    if (loggedInUser) {
-                        // Registra la acción de 'Visita a Órdenes' antes de la redirección
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Órdenes');
-                    }
-                    window.location.href = 'registerOrd.html';
-                });
-            }
-
-            // Manejador de clics para los botones que muestran un mensaje (Buscar y Modificar)
-            // Aquí también se registra la acción en el historial
-            document.querySelectorAll('.menu-btn:not(#vehiculosBtn):not(#ordenesBtn):not(#homeBtn)').forEach(button => {
-                button.addEventListener('click', () => {
-                    const buttonName = button.querySelector('span').innerText;
-                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                    if (loggedInUser) {
-                        // Registra la acción de 'Click en <Nombre del Botón>'
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, `Click en ${buttonName}`);
-                    }
-                    showMessage(`Has presionado el botón de "${buttonName}".`);
-                });
+            // Manejador de clics genérico para los botones que redireccionan
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        window.location.href = buttonRoutes[id];
+                    });
+                }
             });
 
-            // --- Manejador de clic para el botón de salir (Se mantiene igual) ---
+            // --- NUEVO: Manejador de clic para el botón de salir ---
             const logoutBtn = document.getElementById('logoutBtn');
             if (logoutBtn) {
                 logoutBtn.addEventListener('click', () => {
+                    // Obtener los datos del usuario antes de eliminar la sesión
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                        // Registrar la acción de 'Salida de la App'
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
+                    
+                    // Opcional: limpiar la sesión
                     sessionStorage.removeItem('loggedInUser');
+
+                    // Redirigir a la página de inicio
                     window.location.href = 'index.html';
                 });
             }
+
+            // Manejador de clics genérico para los botones que muestran un mensaje
+            document.querySelectorAll('.menu-btn:not(#vehiculosBtn):not(#ordenesBtn)').forEach(button => {
+                button.addEventListener('click', () => {
+                    const buttonName = button.querySelector('span').innerText;
+                    showMessage(`Has presionado el botón de "${buttonName}".`);
+                });
+            });
 
             /**
              * Muestra un mensaje personalizado en el cuadro de diálogo con animaciones.
