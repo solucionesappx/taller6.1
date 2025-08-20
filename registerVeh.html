@@ -103,7 +103,7 @@
 
     <script>
         // --- URL del Google Apps Script ---
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+        const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
         // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
         /**
@@ -114,7 +114,7 @@
          */
         async function registerHistory(cliente_id, nombre, action) {
             console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
-            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+            const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
