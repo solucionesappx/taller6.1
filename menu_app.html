@@ -165,7 +165,7 @@
                 logoutBtn.addEventListener('click', () => {
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
                     sessionStorage.removeItem('loggedInUser');
                     window.location.href = 'index.html';
