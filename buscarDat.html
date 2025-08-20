@@ -303,6 +303,15 @@
                 }, 2000); // Oculta la ventana después de 2 segundos
             }
 
+            // Función para formatear la fecha a dd/mm/aaaa
+            function formatDate(date) {
+                const d = new Date(date);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                return `${day}/${month}/${year}`;
+            }
+
             // Función para formatear la fecha y hora a dd/mm/aaaa hh:mm:ss
             function formatDateTime(date) {
                 const d = new Date(date);
@@ -445,7 +454,7 @@
                     }
                     if (header === 'Orden_Total') {
                         className += ' text-right col-narrow';
-                    } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg') {
+                    } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg' || header === 'Orden_DataReg') {
                         className += ' col-narrow';
                     }
                     tableHTML += `<th class="${className.trim()}">${header}</th>`;
@@ -463,18 +472,21 @@
                         }
                         if (header === 'Orden_Total') {
                             className += ' text-right col-narrow';
-                        } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg') {
+                        } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg' || header === 'Orden_DataReg') {
                             className += ' col-narrow';
                         }
                         let cellValue = row[header] || '';
-                        if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg') { 
+                        // Formatea la fecha según el campo
+                        if (header === 'Orden_Fecha') {
+                            cellValue = formatDate(cellValue);
+                        } else if (header === 'Vehiculo_Data_Reg' || header === 'Orden_DataReg') { 
                             cellValue = formatDateTime(cellValue);
                         }
                         tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
                     });
                     tableHTML += '</tr>';
                 });
-                tableHTML += '</tbody></table>'; // Se corrigió el error de sintaxis aquí
+                tableHTML += '</tbody></table>';
                 container.innerHTML = tableHTML;
             }
 
