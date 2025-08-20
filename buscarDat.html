@@ -288,6 +288,31 @@
             const searchInput = document.getElementById('search-input');
             const clearSearchBtn = document.getElementById('clear-search-btn');
 
+            // Mapas de nombres para los encabezados de las tablas
+            const ordenesHeadersMap = {
+                Orden_ID: 'Orden ID',
+                Vehiculo_Placa: 'Placa',
+                Vehiculo_PersonaContacto: 'Contacto',
+                Orden_Fecha: 'Fecha',
+                Orden_Total: 'Total Orden',
+                Orden_Moneda: 'Moneda',
+                Orden_TasaCambio: 'Tasa Ref',
+                Orden_UsuarioReg: 'Usuario Reg',
+                Orden_DataReg: 'Data Reg'
+            };
+
+            const vehiculosHeadersMap = {
+                Vehiculo_ID: 'Vehículo ID',
+                Vehiculo_PersonaContacto: 'Contacto',
+                Vehiculo_Marca: 'Marca',
+                Vehiculo_Modelo: 'Modelo',
+                Vehiculo_Año: 'Año',
+                Vehiculo_Placa: 'Placa',
+                Vehiculo_Estado: 'Estado',
+                Vehiculo_UsuarioReg: 'Usuario Reg',
+                Vehiculo_Data_Reg: 'Data Reg'
+            };
+
             // Cache para datos de vehículos y órdenes
             let allVehiculosData = []; 
             let allOrdenesData = []; 
@@ -440,21 +465,31 @@
 
             // Nueva función para renderizar tablas genéricas
             function renderTable(data, container, title) {
+                if (data.length === 0) {
+                    container.innerHTML = `<p>No se encontraron datos para ${title}.</p>`;
+                    return;
+                }
+
+                // Obtener el mapa de encabezados correcto
+                const headersMap = (title === 'Vehículos') ? vehiculosHeadersMap : ordenesHeadersMap;
                 const headers = Object.keys(data[0] || {});
                 const fixedHeaderNames = (title === 'Vehículos') ? ['Vehiculo_ID', 'Vehiculo_PersonaContacto'] : ['Orden_ID', 'Vehiculo_Placa'];
                 const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
                 
                 let tableHTML = `<h2>${title}</h2><table class="data-table ${title.toLowerCase()}-table"><thead><tr>`;
                 tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
-                headers.forEach((header, index) => {
+                
+                // Usar el mapa para generar los encabezados de la tabla
+                Object.values(headersMap).forEach((header, index) => {
+                    const technicalKey = Object.keys(headersMap)[index];
                     let className = '';
-                    const isFixed = fixedIndices.includes(index);
+                    const isFixed = fixedHeaderNames.includes(technicalKey);
                     if (isFixed) {
-                         className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
+                         className += ` sticky-col sticky-col-${fixedHeaderNames.indexOf(technicalKey) + 1}`;
                     }
-                    if (header === 'Orden_Total') {
+                    if (technicalKey === 'Orden_Total') {
                         className += ' text-right col-narrow';
-                    } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg' || header === 'Orden_DataReg') {
+                    } else if (technicalKey === 'Orden_Fecha' || technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') {
                         className += ' col-narrow';
                     }
                     tableHTML += `<th class="${className.trim()}">${header}</th>`;
@@ -464,22 +499,25 @@
                 data.forEach(row => {
                     tableHTML += '<tr>';
                     tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
-                    headers.forEach((header, index) => {
+                    
+                    // Usar el mapa para renderizar las celdas en el orden correcto
+                    Object.keys(headersMap).forEach((technicalKey, index) => {
                         let className = '';
-                        const isFixed = fixedIndices.includes(index);
+                        const isFixed = fixedHeaderNames.includes(technicalKey);
                         if (isFixed) {
-                            className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
+                            className += ` sticky-col sticky-col-${fixedHeaderNames.indexOf(technicalKey) + 1}`;
                         }
-                        if (header === 'Orden_Total') {
+                        if (technicalKey === 'Orden_Total') {
                             className += ' text-right col-narrow';
-                        } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg' || header === 'Orden_DataReg') {
+                        } else if (technicalKey === 'Orden_Fecha' || technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') {
                             className += ' col-narrow';
                         }
-                        let cellValue = row[header] || '';
+                        
+                        let cellValue = row[technicalKey] || '';
                         // Formatea la fecha según el campo
-                        if (header === 'Orden_Fecha') {
+                        if (technicalKey === 'Orden_Fecha') {
                             cellValue = formatDate(cellValue);
-                        } else if (header === 'Vehiculo_Data_Reg' || header === 'Orden_DataReg') { 
+                        } else if (technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') { 
                             cellValue = formatDateTime(cellValue);
                         }
                         tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
