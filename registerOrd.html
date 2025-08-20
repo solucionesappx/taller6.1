@@ -236,7 +236,7 @@
       <script>
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Asignar un UUID al campo de Vehiculo ID al cargar la página (aplica solo para Vehiculos)
+            // Asignar un UUID al campo de Vehiculo ID al cargar la página
             //document.getElementById('vehiculoId').value = generateShortUUID();
 
             // Definición de las rutas para todos los botones.
@@ -257,7 +257,9 @@
                     });
                 }
             });
-                 
+
+          
+          
         // --- URL del Google Apps Script ---
         const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
@@ -407,14 +409,14 @@
                 const button = document.getElementById(id);
                 if (button) {
                     button.addEventListener('click', () => {
-                        // Se usa el ID del botón para determinar la acción a registrar en Historia.
-                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Vehículos'.
+                        // Se usa el ID del botón para determinar la acción a registrar.
+                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Acceso a Vehículos'.
                         const actionMap = {
-                            'homeBtn': 'Menú Principal',
-                            'vehiculosBtn': 'Vehículos',
-                            'ordenesBtn': 'Órdenes',
-                            'buscarBtn': 'Búsqueda',
-                            'modificarBtn': 'Modificar'
+                            'homeBtn': 'Acceso al Menú Principal',
+                            'vehiculosBtn': 'Acceso a Vehículos',
+                            'ordenesBtn': 'Acceso a Órdenes',
+                            'buscarBtn': 'Acceso a Búsqueda',
+                            'modificarBtn': 'Acceso a Modificación'
                         };
                         const action = actionMap[id];
                         handleButtonClick(id, action);
