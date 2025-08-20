@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Órdenes y Búsqueda</title>
+    <!-- Incluye Tailwind CSS desde CDN para un diseño moderno y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Carga la fuente Inter de Google Fonts para un diseño limpio -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Incluye la biblioteca de íconos Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6; /* Un gris muy suave para el fondo de la página */
+        }
+        /* Estilos personalizados para la barra de navegación */
+        .nav-link {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 0; 
+            transition: all 0.2s ease-in-out;
+            font-weight: 600;
+        }
+        /* Oculta los botones de incremento/decremento del input de tipo 'number' */
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { 
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type=number] {
+            -moz-appearance: textfield;
+        }
+        /* Estilos para el contenedor del formulario con scroll */
+        .scrollable-form-container {
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
+            padding: 1rem;
+        }
+
+        /* Contenedor del motor de búsqueda del botón buscarBtn */
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .search-button {
+            padding: 10px 15px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Evita que el texto se envuelva */
+        }
+
+        .search-button:hover {
+            background-color: #5a6268;
+        }
+
+        /* Contenedor para los nuevos campos de entrada */
+        .input-fields-container {
+            display: flex;
+            flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
+            gap: 20px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e9f2ff;
+            border: 1px solid #cce0ff;
+            border-radius: 8px;
+            align-items: flex-end; /* Alinea los elementos a la parte inferior del contenedor */
+        }
+
+        .input-field-group {
+            flex-basis: calc(50% - 10px); /* Ocupa la mitad del contenedor con un espacio */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .input-field-group label {
+            font-weight: bold;
+            color: #4a5568;
+            margin-bottom: 5px;
+        }
+
+        .input-field-group input {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        /* Estilo para el nuevo botón de pegar */
+        .paste-button {
+            padding: 10px 15px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .paste-button:hover {
+            background-color: #218838;
+        }
+
+        /* Contenedor principal de la tabla */
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto; /* Habilita el desplazamiento horizontal */
+        }
+        
+        .table-container + .table-container {
+            margin-top: 40px; /* Agrega más espacio entre las tablas */
+        }
+
+        /* Estilos de la tabla de datos */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        /* Estilo para todos los encabezados de la tabla */
+        .data-table th {
+            background-color: #e2e8f0; /* Color de fondo claro para todos los encabezados */
+            color: #1a202c; /* Color de texto oscuro para el contraste */
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        /* Estilo para las celdas normales de la tabla */
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+            white-space: nowrap; /* Evita que el texto se envuelva */
+        }
+        
+        /* Estilos para las columnas fijas (las celdas, no el encabezado) */
+        .data-table .sticky-col {
+            position: sticky;
+            background-color: #e2e8f0; /* Color de fondo para las celdas fijas */
+            z-index: 2; /* Mayor que el resto de celdas para que se superponga */
+        }
+
+        /* Sobreescribe el estilo de las celdas fijas para que se mantengan en su lugar */
+        .data-table th.sticky-col {
+            top: 0; /* Asegura que el encabezado también sea anclado verticalmente */
+        }
+
+        /* Estilos específicos para las columnas ancladas de la tabla de vehículos */
+        .data-table th.sticky-col-0, .data-table td.sticky-col-0 { 
+            left: 0; 
+            width: 15px; /* Ancho fijo para la columna del botón */
+        }
+        .data-table th.sticky-col-1, .data-table td.sticky-col-1 { 
+            left: 35px; /* Comienza donde termina la columna 0 */
+            width: 115px; /* ANCHO AJUSTADO para que coincida con la tabla de órdenes */
+        }
+        .data-table th.sticky-col-2, .data-table td.sticky-col-2 { 
+            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
+            left: 125px; 
+            width: 500px; /* Ancho ajustado para esta columna */
+        }
+        
+        /* Estilos específicos para las columnas ancladas de la tabla de órdenes */
+        .ordenes-table th.sticky-col-0, .ordenes-table td.sticky-col-0 {
+            left: 0;
+            width: 15px; /* Ancho fijo para la columna del botón */
+        }
+        .ordenes-table th.sticky-col-1, .ordenes-table td.sticky-col-1 {
+            left: 35px; /* Comienza donde termina la columna 0 */
+            width: 80px; /* Ancho reducido para el Orden_ID */
+        }
+        .ordenes-table th.sticky-col-2, .ordenes-table td.sticky-col-2 {
+            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
+            left: 115px; 
+            width: 80px; /* Ancho reducido para el Orden_ID */
+        }
+        
+        /* Estilos para los botones de la tabla */
+        .data-table button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .data-table button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Nuevo estilo para justificar el texto a la derecha */
+        .data-table .text-right {
+            text-align: right;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Estilos para la ventana de mensaje personalizada */
+        .message-box {
+            position: fixed;
+            top: 90px;
+            right: 100px;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: bold;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        }
+        
+        /* Clase para un ancho de columna reducido */
+        .col-narrow {
+            width: 100px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- Nueva barra de navegación integrada -->
+    <nav class="fixed top-0 left-0 w-full bg-gray-100 text-gray-800 shadow-lg z-50">
+        <div class="container mx-auto px-4 py-2">
+            <ul class="flex justify-around items-center list-none p-0 m-0">
+                <li class="flex-1">
+                    <button id="homeBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-home text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Inicio</span>
+                </li>
+                <li class="flex-1">
+                    <button id="vehiculosBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-car text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Vehículo</span>
+                </li>
+                <li class="flex-1">
+                    <button id="ordenesBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-tools text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Servicios</span>
+                </li>
+                <li class="flex-1">
+                    <button id="buscarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-search text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Buscar</span>
+                </li>
+                <li class="flex-1">
+                    <button id="EditarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-edit text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Editar</span>
+                </li>
+                <li class="flex-1">
+                    <button id="logoutBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                        <i class="fas fa-sign-out-alt text-lg"></i>
+                        <span class="mt-1 text-xs sm:text-sm">Salir</span>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+
+    <!-- Contenedor principal para el formulario  -->
+    <div class="container mx-auto px-4 mt-20"> <!-- Margen superior para evitar que la barra de navegación la oculte -->
+        <h1>Listado de Vehículos y Órdenes</h1>
+            
+        <!-- Contenedor del motor de búsqueda -->
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar en todas las tablas...">
+            <button id="clear-search-btn" class="search-button">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+
+        <!-- Contenedor para los nuevos campos editables -->
+        <div class="input-fields-container">
+            <div class="input-field-group">
+                <label for="vehiculo-placa-input">Campo01</label>
+                <input type="text" id="vehiculo-placa-input" placeholder="Ingresar Placa">
+            </div>
+            <div class="input-field-group">
+                <label for="orden-id-input">Campo02</label>
+                <input type="text" id="orden-id-input" placeholder="Ingresar Modelo">
+            </div>
+            <button id="paste-button" class="paste-button">
+                <i class="fas fa-paste"></i> Pegar
+            </button>
+        </div>
+
+        <!-- Contenedor de la tabla de vehículos -->
+        <div id="vehiculos-container" class="table-container">
+            <!-- El contenido de la tabla de vehículos se inyectará aquí con JavaScript -->
+        </div>
+
+        <!-- Contenedor de la tabla de órdenes -->
+        <div id="ordenes-container" class="table-container">
+            <!-- El contenido de la tabla de órdenes se inyectará aquí con JavaScript -->
+        </div>
+
+        <!-- Ventana de mensaje personalizada (oculta por defecto) -->
+        <div id="message-box" class="message-box">
+            <span id="message-text"></span>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
+            const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxiRogoHmvMPW7oo-q3_013L1DoLD3eG1qM8MxBJg8qvResNGEWXkXxxrld-XrBUUbt/exec';
+            
+            // Referencias a los elementos del DOM
+            const vehiculosContainer = document.getElementById('vehiculos-container');
+            const ordenesContainer = document.getElementById('ordenes-container');
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+
+            // Nuevas referencias a los campos de entrada y al nuevo botón de pegar
+            const vehiculoPlacaInput = document.getElementById('vehiculo-placa-input');
+            const ordenIdInput = document.getElementById('orden-id-input');
+            const pasteButton = document.getElementById('paste-button');
+
+            // Variable para almacenar temporalmente los datos para pegar
+            let dataToPaste = null;
+
+
+            // Función para mostrar la ventana de mensaje
+            function showMessage(message) {
+                messageText.textContent = message;
+                messageBox.style.opacity = '1';
+                messageBox.style.visibility = 'visible';
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.visibility = 'hidden';
+                }, 2000); // Oculta la ventana después de 2 segundos
+            }
+
+            // Función para formatear la fecha y hora a dd/mm/aaaa hh:mm:ss
+            function formatDateTime(date) {
+                const d = new Date(date);
+                const day = String(d.getDate()).padStart(2, '0');
+                const month = String(d.getMonth() + 1).padStart(2, '0');
+                const year = d.getFullYear();
+                const hours = String(d.getHours()).padStart(2, '0');
+                const minutes = String(d.getMinutes()).padStart(2, '0');
+                const seconds = String(d.getSeconds()).padStart(2, '0');
+                return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
+            }
+
+            // Función para adjuntar los listeners de copia para la tabla de vehículos
+            function attachVehiculosCopyListeners(headers) {
+                const copyButtons = vehiculosContainer.querySelectorAll('.copy-button');
+                copyButtons.forEach(button => {
+                    if (button.dataset.listenerAttached) {
+                        return;
+                    }
+                    button.dataset.listenerAttached = true;
+                    
+                    button.addEventListener('click', () => {
+                        const row = button.closest('tr');
+                        const cells = row.querySelectorAll('td');
+
+                        // Obtener los valores de la fila usando los encabezados
+                        const vehiculoPlacaIndex = headers.indexOf('Vehiculo_Placa') + 1;
+                        const vehiculoPersonaContactoIndex = headers.indexOf('Vehiculo_PersonaContacto') + 1;
+                        
+                        const vehiculoPlaca = cells[vehiculoPlacaIndex].textContent.trim();
+                        const vehiculoPersonaContacto = cells[vehiculoPersonaContactoIndex].textContent.trim();
+
+                        // Almacena los valores como un objeto para poder pegarlos más tarde
+                        const vehiculoData = {
+                            placa: vehiculoPlaca,
+                            contacto: vehiculoPersonaContacto
+                        };
+                        dataToPaste = {
+                            type: 'vehiculo',
+                            data: vehiculoData
+                        };
+                        
+                        // Convierte el objeto a una cadena JSON para copiar al portapapeles
+                        const combinedText = JSON.stringify(vehiculoData);
+                        
+                        const tempInput = document.createElement('textarea');
+                        tempInput.value = combinedText;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempInput);
+                        
+                        showMessage('Datos de Vehículo copiados (JSON).');
+                    });
+                });
+            }
+
+            // Función para adjuntar los listeners de copia para la tabla de órdenes
+            function attachOrdenesCopyListeners(headers) {
+                const copyButtons = ordenesContainer.querySelectorAll('.copy-button');
+                copyButtons.forEach(button => {
+                    if (button.dataset.listenerAttached) {
+                        return;
+                    }
+                    button.dataset.listenerAttached = true;
+                    
+                    button.addEventListener('click', () => {
+                        const row = button.closest('tr');
+                        const cells = row.querySelectorAll('td');
+
+                        // Obtenemos el índice de la columna Orden_ID de forma dinámica
+                        const ordenIdIndex = headers.indexOf('Orden_ID') + 1;
+
+                        const ordenId = cells[ordenIdIndex].textContent.trim();
+                        
+                        // Almacenamos el ID de la orden y su tipo para el botón de pegar
+                        dataToPaste = {
+                            type: 'orden',
+                            id: ordenId
+                        };
+                        
+                        const combinedText = ordenId;
+                        
+                        const tempInput = document.createElement('textarea');
+                        tempInput.value = combinedText;
+                        document.body.appendChild(tempInput);
+                        tempInput.select();
+                        document.execCommand('copy');
+                        document.body.removeChild(tempInput);
+                        
+                        showMessage('ID de la Orden copiada.');
+                    });
+                });
+            }
+
+            // Función para cargar y mostrar los datos de la hoja de cálculo de Vehículos
+            async function loadVehiculos() {
+                vehiculosContainer.innerHTML = '<div class="loader"></div>';
+                try {
+                    const response = await fetch(`${GAS_API_URL}?sheet=Vehiculos`);
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        vehiculosContainer.innerHTML = `<p style="color: red;">Error al cargar los datos: ${result.error}</p>`;
+                        console.error('GAS API Error:', result.error);
+                        return;
+                    }
+
+                    const data = result.data;
+                    const headers = result.headers.filter(h => h && h.trim() !== '');
+                    const fixedHeaderNames = ['Vehiculo_ID', 'Vehiculo_PersonaContacto'];
+                    const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
+                    
+                    if (fixedIndices.some(index => index === -1)) {
+                        console.error('Error: Una o más columnas a fijar no se encontraron en los datos de Vehículos.');
+                        vehiculosContainer.innerHTML = `<p style="color: red;">Error: Las columnas a anclar (Vehiculo_ID, Vehiculo_PersonaContacto) no fueron encontradas.</p>`;
+                        return;
+                    }
+
+                    let tableHTML = '<h2>Vehículos</h2><table class="data-table"><thead><tr>';
+                    tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
+                    headers.forEach((header, index) => {
+                        const isFixed = fixedIndices.includes(index);
+                        const className = isFixed ? `sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}` : '';
+                        tableHTML += `<th class="${className}">${header}</th>`;
+                    });
+                    tableHTML += '</tr></thead><tbody>';
+
+                    data.forEach(row => {
+                        tableHTML += '<tr>';
+                        tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
+                        headers.forEach((header, index) => {
+                            const isFixed = fixedIndices.includes(index);
+                            const className = isFixed ? `sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}` : '';
+                            let cellValue = row[header] || '';
+                            if (header === 'Vehiculo_Data_Reg') {
+                                cellValue = formatDateTime(cellValue);
+                            }
+                            tableHTML += `<td class="${className}">${cellValue}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table>';
+                    vehiculosContainer.innerHTML = tableHTML;
+                    attachVehiculosCopyListeners(headers);
+
+                } catch (error) {
+                    vehiculosContainer.innerHTML = '<p style="color: red;">No se pudo conectar con el script. Por favor, asegúrate de que la URL de despliegue sea correcta y esté publicada para acceso anónimo.</p>';
+                    console.error('Fetch Error:', error);
+                }
+            }
+
+            // Función para cargar y mostrar los datos de la hoja de cálculo de Órdenes
+            async function loadOrdenes() {
+                ordenesContainer.innerHTML = '<div class="loader"></div>';
+                try {
+                    const response = await fetch(`${GAS_API_URL}?sheet=OrdenesCab`);
+                    const result = await response.json();
+                    
+                    if (result.error) {
+                        ordenesContainer.innerHTML = `<p style="color: red;">Error al cargar los datos: ${result.error}</p>`;
+                        console.error('GAS API Error:', result.error);
+                        return;
+                    }
+
+                    const data = result.data;
+                    const headers = result.headers.filter(h => h && h.trim() !== '');
+                    const fixedHeaderNames = ['Orden_ID', 'Vehiculo_Placa'];
+                    const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
+                    
+                    if (fixedIndices.some(index => index === -1)) {
+                        console.error('Error: Una o más columnas a fijar no se encontraron en los datos de Órdenes.');
+                        ordenesContainer.innerHTML = `<p style="color: red;">Error: Las columnas a anclar (Orden_ID, Vehiculo_Placa) no fueron encontradas.</p>`;
+                        return;
+                    }
+
+                    let tableHTML = '<h2>Órdenes</h2><table class="data-table ordenes-table"><thead><tr>';
+                    tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
+                    headers.forEach((header, index) => {
+                        let className = '';
+                        const isFixed = fixedIndices.includes(index);
+                        if (isFixed) {
+                             className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
+                        }
+                        if (header === 'Orden_Total') {
+                            className += ' text-right col-narrow';
+                        } else if (header === 'Orden_Fecha') {
+                            className += ' col-narrow';
+                        }
+                        tableHTML += `<th class="${className.trim()}">${header}</th>`;
+                    });
+                    tableHTML += '</tr></thead><tbody>';
+
+                    data.forEach(row => {
+                        tableHTML += '<tr>';
+                        tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
+                        headers.forEach((header, index) => {
+                            let className = '';
+                            const isFixed = fixedIndices.includes(index);
+                            if (isFixed) {
+                                className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
+                            }
+                            if (header === 'Orden_Total') {
+                                className += ' text-right col-narrow';
+                            } else if (header === 'Orden_Fecha') {
+                                className += ' col-narrow';
+                            }
+                            let cellValue = row[header] || '';
+                            if (header === 'Orden_Fecha') { 
+                                cellValue = formatDateTime(cellValue);
+                            }
+                            tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table>';
+                    ordenesContainer.innerHTML = tableHTML;
+                    attachOrdenesCopyListeners(headers);
+
+                } catch (error) {
+                    ordenesContainer.innerHTML = '<p style="color: red;">No se pudo conectar con el script. Por favor, asegúrate de que la URL de despliegue sea correcta y esté publicada para acceso anónimo.</p>';
+                    console.error('Fetch Error:', error);
+                }
+            }
+
+            // Función para filtrar las tablas según el valor de búsqueda
+            function filterTables() {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                let foundMatch = false;
+
+                // Filtra la tabla de Vehículos
+                const vehiculoRows = vehiculosContainer.querySelectorAll('tbody tr');
+                vehiculoRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase().trim();
+                    console.log('Buscando en Vehículos:', rowText, 'vs', searchTerm);
+                    if (rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                        foundMatch = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Filtra la tabla de Órdenes
+                const ordenesRows = ordenesContainer.querySelectorAll('tbody tr');
+                ordenesRows.forEach(row => {
+                    const rowText = row.textContent.toLowerCase().trim();
+                    console.log('Buscando en Órdenes:', rowText, 'vs', searchTerm);
+                    if (rowText.includes(searchTerm)) {
+                        row.style.display = '';
+                        foundMatch = true;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                // Muestra un mensaje si no hay coincidencias
+                if (!foundMatch && searchTerm.length > 0) {
+                    showMessage('No se encontraron coincidencias.');
+                }
+            }
+
+            // Agrega el listener para el campo de búsqueda
+            searchInput.addEventListener('input', filterTables);
+
+            // Agrega el listener para el botón de borrar búsqueda
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                filterTables();
+            });
+
+            // Agrega el listener para el nuevo botón de pegar
+            pasteButton.addEventListener('click', () => {
+                if (!dataToPaste) {
+                    showMessage('No hay datos guardados para pegar. Copie una fila primero.');
+                    return;
+                }
+
+                if (dataToPaste.type === 'vehiculo') {
+                    // Pega los datos de vehículo
+                    vehiculoPlacaInput.value = dataToPaste.data.placa;
+                    ordenIdInput.value = dataToPaste.data.contacto;
+                    showMessage('Datos de vehículo pegados correctamente.');
+                } else if (dataToPaste.type === 'orden') {
+                    // Pega el ID de la orden en el campo de placa y borra el otro campo
+                    vehiculoPlacaInput.value = dataToPaste.id;
+                    ordenIdInput.value = '';
+                    showMessage('ID de orden pegado correctamente.');
+                }
+            });
+
+            // Carga ambas tablas al cargar la página
+            loadVehiculos();
+            loadOrdenes();
+        });
+    </script>
+</body>
+</html>
