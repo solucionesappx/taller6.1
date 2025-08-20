@@ -263,7 +263,7 @@
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
                         // Esperamos a que el registro de salida se complete.
                         // Esta función `registerHistory` debe estar definida en tu código.
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
 
                     // Limpiamos los datos del usuario de sessionStorage.
