@@ -72,53 +72,6 @@
             background-color: #5a6268;
         }
 
-        /* Contenedor para los nuevos campos de entrada */
-        .input-fields-container {
-            display: flex;
-            flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
-            gap: 20px;
-            margin-bottom: 20px;
-            padding: 15px;
-            background-color: #e9f2ff;
-            border: 1px solid #cce0ff;
-            border-radius: 8px;
-            align-items: flex-end; /* Alinea los elementos a la parte inferior del contenedor */
-        }
-
-        .input-field-group {
-            flex-basis: calc(50% - 10px); /* Ocupa la mitad del contenedor con un espacio */
-            display: flex;
-            flex-direction: column;
-        }
-
-        .input-field-group label {
-            font-weight: bold;
-            color: #4a5568;
-            margin-bottom: 5px;
-        }
-
-        .input-field-group input {
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            font-size: 16px;
-        }
-
-        /* Estilo para el nuevo botón de pegar */
-        .paste-button {
-            padding: 10px 15px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .paste-button:hover {
-            background-color: #218838;
-        }
-
         /* Contenedor principal de la tabla */
         .table-container {
             margin-top: 20px;
@@ -307,21 +260,6 @@
             </button>
         </div>
 
-        <!-- Contenedor para los nuevos campos editables -->
-        <div class="input-fields-container">
-            <div class="input-field-group">
-                <label for="vehiculo-placa-input">Campo01</label>
-                <input type="text" id="vehiculo-placa-input" placeholder="Ingresar Placa">
-            </div>
-            <div class="input-field-group">
-                <label for="orden-id-input">Campo02</label>
-                <input type="text" id="orden-id-input" placeholder="Ingresar Modelo">
-            </div>
-            <button id="paste-button" class="paste-button">
-                <i class="fas fa-paste"></i> Pegar
-            </button>
-        </div>
-
         <!-- Contenedor de la tabla de vehículos -->
         <div id="vehiculos-container" class="table-container">
             <!-- El contenido de la tabla de vehículos se inyectará aquí con JavaScript -->
@@ -350,14 +288,9 @@
             const searchInput = document.getElementById('search-input');
             const clearSearchBtn = document.getElementById('clear-search-btn');
 
-            // Nuevas referencias a los campos de entrada y al nuevo botón de pegar
-            const vehiculoPlacaInput = document.getElementById('vehiculo-placa-input');
-            const ordenIdInput = document.getElementById('orden-id-input');
-            const pasteButton = document.getElementById('paste-button');
-
-            // Variable para almacenar temporalmente los datos para pegar
-            let dataToPaste = null;
-
+            // Cache para datos de vehículos y órdenes
+            let allVehiculosData = []; 
+            let allOrdenesData = []; 
 
             // Función para mostrar la ventana de mensaje
             function showMessage(message) {
@@ -395,25 +328,13 @@
                         const row = button.closest('tr');
                         const cells = row.querySelectorAll('td');
 
-                        // Obtener los valores de la fila usando los encabezados
                         const vehiculoPlacaIndex = headers.indexOf('Vehiculo_Placa') + 1;
                         const vehiculoPersonaContactoIndex = headers.indexOf('Vehiculo_PersonaContacto') + 1;
                         
                         const vehiculoPlaca = cells[vehiculoPlacaIndex].textContent.trim();
                         const vehiculoPersonaContacto = cells[vehiculoPersonaContactoIndex].textContent.trim();
 
-                        // Almacena los valores como un objeto para poder pegarlos más tarde
-                        const vehiculoData = {
-                            placa: vehiculoPlaca,
-                            contacto: vehiculoPersonaContacto
-                        };
-                        dataToPaste = {
-                            type: 'vehiculo',
-                            data: vehiculoData
-                        };
-                        
-                        // Convierte el objeto a una cadena JSON para copiar al portapapeles
-                        const combinedText = JSON.stringify(vehiculoData);
+                        const combinedText = `Placa: ${vehiculoPlaca}, Contacto: ${vehiculoPersonaContacto}`;
                         
                         const tempInput = document.createElement('textarea');
                         tempInput.value = combinedText;
@@ -422,7 +343,7 @@
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
                         
-                        showMessage('Datos de Vehículo copiados (JSON).');
+                        showMessage('Datos de Vehículo copiados.');
                     });
                 });
             }
@@ -440,21 +361,12 @@
                         const row = button.closest('tr');
                         const cells = row.querySelectorAll('td');
 
-                        // Obtenemos el índice de la columna Orden_ID de forma dinámica
                         const ordenIdIndex = headers.indexOf('Orden_ID') + 1;
 
                         const ordenId = cells[ordenIdIndex].textContent.trim();
                         
-                        // Almacenamos el ID de la orden y su tipo para el botón de pegar
-                        dataToPaste = {
-                            type: 'orden',
-                            id: ordenId
-                        };
-                        
-                        const combinedText = ordenId;
-                        
                         const tempInput = document.createElement('textarea');
-                        tempInput.value = combinedText;
+                        tempInput.value = ordenId;
                         document.body.appendChild(tempInput);
                         tempInput.select();
                         document.execCommand('copy');
@@ -467,6 +379,7 @@
 
             // Función para cargar y mostrar los datos de la hoja de cálculo de Vehículos
             async function loadVehiculos() {
+                console.log("Cargando datos de vehículos...");
                 vehiculosContainer.innerHTML = '<div class="loader"></div>';
                 try {
                     const response = await fetch(`${GAS_API_URL}?sheet=Vehiculos`);
@@ -478,43 +391,11 @@
                         return;
                     }
 
-                    const data = result.data;
-                    const headers = result.headers.filter(h => h && h.trim() !== '');
-                    const fixedHeaderNames = ['Vehiculo_ID', 'Vehiculo_PersonaContacto'];
-                    const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
-                    
-                    if (fixedIndices.some(index => index === -1)) {
-                        console.error('Error: Una o más columnas a fijar no se encontraron en los datos de Vehículos.');
-                        vehiculosContainer.innerHTML = `<p style="color: red;">Error: Las columnas a anclar (Vehiculo_ID, Vehiculo_PersonaContacto) no fueron encontradas.</p>`;
-                        return;
-                    }
-
-                    let tableHTML = '<h2>Vehículos</h2><table class="data-table"><thead><tr>';
-                    tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
-                    headers.forEach((header, index) => {
-                        const isFixed = fixedIndices.includes(index);
-                        const className = isFixed ? `sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}` : '';
-                        tableHTML += `<th class="${className}">${header}</th>`;
-                    });
-                    tableHTML += '</tr></thead><tbody>';
-
-                    data.forEach(row => {
-                        tableHTML += '<tr>';
-                        tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
-                        headers.forEach((header, index) => {
-                            const isFixed = fixedIndices.includes(index);
-                            const className = isFixed ? `sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}` : '';
-                            let cellValue = row[header] || '';
-                            if (header === 'Vehiculo_Data_Reg') {
-                                cellValue = formatDateTime(cellValue);
-                            }
-                            tableHTML += `<td class="${className}">${cellValue}</td>`;
-                        });
-                        tableHTML += '</tr>';
-                    });
-                    tableHTML += '</tbody></table>';
-                    vehiculosContainer.innerHTML = tableHTML;
-                    attachVehiculosCopyListeners(headers);
+                    allVehiculosData = result.data;
+                    renderTable(allVehiculosData, vehiculosContainer, 'Vehículos');
+                    attachVehiculosCopyListeners(result.headers.filter(h => h && h.trim() !== ''));
+                    console.log("Datos de vehículos cargados correctamente.");
+                    showMessage("Datos de vehículos cargados.");
 
                 } catch (error) {
                     vehiculosContainer.innerHTML = '<p style="color: red;">No se pudo conectar con el script. Por favor, asegúrate de que la URL de despliegue sea correcta y esté publicada para acceso anónimo.</p>';
@@ -524,6 +405,7 @@
 
             // Función para cargar y mostrar los datos de la hoja de cálculo de Órdenes
             async function loadOrdenes() {
+                console.log("Cargando datos de órdenes...");
                 ordenesContainer.innerHTML = '<div class="loader"></div>';
                 try {
                     const response = await fetch(`${GAS_API_URL}?sheet=OrdenesCab`);
@@ -535,59 +417,11 @@
                         return;
                     }
 
-                    const data = result.data;
-                    const headers = result.headers.filter(h => h && h.trim() !== '');
-                    const fixedHeaderNames = ['Orden_ID', 'Vehiculo_Placa'];
-                    const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
-                    
-                    if (fixedIndices.some(index => index === -1)) {
-                        console.error('Error: Una o más columnas a fijar no se encontraron en los datos de Órdenes.');
-                        ordenesContainer.innerHTML = `<p style="color: red;">Error: Las columnas a anclar (Orden_ID, Vehiculo_Placa) no fueron encontradas.</p>`;
-                        return;
-                    }
-
-                    let tableHTML = '<h2>Órdenes</h2><table class="data-table ordenes-table"><thead><tr>';
-                    tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
-                    headers.forEach((header, index) => {
-                        let className = '';
-                        const isFixed = fixedIndices.includes(index);
-                        if (isFixed) {
-                             className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
-                        }
-                        if (header === 'Orden_Total') {
-                            className += ' text-right col-narrow';
-                        } else if (header === 'Orden_Fecha') {
-                            className += ' col-narrow';
-                        }
-                        tableHTML += `<th class="${className.trim()}">${header}</th>`;
-                    });
-                    tableHTML += '</tr></thead><tbody>';
-
-                    data.forEach(row => {
-                        tableHTML += '<tr>';
-                        tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
-                        headers.forEach((header, index) => {
-                            let className = '';
-                            const isFixed = fixedIndices.includes(index);
-                            if (isFixed) {
-                                className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
-                            }
-                            if (header === 'Orden_Total') {
-                                className += ' text-right col-narrow';
-                            } else if (header === 'Orden_Fecha') {
-                                className += ' col-narrow';
-                            }
-                            let cellValue = row[header] || '';
-                            if (header === 'Orden_Fecha') { 
-                                cellValue = formatDateTime(cellValue);
-                            }
-                            tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
-                        });
-                        tableHTML += '</tr>';
-                    });
-                    tableHTML += '</tbody></table>';
-                    ordenesContainer.innerHTML = tableHTML;
-                    attachOrdenesCopyListeners(headers);
+                    allOrdenesData = result.data;
+                    renderTable(allOrdenesData, ordenesContainer, 'Órdenes');
+                    attachOrdenesCopyListeners(result.headers.filter(h => h && h.trim() !== ''));
+                    console.log("Datos de órdenes cargados correctamente.");
+                    showMessage("Datos de órdenes cargados.");
 
                 } catch (error) {
                     ordenesContainer.innerHTML = '<p style="color: red;">No se pudo conectar con el script. Por favor, asegúrate de que la URL de despliegue sea correcta y esté publicada para acceso anónimo.</p>';
@@ -595,41 +429,92 @@
                 }
             }
 
+            // Nueva función para renderizar tablas genéricas
+            function renderTable(data, container, title) {
+                const headers = Object.keys(data[0] || {});
+                const fixedHeaderNames = (title === 'Vehículos') ? ['Vehiculo_ID', 'Vehiculo_PersonaContacto'] : ['Orden_ID', 'Vehiculo_Placa'];
+                const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
+                
+                let tableHTML = `<h2>${title}</h2><table class="data-table ${title.toLowerCase()}-table"><thead><tr>`;
+                tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
+                headers.forEach((header, index) => {
+                    let className = '';
+                    const isFixed = fixedIndices.includes(index);
+                    if (isFixed) {
+                         className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
+                    }
+                    if (header === 'Orden_Total') {
+                        className += ' text-right col-narrow';
+                    } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg') {
+                        className += ' col-narrow';
+                    }
+                    tableHTML += `<th class="${className.trim()}">${header}</th>`;
+                });
+                tableHTML += '</tr></thead><tbody>';
+
+                data.forEach(row => {
+                    tableHTML += '<tr>';
+                    tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
+                    headers.forEach((header, index) => {
+                        let className = '';
+                        const isFixed = fixedIndices.includes(index);
+                        if (isFixed) {
+                            className += ` sticky-col sticky-col-${fixedIndices.indexOf(index) + 1}`;
+                        }
+                        if (header === 'Orden_Total') {
+                            className += ' text-right col-narrow';
+                        } else if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg') {
+                            className += ' col-narrow';
+                        }
+                        let cellValue = row[header] || '';
+                        if (header === 'Orden_Fecha' || header === 'Vehiculo_Data_Reg') { 
+                            cellValue = formatDateTime(cellValue);
+                        }
+                        tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                tableHTML += '</tbody></table>'; // Se corrigió el error de sintaxis aquí
+                container.innerHTML = tableHTML;
+            }
+
+
             // Función para filtrar las tablas según el valor de búsqueda
             function filterTables() {
                 const searchTerm = searchInput.value.toLowerCase().trim();
-                let foundMatch = false;
+                console.log("Buscando el término:", searchTerm);
 
-                // Filtra la tabla de Vehículos
-                const vehiculoRows = vehiculosContainer.querySelectorAll('tbody tr');
-                vehiculoRows.forEach(row => {
-                    const rowText = row.textContent.toLowerCase().trim();
-                    console.log('Buscando en Vehículos:', rowText, 'vs', searchTerm);
-                    if (rowText.includes(searchTerm)) {
-                        row.style.display = '';
-                        foundMatch = true;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
+                // Re-renderiza las tablas con los datos filtrados
+                const filteredVehiculos = allVehiculosData.filter(row => 
+                    Object.values(row).some(value => 
+                        String(value).toLowerCase().includes(searchTerm)
+                    )
+                );
+                
+                const filteredOrdenes = allOrdenesData.filter(row => 
+                    Object.values(row).some(value => 
+                        String(value).toLowerCase().includes(searchTerm)
+                    )
+                );
+                
+                console.log("Vehículos encontrados:", filteredVehiculos.length);
+                console.log("Órdenes encontradas:", filteredOrdenes.length);
 
-                // Filtra la tabla de Órdenes
-                const ordenesRows = ordenesContainer.querySelectorAll('tbody tr');
-                ordenesRows.forEach(row => {
-                    const rowText = row.textContent.toLowerCase().trim();
-                    console.log('Buscando en Órdenes:', rowText, 'vs', searchTerm);
-                    if (rowText.includes(searchTerm)) {
-                        row.style.display = '';
-                        foundMatch = true;
-                    } else {
-                        row.style.display = 'none';
-                    }
-                });
-
-                // Muestra un mensaje si no hay coincidencias
-                if (!foundMatch && searchTerm.length > 0) {
-                    showMessage('No se encontraron coincidencias.');
+                // Solo renderiza si hay datos o si la búsqueda está vacía
+                if (searchTerm === '' || filteredVehiculos.length > 0) {
+                    renderTable(filteredVehiculos, vehiculosContainer, 'Vehículos');
+                    attachVehiculosCopyListeners(Object.keys(allVehiculosData[0] || {}));
+                } else {
+                    vehiculosContainer.innerHTML = '<p>No se encontraron vehículos.</p>';
                 }
+
+                if (searchTerm === '' || filteredOrdenes.length > 0) {
+                    renderTable(filteredOrdenes, ordenesContainer, 'Órdenes');
+                    attachOrdenesCopyListeners(Object.keys(allOrdenesData[0] || {}));
+                } else {
+                    ordenesContainer.innerHTML = '<p>No se encontraron órdenes.</p>';
+                }
+
             }
 
             // Agrega el listener para el campo de búsqueda
@@ -641,102 +526,13 @@
                 filterTables();
             });
 
-            // Agrega el listener para el nuevo botón de pegar
-            pasteButton.addEventListener('click', () => {
-                if (!dataToPaste) {
-                    showMessage('No hay datos guardados para pegar. Copie una fila primero.');
-                    return;
-                }
-
-                if (dataToPaste.type === 'vehiculo') {
-                    // Pega los datos de vehículo
-                    vehiculoPlacaInput.value = dataToPaste.data.placa;
-                    ordenIdInput.value = dataToPaste.data.contacto;
-                    showMessage('Datos de vehículo pegados correctamente.');
-                } else if (dataToPaste.type === 'orden') {
-                    // Pega el ID de la orden en el campo de placa y borra el otro campo
-                    vehiculoPlacaInput.value = dataToPaste.id;
-                    ordenIdInput.value = '';
-                    showMessage('ID de orden pegado correctamente.');
-                }
-            });
-
-            // Carga ambas tablas al cargar la página
+            // Estas llamadas son las que inician la carga de las tablas al cargar la página
             loadVehiculos();
             loadOrdenes();
         });
-            // --- Lógica del menú y redirección ---
-            
-            // Definición de las rutas para todos los botones.
-            const buttonRoutes = {
-                'homeBtn': 'menu_app.html',
-                'vehiculosBtn': 'registerVeh.html',  
-                'ordenesBtn': 'registerOrd.html',      
-                'buscarBtn': 'buscarDat.html',        
-                'EditarBtn': 'EditarDat.html'   
-            };
 
-            // URL del Google Apps Script para registrar el historial.
-            const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
 
-            // Función para registrar un evento en la hoja de historial del Google Sheet.
-            async function registerHistory(cliente_id, nombre, action) {
-                console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
-                const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
-                try {
-                    const response = await fetch(url);
-                    const data = await response.json();
-                    if (data.success) {
-                        console.log("Registro de historial exitoso:", data.message);
-                    } else {
-                        console.error("Fallo al registrar historial:", data.message);
-                    }
-                } catch (error) {
-                    console.error("Error al conectar para registrar historial:", error);
-                }
-            }
-
-            // Función para manejar el registro de historial y la redirección.
-            const handleButtonClick = async (id, action) => {
-                const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
-                }
-                window.location.href = buttonRoutes[id];
-            };
-
-            // Mapa de acciones a registrar en el historial.
-            const actionMap = {
-                'homeBtn': 'Menú Principal',
-                'vehiculosBtn': 'Vehículos',
-                'ordenesBtn': 'Órdenes',
-                'buscarBtn': 'Buscar',
-                'EditarBtn': 'Editar'
-            };
-
-            // Aplicar la lógica a los botones de navegación.
-            Object.keys(buttonRoutes).forEach(id => {
-                const button = document.getElementById(id);
-                if (button) {
-                    button.addEventListener('click', () => {
-                        const action = actionMap[id];
-                        handleButtonClick(id, action);
-                    });
-                }
-            });
-
-            // Lógica del botón de salida (logoutBtn).
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async () => {
-                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                    if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
-                    }
-                    sessionStorage.removeItem('loggedInUser');
-                    window.location.href = 'index.html';
-                });
-            }
+        
     </script>
 </body>
 </html>
