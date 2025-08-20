@@ -284,16 +284,17 @@
             }
             passwordDisplayModal.style.display = 'flex';
         }
-
-        // --- NUEVA FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
+        
+        // --- FUNCIÓN PARA REGISTRAR EN EL HISTORIAL ---
         /**
-         * Registra un evento de inicio de sesión en la hoja de historial del Google Sheet.
+         * Registra un evento en la hoja de historial del Google Sheet.
          * @param {string} cliente_id - El ID del cliente.
          * @param {string} nombre - El nombre del cliente.
+         * @param {string} action - La acción a registrar (ej. 'Visita a Menú').
          */
-        async function registerLoginHistory(cliente_id, nombre) {
-            console.log("Iniciando registro de historial para:", nombre);
-            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}`;
+        async function registerHistory(cliente_id, nombre, action) {
+            console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+            const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
             try {
                 const response = await fetch(url);
                 const data = await response.json();
@@ -331,14 +332,14 @@
                         // TODO: Asegúrate de que el perfil del usuario venga de la respuesta de Google Apps Script (data.user.profile).
                         // Para demostración, si no viene del backend, se asume 'Admin'.
                         profile: data.user.profile 
-                    };sessionStorage.setItem('loggedInUser', JSON.stringify(loggedInUserWithTimestamp))
+                    };
+                    sessionStorage.setItem('loggedInUser', JSON.stringify(loggedInUserWithTimestamp));
                     
                     console.log('Usuario logueado y datos guardados en sessionStorage:', loggedInUserWithTimestamp);
 
-                    // --- LLAMADA A LA NUEVA FUNCIÓN ---
-                    // Se llama a la nueva función de registro de historial después de un inicio de sesión exitoso.
+                    // --- CAMBIO CLAVE: Esperar a que el registro de historial se complete antes de redirigir ---
                     if (data.user && data.user.Cliente_ID && data.user.Cliente_Nombre) {
-                        registerLoginHistory(data.user.Cliente_ID, data.user.Cliente_Nombre);
+                        await registerHistory(data.user.Cliente_ID, data.user.Cliente_Nombre, 'Ingreso a la App');
                     }
                     
                     showMessage(messageContainer, '¡Inicio de Sesión Exitoso! Redirigiendo...', 'success');
