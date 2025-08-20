@@ -235,6 +235,10 @@
 
       <script>
 
+        document.addEventListener('DOMContentLoaded', () => {
+            // Asignar un UUID al campo de Vehiculo ID al cargar la página
+            //document.getElementById('vehiculoId').value = generateShortUUID();
+
             // Definición de las rutas para todos los botones.
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
@@ -253,6 +257,7 @@
                     });
                 }
             });
+
           
           
         // --- URL del Google Apps Script ---
