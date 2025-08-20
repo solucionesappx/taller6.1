@@ -155,7 +155,7 @@
             const handleButtonClick = async (id, action) => {
                 const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                 if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                    await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
+                    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
                 }
                 window.location.href = buttonRoutes[id];
             };
@@ -186,7 +186,7 @@
                 logoutBtn.addEventListener('click', async () => {
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
                     }
                     sessionStorage.removeItem('loggedInUser');
                     window.location.href = 'index.html';
