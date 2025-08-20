@@ -130,7 +130,7 @@
                     const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
                     if (loggedInUser) {
                         // Se utiliza 'await' para esperar a que el registro se complete antes de la redirección
-                        await registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Vehículos');
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Vehículos');
                     }
                     window.location.href = 'registerVeh.html';
                 });
