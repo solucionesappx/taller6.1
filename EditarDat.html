@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registro de Órdenes</title>
+    <title>Edición de Registros de Órdenes</title>
     <!-- Incluye Tailwind CSS desde CDN para un diseño moderno y responsivo -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Carga la fuente Inter de Google Fonts para un diseño limpio -->
@@ -34,19 +34,170 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
-        /* Estilos para el contenedor del formulario con scroll */
-        .scrollable-form-container {
-            max-height: calc(100vh - 120px);
-            overflow-y: auto;
-            padding: 1rem;
-        }
-        /* Estilos para los botones del menú principal */
-        .menu-btn {
+
+        /* Contenedor del motor de búsqueda del botón buscarBtn */
+        .search-container {
             display: flex;
-            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 20px;
             align-items: center;
-            justify-content: center;
+        }
+
+        .search-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .search-button {
+            padding: 10px 15px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            white-space: nowrap; /* Evita que el texto se envuelva */
+        }
+
+        .search-button:hover {
+            background-color: #5a6268;
+        }
+
+        /* Contenedor principal de la tabla */
+        .table-container {
+            margin-top: 20px;
+            overflow-x: auto; /* Habilita el desplazamiento horizontal */
+        }
+        
+        .table-container + .table-container {
+            margin-top: 40px; /* Agrega más espacio entre las tablas */
+        }
+
+        /* Estilos de la tabla de datos */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        /* Estilo para todos los encabezados de la tabla */
+        .data-table th {
+            background-color: #e2e8f0; /* Color de fondo claro para todos los encabezados */
+            color: #1a202c; /* Color de texto oscuro para el contraste */
+            border: 1px solid #ddd;
+            padding: 5px;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        /* Estilo para las celdas normales de la tabla */
+        .data-table td {
+            border: 1px solid #ddd;
+            padding: 3px;
+            text-align: left;
+            white-space: nowrap; /* Evita que el texto se envuelva */
+        }
+        
+        /* Estilos para las columnas fijas (las celdas, no el encabezado) */
+        .data-table .sticky-col {
+            position: sticky;
+            background-color: #e2e8f0; /* Color de fondo para las celdas fijas */
+            z-index: 2; /* Mayor que el resto de celdas para que se superponga */
+        }
+
+        /* Sobreescribe el estilo de las celdas fijas para que se mantengan en su lugar */
+        .data-table th.sticky-col {
+            top: 0; /* Asegura que el encabezado también sea anclado verticalmente */
+        }
+
+        /* Estilos específicos para las columnas ancladas de la tabla de vehículos */
+        .data-table th.sticky-col-0, .data-table td.sticky-col-0 { 
+            left: 0; 
+            width: 15px; /* Ancho fijo para la columna del botón */
+        }
+        .data-table th.sticky-col-1, .data-table td.sticky-col-1 { 
+            left: 35px; /* Comienza donde termina la columna 0 */
+            width: 115px; /* ANCHO AJUSTADO para que coincida con la tabla de órdenes */
+        }
+        .data-table th.sticky-col-2, .data-table td.sticky-col-2 { 
+            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
+            left: 125px; 
+            width: 500px; /* Ancho ajustado para esta columna */
+        }
+        
+        /* Estilos específicos para las columnas ancladas de la tabla de órdenes */
+        .ordenes-table th.sticky-col-0, .ordenes-table td.sticky-col-0 {
+            left: 0;
+            width: 15px; /* Ancho fijo para la columna del botón */
+        }
+        .ordenes-table th.sticky-col-1, .ordenes-table td.sticky-col-1 {
+            left: 35px; /* Comienza donde termina la columna 0 */
+            width: 80px; /* Ancho reducido para el Orden_ID */
+        }
+        .ordenes-table th.sticky-col-2, .ordenes-table td.sticky-col-2 {
+            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
+            left: 115px; 
+            width: 80px; /* Ancho reducido para el Orden_ID */
+        }
+        
+        /* Estilos para los botones de la tabla */
+        .data-table button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .data-table button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Nuevo estilo para justificar el texto a la derecha */
+        .data-table .text-right {
+            text-align: right;
+        }
+
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Estilos para la ventana de mensaje personalizada */
+        .message-box {
+            position: fixed;
+            top: 90px;
+            right: 100px;
+            background-color: rgba(0, 0, 0, 0.75);
+            color: #fff;
+            padding: 15px 30px;
+            border-radius: 8px;
             text-align: center;
+            font-weight: bold;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
+        }
+        
+        /* Clase para un ancho de columna reducido */
+        .col-narrow {
+            width: 100px;
         }
     </style>
 </head>
@@ -88,29 +239,44 @@
                 </li>
             </ul>
         </div>
-    </nav>    
+    </nav>   
 
-    <!-- Contenedor principal para los botones del dashboard. -->
-    <main class="flex-grow flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800 transition-colors duration-300 rounded-xl m-4">
-        <h1 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200">
-            Bienvenido al Menú Principal
-        </h1>
-    </main>
-    
-    <!-- Contenedor de mensajes (alerta modal con animaciones) -->
-    <div id="messageBox" class="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300 opacity-0">
-        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full text-center transform transition-transform duration-300 scale-95">
-            <p id="messageText" class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4"></p>
-            <button onclick="closeMessage()" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                Entendido
+
+    <!-- Contenedor principal para el formulario  -->
+    <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col mb-6 gap-6">
+            <!-- Título del formulario -->
+            <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mt-14">Formulario de Edición de Datos</h2>
+    </div>
+    <div class="container mx-auto px-4 mt-2"> 
+        <h1>Búsqueda de Órdenes por Vehículos</h1>
+            
+        <!-- Contenedor del motor de búsqueda -->
+        <div class="search-container">
+            <input type="text" id="search-input" class="search-input" placeholder="Buscar en inventario de Órdenes...">
+            <button id="clear-search-btn" class="search-button">
+                <i class="fas fa-times"></i>
             </button>
+        </div>
+
+        <!-- Contenedor de la tabla de vehículos -->
+        <div id="vehiculos-container" class="table-container">
+            <!-- El contenido de la tabla de vehículos se inyectará aquí con JavaScript -->
+        </div>
+
+        <!-- Contenedor de la tabla de órdenes -->
+        <div id="ordenes-container" class="table-container">
+            <!-- El contenido de la tabla de órdenes se inyectará aquí con JavaScript -->
+        </div>
+
+        <!-- Ventana de mensaje personalizada (oculta por defecto) -->
+        <div id="message-box" class="message-box">
+            <span id="message-text"></span>
         </div>
     </div>
 
     <script>
+        // Lógica propia de la barra de navegación y registro de historial:
 
-        // --- Lógica barra de navegación y registro de historial ---
-        
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- Lógica del menú y redirección ---
@@ -221,199 +387,10 @@
             };
 
         });
+    </script>
 
-// --- Lógica del formulario de edición ---
-
-            const formContainer = document.getElementById('edit-form-container');
-            const formTitle = document.getElementById('form-title');
-            const formFields = document.getElementById('form-fields');
-            const editForm = document.getElementById('editForm');
-            const loader = document.getElementById('loader');
-            const messageBox = document.getElementById('messageBox');
-            const messageText = document.getElementById('messageText');
-            
-            const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxiRogoHmvMPW7oo-q3_013L1DoLD3eG1qM8MxBJg8qvResNGEWXkXxxrld-XrBUUbt/exec';
-            
-            // Función para obtener los parámetros de la URL
-            function getUrlParams() {
-                const params = {};
-                const queryString = window.location.search.substring(1);
-                const pairs = queryString.split('&');
-                for (const pair of pairs) {
-                    const [key, value] = pair.split('=');
-                    params[decodeURIComponent(key)] = decodeURIComponent(value || '');
-                }
-                return params;
-            }
-
-            // Función para cargar los datos del registro y generar el formulario
-            async function loadRecordAndGenerateForm() {
-                const params = getUrlParams();
-                const recordId = params.id;
-                const recordType = params.type;
-
-                if (!recordId || !recordType) {
-                    showMessage('No se especificó un registro para editar.');
-                    formContainer.classList.add('hidden');
-                    return;
-                }
-                
-                formContainer.classList.add('hidden');
-                loader.classList.remove('hidden');
-
-                const url = `${GAS_API_URL}?action=getRecord&type=${recordType}&id=${recordId}`;
-                
-                try {
-                    const response = await fetch(url);
-                    const result = await response.json();
-
-                    if (result.error) {
-                        showMessage(`Error al cargar los datos: ${result.error}`);
-                        console.error('API Error:', result.error);
-                        return;
-                    }
-
-                    const record = result.data;
-                    if (!record) {
-                        showMessage('El registro no fue encontrado.');
-                        return;
-                    }
-
-                    // Pre-llenar el formulario
-                    generateForm(record, recordType);
-
-                } catch (error) {
-                    showMessage('Error de conexión. Asegúrate de que la URL del script sea correcta.');
-                    console.error('Fetch Error:', error);
-                } finally {
-                    loader.classList.add('hidden');
-                    formContainer.classList.remove('hidden');
-                }
-            }
-
-            // Función para generar dinámicamente los campos del formulario
-            function generateForm(data, type) {
-                formFields.innerHTML = '';
-                formTitle.textContent = `Editar ${type === 'Vehiculos' ? 'Vehículo' : 'Orden'}`;
-
-                // Se excluyen los campos de registro de usuario y fecha
-                const excludedFields = ['Vehiculo_UsuarioReg', 'Vehiculo_Data_Reg', 'Orden_UsuarioReg', 'Orden_DataReg'];
-                
-                for (const key in data) {
-                    if (Object.hasOwnProperty.call(data, key) && !excludedFields.includes(key)) {
-                        const value = data[key];
-                        const label = key.replace(/_/g, ' '); // Formatear el nombre del campo para la etiqueta
-                        
-                        const fieldHTML = `
-                            <div>
-                                <label for="${key}" class="block text-sm font-medium text-gray-700">${label}</label>
-                                <input type="text" id="${key}" name="${key}" value="${value}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-                            </div>
-                        `;
-                        formFields.insertAdjacentHTML('beforeend', fieldHTML);
-                    }
-                }
-            }
-
-            // Lógica para manejar el envío del formulario
-            editForm.addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const params = getUrlParams();
-                const recordId = params.id;
-                const recordType = params.type;
-
-                if (!recordId || !recordType) {
-                    showMessage('Error: No se puede guardar sin un ID de registro o tipo.');
-                    return;
-                }
-
-                const formData = new FormData(editForm);
-                const updatedData = {};
-                for (const [key, value] of formData.entries()) {
-                    updatedData[key] = value;
-                }
-
-                // Asegúrate de incluir el ID del registro en los datos a enviar
-                updatedData.recordId = recordId;
-                
-                formContainer.classList.add('hidden');
-                loader.classList.remove('hidden');
-
-                const url = `${GAS_API_URL}?action=updateRecord&type=${recordType}`;
-                const options = {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedData)
-                };
-                
-                try {
-                    const response = await fetch(url, options);
-                    const result = await response.json();
-
-                    if (result.success) {
-                        showMessage('Registro actualizado exitosamente.');
-                        // Opcional: Redirigir de nuevo a la página de búsqueda
-                        setTimeout(() => {
-                           window.location.href = 'buscarDat.html';
-                        }, 2000);
-                    } else {
-                        showMessage(`Error al actualizar el registro: ${result.error}`);
-                        console.error('API Error:', result.error);
-                    }
-                } catch (error) {
-                    showMessage('Error de conexión al intentar guardar los cambios.');
-                    console.error('Fetch Error:', error);
-                } finally {
-                    loader.classList.add('hidden');
-                    formContainer.classList.remove('hidden');
-                }
-            });
-
-            // Lógica para el botón de cancelar
-            document.getElementById('cancelBtn').addEventListener('click', () => {
-                window.location.href = 'buscarDat.html';
-            });
-            
-            // --- LÓGICA DEL POPUP DE MENSAJE ---
-            
-            // Función para mostrar un mensaje personalizado en el cuadro de diálogo con animaciones.
-            function showMessage(message) {
-                const messageBox = document.getElementById('messageBox');
-                const messageText = document.getElementById('messageText');
-                const modalContent = messageBox.querySelector('.modal-content');
-
-                messageText.innerText = message;
-                messageBox.classList.remove('hidden');
-
-                // Forzar el redibujado para que las transiciones funcionen correctamente
-                void messageBox.offsetWidth;
-
-                // Animar el fade-in y el scale-in
-                messageBox.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
-            }
-
-            // Asignar la función closeMessage al ámbito global para el onclick.
-            window.closeMessage = function() {
-                const messageBox = document.getElementById('messageBox');
-                const modalContent = messageBox.querySelector('.modal-content');
-                
-                // Animar el fade-out y el scale-out
-                messageBox.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-
-                // Ocultar el modal una vez que la transición haya terminado.
-                setTimeout(() => {
-                    messageBox.classList.add('hidden');
-                }, 300);
-            };
-
-            // Iniciar la carga del registro al cargar la página
-            loadRecordAndGenerateForm();
-        });
-    </script> 
+    <script>
+        // Lógica propia de la funcionabilidad de la página actual:   
+    </script>
 </body>
 </html>
