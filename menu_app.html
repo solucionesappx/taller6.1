@@ -90,21 +90,11 @@
         </div>
     </nav>    
 
-    <!-- Contenedor principal para los botones del dashboard.
-         Se han eliminado los botones duplicados para evitar conflictos. -->
+    <!-- Contenedor principal para los botones del dashboard. -->
     <main class="flex-grow flex items-center justify-center p-4 bg-gray-200 dark:bg-gray-800 transition-colors duration-300 rounded-xl m-4">
-        <!-- Puedes usar este espacio para mostrar el contenido dinámico de la página, 
-             como un dashboard, un formulario o una lista de órdenes. -->
         <h1 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-200">
             Bienvenido al Menú Principal
         </h1>
-        
-        <!-- Aquí podrías incluir los botones del dashboard si lo deseas, pero asegurándote de que no tengan el mismo ID que los de la barra de navegación -->
-        <!-- Ejemplo:
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl">
-            <button class="menu-btn bg-white ...">...</button>
-        </div>
-        -->
     </main>
     
     <!-- Contenedor de mensajes (alerta modal con animaciones) -->
@@ -118,6 +108,9 @@
     </div>
 
     <script>
+
+        // --- Lógica barra de navegación y registro de historial ---
+        
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- Lógica del menú y redirección ---
@@ -229,5 +222,10 @@
 
         });
     </script>
+
+    <script>
+    // Lógica propia de la funcionabilidad de la página
+    </script>    
+    
 </body>
 </html>
