@@ -1,3 +1,4 @@
+/* Versión actualizada por el usuario */
 <!DOCTYPE html>
 <html lang="es" class="dark">
 <head>
@@ -275,7 +276,125 @@
             <span id="message-text"></span>
         </div>
     </div>
+
     <script>
+        // Lógica propia de la barra de navegación y registro de historial:
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // --- Lógica del menú y redirección ---
+            
+            // Definición de las rutas para todos los botones.
+            const buttonRoutes = {
+                'homeBtn': 'menu_app.html',
+                'vehiculosBtn': 'registerVeh.html',  
+                'ordenesBtn': 'registerOrd.html',      
+                'buscarBtn': 'buscarDat.html',        
+                'EditarBtn': 'EditarDat.html'   
+            };
+
+            // URL del Google Apps Script para registrar el historial.
+            const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+
+            // Función para registrar un evento en la hoja de historial del Google Sheet.
+            async function registerHistory(cliente_id, nombre, action) {
+                console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+                const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+                    if (data.success) {
+                        console.log("Registro de historial exitoso:", data.message);
+                    } else {
+                        console.error("Fallo al registrar historial:", data.message);
+                    }
+                } catch (error) {
+                    console.error("Error al conectar para registrar historial:", error);
+                }
+            }
+
+            // Función para manejar el registro de historial y la redirección.
+            const handleButtonClick = async (id, action) => {
+                const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
+                }
+                window.location.href = buttonRoutes[id];
+            };
+
+            // Mapa de acciones a registrar en el historial.
+            const actionMap = {
+                'homeBtn': 'Menú Principal',
+                'vehiculosBtn': 'Vehículos',
+                'ordenesBtn': 'Órdenes',
+                'buscarBtn': 'Buscar',
+                'EditarBtn': 'Editar'
+            };
+
+            // Aplicar la lógica a los botones de navegación.
+            Object.keys(buttonRoutes).forEach(id => {
+                const button = document.getElementById(id);
+                if (button) {
+                    button.addEventListener('click', () => {
+                        const action = actionMap[id];
+                        handleButtonClick(id, action);
+                    });
+                }
+            });
+
+            // Lógica del botón de salida (logoutBtn).
+            const logoutBtn = document.getElementById('logoutBtn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', async () => {
+                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
+                    if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
+                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
+                    }
+                    sessionStorage.removeItem('loggedInUser');
+                    window.location.href = 'index.html';
+                });
+            }
+
+            // --- LÓGICA DEL POPUP DE MENSAJE ---
+            
+            // Función para mostrar un mensaje personalizado en el cuadro de diálogo con animaciones.
+            function showMessage(message) {
+                const messageBox = document.getElementById('messageBox');
+                const messageText = document.getElementById('messageText');
+                const modalContent = messageBox.querySelector('div');
+
+                messageText.innerText = message;
+                messageBox.classList.remove('hidden');
+
+                // Forzar el redibujado para que las transiciones funcionen correctamente
+                void messageBox.offsetWidth;
+
+                // Animar el fade-in y el scale-in
+                messageBox.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            }
+
+            // Asignar la función closeMessage al ámbito global para el onclick.
+            window.closeMessage = function() {
+                const messageBox = document.getElementById('messageBox');
+                const modalContent = messageBox.querySelector('div');
+                
+                // Animar el fade-out y el scale-out
+                messageBox.classList.add('opacity-0');
+                modalContent.classList.add('scale-95');
+
+                // Ocultar el modal una vez que la transición haya terminado.
+                setTimeout(() => {
+                    messageBox.classList.add('hidden');
+                }, 300);
+            };
+
+        });
+    </script>
+
+    <script>
+        // Lógica propia de la funcionabilidad de la página actual:
+        
         document.addEventListener('DOMContentLoaded', () => {
             // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
             const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxiRogoHmvMPW7oo-q3_013L1DoLD3eG1qM8MxBJg8qvResNGEWXkXxxrld-XrBUUbt/exec';
@@ -314,8 +433,9 @@
             };
 
             // Cache para datos de vehículos y órdenes
+            let cachedData = {}; 
             let allVehiculosData = []; 
-            let allOrdenesData = []; 
+            let allOrdenesData = [];  
 
             // Función para mostrar la ventana de mensaje
             function showMessage(message) {
