@@ -34,7 +34,6 @@
         input[type=number] {
             -moz-appearance: textfield;
         }
-
         /* Contenedor del motor de búsqueda del botón buscarBtn */
         .search-container {
             display: flex;
@@ -42,7 +41,6 @@
             margin-bottom: 20px;
             align-items: center;
         }
-
         .search-input {
             flex-grow: 1;
             padding: 10px;
@@ -50,7 +48,6 @@
             border-radius: 8px;
             font-size: 16px;
         }
-
         .search-button {
             padding: 10px 15px;
             background-color: #6c757d;
@@ -61,28 +58,23 @@
             transition: background-color 0.3s ease;
             white-space: nowrap; /* Evita que el texto se envuelva */
         }
-
         .search-button:hover {
             background-color: #5a6268;
         }
-
         /* Contenedor principal de la tabla */
         .table-container {
             margin-top: 20px;
             overflow-x: auto; /* Habilita el desplazamiento horizontal */
         }
-        
         .table-container + .table-container {
             margin-top: 40px; /* Agrega más espacio entre las tablas */
         }
-
         /* Estilos de la tabla de datos */
         .data-table {
             width: 100%;
             border-collapse: collapse;
             font-size: 14px;
         }
-
         /* Estilo para todos los encabezados de la tabla */
         .data-table th {
             background-color: #e2e8f0; /* Color de fondo claro para todos los encabezados */
@@ -92,7 +84,6 @@
             text-align: left;
             white-space: nowrap;
         }
-
         /* Estilo para las celdas normales de la tabla */
         .data-table td {
             border: 1px solid #ddd;
@@ -100,49 +91,35 @@
             text-align: left;
             white-space: nowrap; /* Evita que el texto se envuelva */
         }
-        
         /* Estilos para las columnas fijas (las celdas, no el encabezado) */
         .data-table .sticky-col {
             position: sticky;
             background-color: #e2e8f0; /* Color de fondo para las celdas fijas */
             z-index: 2; /* Mayor que el resto de celdas para que se superponga */
         }
-
         /* Sobreescribe el estilo de las celdas fijas para que se mantengan en su lugar */
         .data-table th.sticky-col {
             top: 0; /* Asegura que el encabezado también sea anclado verticalmente */
         }
-
-        /* Estilos específicos para las columnas ancladas de la tabla de vehículos */
-        .data-table th.sticky-col-0, .data-table td.sticky-col-0 { 
-            left: 0; 
-            width: 15px; /* Ancho fijo para la columna del botón */
-        }
-        .data-table th.sticky-col-1, .data-table td.sticky-col-1 { 
-            left: 35px; /* Comienza donde termina la columna 0 */
-            width: 115px; /* ANCHO AJUSTADO para que coincida con la tabla de órdenes */
-        }
-        .data-table th.sticky-col-2, .data-table td.sticky-col-2 { 
-            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
-            left: 125px; 
-            width: 500px; /* Ancho ajustado para esta columna */
-        }
-        
         /* Estilos específicos para las columnas ancladas de la tabla de órdenes */
         .ordenes-table th.sticky-col-0, .ordenes-table td.sticky-col-0 {
             left: 0;
-            width: 15px; /* Ancho fijo para la columna del botón */
+            width: 40px; /* Ancho fijo para la columna del botón */
         }
         .ordenes-table th.sticky-col-1, .ordenes-table td.sticky-col-1 {
-            left: 35px; /* Comienza donde termina la columna 0 */
-            width: 80px; /* Ancho reducido para el Orden_ID */
+            left: 40px; /* Comienza donde termina la columna 0 */
+            width: 80px; /* Ancho para el Orden_ID */
         }
         .ordenes-table th.sticky-col-2, .ordenes-table td.sticky-col-2 {
             /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
-            left: 115px; 
-            width: 80px; /* Ancho reducido para el Orden_ID */
+            left: 120px; 
+            width: 80px; /* Ancho para la Placa */
         }
-        
+        .ordenes-table th.sticky-col-3, .ordenes-table td.sticky-col-3 {
+            /* Se basa en el ancho de las columnas anteriores: 40px + 80px + 80px */
+            left: 200px;
+            width: 120px; /* Ancho para el Contacto */
+        }
         /* Estilos para los botones de la tabla */
         .data-table button {
             background-color: #007bff;
@@ -153,16 +130,13 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-
         .data-table button:hover {
             background-color: #0056b3;
         }
-
         /* Nuevo estilo para justificar el texto a la derecha */
         .data-table .text-right {
             text-align: right;
         }
-
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #007bff;
@@ -172,12 +146,10 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         /* Estilos para la ventana de mensaje personalizada */
         .message-box {
             position: fixed;
@@ -194,15 +166,13 @@
             visibility: hidden;
             transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
         }
-        
         /* Clase para un ancho de columna reducido */
         .col-narrow {
             width: 100px;
         }
     </style>
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300">
-
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen flex flex-col transition-colors duration-300 pt-24 sm:pt-28">
     <!-- Barra de navegación principal -->
     <nav class="fixed top-0 left-0 w-full bg-gray-100 text-gray-800 shadow-lg z-50">
         <div class="container mx-auto px-4 py-2">
@@ -239,17 +209,9 @@
                 </li>
             </ul>
         </div>
-    </nav>   
-
-
-    <!-- Contenedor principal para el formulario  -->
-    <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full lg:w-1/2 transition-colors duration-300 flex flex-col mb-6 gap-6">
-            <!-- Título del formulario -->
-            <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mt-14">Formulario de Edición de Datos</h2>
-    </div>
-    <div class="container mx-auto px-4 mt-2"> 
+    </nav>
+    <div class="container mx-auto px-4">
         <h1>Búsqueda de Órdenes por Vehículos</h1>
-            
         <!-- Contenedor del motor de búsqueda -->
         <div class="search-container">
             <input type="text" id="search-input" class="search-input" placeholder="Buscar en inventario de Órdenes...">
@@ -257,30 +219,32 @@
                 <i class="fas fa-times"></i>
             </button>
         </div>
-
-        <!-- Contenedor de la tabla de vehículos -->
-        <div id="vehiculos-container" class="table-container">
-            <!-- El contenido de la tabla de vehículos se inyectará aquí con JavaScript -->
-        </div>
-
         <!-- Contenedor de la tabla de órdenes -->
         <div id="ordenes-container" class="table-container">
             <!-- El contenido de la tabla de órdenes se inyectará aquí con JavaScript -->
         </div>
-
         <!-- Ventana de mensaje personalizada (oculta por defecto) -->
         <div id="message-box" class="message-box">
             <span id="message-text"></span>
         </div>
     </div>
-
+    <!-- Contenedor principal para el formulario ajustado a w-full -->
+    <div class="bg-gray-200 dark:bg-gray-800 p-8 rounded-xl shadow-lg w-full flex flex-col mb-6 mt-8 gap-6">
+        <!-- Título del formulario ajustado a w-full -->
+        <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100">Formulario de Edición de Datos</h2>
+        <!-- Nuevo formulario con los campos solicitados -->
+        <div class="space-y-4">
+            <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200">Campos de Órdenes</h3>
+            <!-- Contenedor de los campos del formulario -->
+            <div id="ordenes-form-fields" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Los campos se inyectarán con JavaScript -->
+            </div>
+        </div>
+    </div>
     <script>
         // Lógica propia de la barra de navegación y registro de historial:
-
         document.addEventListener('DOMContentLoaded', () => {
-
             // --- Lógica del menú y redirección ---
-            
             // Definición de las rutas para todos los botones.
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
@@ -289,10 +253,8 @@
                 'buscarBtn': 'buscarDat.html',        
                 'EditarBtn': 'EditarDat.html'   
             };
-
             // URL del Google Apps Script para registrar el historial.
             const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
-
             // Función para registrar un evento en la hoja de historial del Google Sheet.
             async function registerHistory(cliente_id, nombre, action) {
                 console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
@@ -309,7 +271,6 @@
                     console.error("Error al conectar para registrar historial:", error);
                 }
             }
-
             // Función para manejar el registro de historial y la redirección.
             const handleButtonClick = async (id, action) => {
                 const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
@@ -318,7 +279,6 @@
                 }
                 window.location.href = buttonRoutes[id];
             };
-
             // Mapa de acciones a registrar en el historial.
             const actionMap = {
                 'homeBtn': 'Menú Principal',
@@ -327,7 +287,6 @@
                 'buscarBtn': 'Buscar',
                 'EditarBtn': 'Editar'
             };
-
             // Aplicar la lógica a los botones de navegación.
             Object.keys(buttonRoutes).forEach(id => {
                 const button = document.getElementById(id);
@@ -338,7 +297,6 @@
                     });
                 }
             });
-
             // Lógica del botón de salida (logoutBtn).
             const logoutBtn = document.getElementById('logoutBtn');
             if (logoutBtn) {
@@ -351,46 +309,198 @@
                     window.location.href = 'index.html';
                 });
             }
-
             // --- LÓGICA DEL POPUP DE MENSAJE ---
-            
             // Función para mostrar un mensaje personalizado en el cuadro de diálogo con animaciones.
             function showMessage(message) {
                 const messageBox = document.getElementById('messageBox');
                 const messageText = document.getElementById('messageText');
                 const modalContent = messageBox.querySelector('div');
-
                 messageText.innerText = message;
                 messageBox.classList.remove('hidden');
-
                 // Forzar el redibujado para que las transiciones funcionen correctamente
                 void messageBox.offsetWidth;
-
                 // Animar el fade-in y el scale-in
                 messageBox.classList.remove('opacity-0');
                 modalContent.classList.remove('scale-95');
             }
-
             // Asignar la función closeMessage al ámbito global para el onclick.
             window.closeMessage = function() {
                 const messageBox = document.getElementById('messageBox');
                 const modalContent = messageBox.querySelector('div');
-                
                 // Animar el fade-out y el scale-out
                 messageBox.classList.add('opacity-0');
                 modalContent.classList.add('scale-95');
-
                 // Ocultar el modal una vez que la transición haya terminado.
                 setTimeout(() => {
                     messageBox.classList.add('hidden');
                 }, 300);
             };
-
         });
     </script>
-
     <script>
         // Lógica propia de la funcionabilidad de la página actual:   
+        document.addEventListener('DOMContentLoaded', () => {
+            // Mock data for the 'Ordenes' table
+            const mockOrdenesData = [
+                {
+                    Orden_ID: 'ORD-001',
+                    Vehiculo_Placa: 'ABC-123',
+                    Vehiculo_PersonaContacto: 'Juan Perez',
+                    Orden_Fecha: '2023-01-15',
+                    Orden_Total: 150.75,
+                    Orden_Moneda: 'USD',
+                    Orden_TasaCambio: 1.0,
+                    Orden_UsuarioReg: 'user1',
+                    Orden_DataReg: 'data1',
+                    Orden_Estado: 'Completado',
+                    Orden_Comentarios: 'Servicio de mantenimiento'
+                },
+                {
+                    Orden_ID: 'ORD-002',
+                    Vehiculo_Placa: 'XYZ-987',
+                    Vehiculo_PersonaContacto: 'Maria Gomez',
+                    Orden_Fecha: '2023-01-16',
+                    Orden_Total: 500000.00,
+                    Orden_Moneda: 'VED',
+                    Orden_TasaCambio: 35.0,
+                    Orden_UsuarioReg: 'user2',
+                    Orden_DataReg: 'data2',
+                    Orden_Estado: 'Pendiente',
+                    Orden_Comentarios: 'Cambio de aceite pendiente'
+                },
+                {
+                    Orden_ID: 'ORD-003',
+                    Vehiculo_Placa: 'ABC-123',
+                    Vehiculo_PersonaContacto: 'Juan Perez',
+                    Orden_Fecha: '2023-02-20',
+                    Orden_Total: 250.50,
+                    Orden_Moneda: 'USD',
+                    Orden_TasaCambio: 1.0,
+                    Orden_UsuarioReg: 'user1',
+                    Orden_DataReg: 'data3',
+                    Orden_Estado: 'En progreso',
+                    Orden_Comentarios: 'Revisión del motor'
+                },
+            ];
+            // Maps for table headers
+            const ordenesHeadersMap = {
+                acciones: ' ', // Nueva columna para los botones de acción
+                Orden_ID: 'Orden ID',
+                Vehiculo_Placa: 'Placa',
+                Vehiculo_PersonaContacto: 'Contacto',
+                Orden_Fecha: 'Fecha',
+                Orden_Total: 'Total Orden',
+                Orden_Moneda: 'Moneda',
+                Orden_TasaCambio: 'Tasa Ref',
+                Orden_Estado: 'Estado',
+                Orden_Comentarios: 'Comentarios'
+            };
+            // Get references to elements
+            const searchInput = document.getElementById('search-input');
+            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const ordenesContainer = document.getElementById('ordenes-container');
+            const formFieldsContainer = document.getElementById('ordenes-form-fields');
+            // Function to dynamically generate the form fields
+            function generateForm() {
+                // Clear any existing fields
+                formFieldsContainer.innerHTML = '';
+                // Get the keys from the headers map to iterate over
+                const fieldKeys = Object.keys(ordenesHeadersMap).filter(key => key !== 'acciones');
+                // Loop through the fields and create HTML elements
+                fieldKeys.forEach(key => {
+                    const labelText = ordenesHeadersMap[key];
+                    const fieldDiv = document.createElement('div');
+                    fieldDiv.className = 'flex flex-col';
+                    const label = document.createElement('label');
+                    label.htmlFor = key;
+                    label.className = 'font-semibold text-gray-700 dark:text-gray-200';
+                    label.textContent = labelText;
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.id = key;
+                    input.name = key;
+                    input.placeholder = `Ingresa ${labelText}`;
+                    input.className = 'p-2 mt-1 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500';
+                    fieldDiv.appendChild(label);
+                    fieldDiv.appendChild(input);
+                    formFieldsContainer.appendChild(fieldDiv);
+                });
+            }
+            // Function to dynamically generate the HTML for the 'Ordenes' table
+            function renderOrdenesTable(data) {
+                if (data.length === 0) {
+                    ordenesContainer.innerHTML = '<p class="text-center text-gray-500">No se encontraron resultados para su búsqueda.</p>';
+                    return;
+                }
+                const headersHTML = Object.values(ordenesHeadersMap).map((header, index) => {
+                    let classes = '';
+                    if (index === 0) classes = 'sticky-col sticky-col-0';
+                    if (index === 1) classes = 'sticky-col sticky-col-1';
+                    if (index === 2) classes = 'sticky-col sticky-col-2';
+                    if (index === 3) classes = 'sticky-col sticky-col-3';
+                    return `<th class="${classes}">${header}</th>`;
+                }).join('');
+                const rowsHTML = data.map(item => {
+                    const values = Object.keys(ordenesHeadersMap).map((key, index) => {
+                        let cellContent = item[key] || '';
+                        let classes = '';
+                        if (index === 0) {
+                            classes = 'sticky-col sticky-col-0';
+                            cellContent = `<button onclick="editOrden('${item.Orden_ID}')"><i class="fas fa-edit"></i></button>`;
+                        }
+                        if (index === 1) classes = 'sticky-col sticky-col-1';
+                        if (index === 2) classes = 'sticky-col sticky-col-2';
+                        if (index === 3) classes = 'sticky-col sticky-col-3';
+                        return `<td class="${classes}">${cellContent}</td>`;
+                    }).join('');
+                    return `<tr>${values}</tr>`;
+                }).join('');
+                let tableHTML = `
+                    <h2 class="text-2xl font-bold mb-4">Tabla de Órdenes</h2>
+                    <table class="data-table ordenes-table">
+                        <thead>
+                            <tr>
+                                ${headersHTML}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHTML}
+                        </tbody>
+                    </table>
+                `;
+                ordenesContainer.innerHTML = tableHTML;
+            }
+            // Placeholder function for editing an order
+            window.editOrden = function(ordenId) {
+                console.log(`Editando orden con ID: ${ordenId}`);
+                // Aquí puedes agregar la lógica para llenar el formulario o redirigir
+            };
+            // Function to filter the mock data based on search input
+            function filterOrdenes(searchTerm) {
+                const lowercasedTerm = searchTerm.toLowerCase();
+                return mockOrdenesData.filter(item => {
+                    // Check if any value in the current item (across all searchable fields) contains the search term
+                    return Object.values(ordenesHeadersMap).some(headerKey => {
+                        const value = item[Object.keys(ordenesHeadersMap).find(key => ordenesHeadersMap[key] === headerKey)];
+                        return value && String(value).toLowerCase().includes(lowercasedTerm);
+                    });
+                });
+            }
+            // Event listener for real-time search
+            searchInput.addEventListener('input', (e) => {
+                const searchTerm = e.target.value;
+                const filteredData = filterOrdenes(searchTerm);
+                renderOrdenesTable(filteredData);
+            });
+            // Event listener for the clear search button
+            clearSearchBtn.addEventListener('click', () => {
+                searchInput.value = '';
+                renderOrdenesTable(mockOrdenesData);
+            });
+            // Initial rendering of the table and form when the page loads
+            generateForm();
+            renderOrdenesTable(mockOrdenesData);
+        });
     </script>
 </body>
 </html>
