@@ -131,9 +131,15 @@
             color: #4b5563; /* Color de texto del encabezado */
             white-space: nowrap; /* Evita el salto de línea en los encabezados */
         }
+        /* Se ha cambiado el fondo de las celdas a blanco */
         table.dataTable tbody td {
-            background-color: #f9fafb; /* Color de fondo del cuerpo de la tabla (gris muy claro) */
+            background-color: #ffffff;
         }
+        /* Se ha cambiado el color de fondo para las columnas fijas a un gris claro para que coincida con el encabezado */
+        table.dataTable .dtfc-fixed-left {
+            background-color: #e5e7eb !important;
+        }
+        /* Estilo de hover para las filas, se asegura de que funcione en todas las celdas */
         table.dataTable.hover tbody tr:hover {
             background-color: #e5e7eb !important; /* Color al pasar el cursor sobre las filas */
         }
@@ -142,7 +148,7 @@
         .dataTables_wrapper .dataTables_filter,
         .dataTables_wrapper .dataTables_info,
         .dataTables_wrapper .dataTables_paginate {
-            font-size: 0.5rem; /* Reduce el tamaño de la fuente para todos estos elementos */
+            font-size: 0.4rem; /* Se ha reducido el tamaño de la fuente para este elemento */
         }
     </style>
 </head>
@@ -199,9 +205,9 @@
                 <table id="ordenes-table" class="display data-table" style="width:100%">
                     <thead>
                         <tr>
-                            <th style="width: 5px;"></th>
-                            <th>Orden ID</th>
+                            <th style="width: 15px;"></th>
                             <th>Placa</th>
+                            <th>Orden ID</th>
                             <th>Contacto</th>
                             <th>Fecha</th>
                             <th>Total Orden</th>
@@ -374,8 +380,13 @@
             const clearSearchBtn = document.getElementById('clear-search-btn');
             // Inicializa la tabla de DataTables
             const ordenesTable = new DataTable('#ordenes-table', {
-                // Deshabilita el filtrado nativo de DataTables para usar nuestro motor de búsqueda
+                // Habilitamos la paginación para poder usar el selector de registros
+                paging: true,
+                // Ocultamos el filtro nativo para usar el nuestro
                 searching: false,
+                // Controlamos qué elementos se muestran en el DOM de la tabla
+                // 'l' = selector de longitud (lengthChange), 'f' = filtro (search), 't' = tabla
+                dom: 'lft',
                 // Proporciona los datos y define las columnas
                 data: mockOrdenesData,
                 columns: [{
@@ -386,11 +397,11 @@
                     orderable: false,
                     className: 'text-center'
                 }, {
-                    data: 'Orden_ID',
-                    title: 'Orden ID'
-                }, {
                     data: 'Vehiculo_Placa',
                     title: 'Placa'
+                }, {
+                    data: 'Orden_ID',
+                    title: 'Orden ID'
                 }, {
                     data: 'Vehiculo_PersonaContacto',
                     title: 'Contacto'
@@ -426,9 +437,11 @@
                 }, ],
                 // Configuración de la extensión FixedColumns para anclar columnas
                 fixedColumns: {
-                    left: 4 // Ancla las primeras 4 columnas
+                    left: 2 // Ancla las dos primeras columnas
                 },
                 scrollX: true, // Habilita el desplazamiento horizontal
+                // Deshabilita la paginación y la información de la tabla
+                info: false,
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',
                 }
