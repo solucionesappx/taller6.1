@@ -358,7 +358,7 @@
         // Lógica propia de la funcionabilidad de la página actual:
         document.addEventListener('DOMContentLoaded', () => {
             // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
-            const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxiRogoHmvMPW7oo-q3_013L1DoLD3eG1qM8MxBJg8qvResNGEWXkXxxrld-XrBUUbt/exec';
+            const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
             
             // Cache para datos de vehículos y órdenes
             let cachedData = {};
@@ -449,30 +449,35 @@
 
             // Función asíncrona para obtener datos de Google Apps Script
             async function fetchData() {
-                // Primero, comprueba si los datos ya están en caché
                 if (allOrdenesData.length > 0) {
-                    // Si los datos están en caché, simplemente actualiza la tabla
                     ordenesTable.clear().rows.add(allOrdenesData).draw();
                     updateResultsCount();
-                    return; // Termina la función aquí
+                    return;
                 }
 
-                // Si no están en caché, muestra el loader y carga los datos de la API
                 loaderContainer.classList.remove('hidden');
                 ordenesContainer.classList.add('hidden');
                 try {
-                    const response = await fetch(`${GAS_API_URL}?action=getOrdenesCab`);
+                    const response = await fetch(`${GAS_READ_EDIT_URL}?action=getOrdenesCab`);
+                    console.log('API Response:', response);
+
                     if (!response.ok) {
                         throw new Error(`Error en la red: ${response.statusText}`);
                     }
+                    
                     const data = await response.json();
-                    if (data.data) {
-                        // Almacena los datos en la caché y luego actualiza la tabla
+                    console.log('API Data:', data);
+                    
+                    // Se ha agregado un condicional para manejar una respuesta vacía o un error de formato.
+                    if (data && data.data && Array.isArray(data.data)) {
                         allOrdenesData = data.data;
                         ordenesTable.clear().rows.add(allOrdenesData).draw();
                         updateResultsCount();
+                    } else if (data && !data.data) {
+                        console.warn('La respuesta de la API no contiene una matriz de datos. Tabla se mantendrá vacía.');
+                        showTemporaryMessage('No hay datos disponibles para mostrar.');
                     } else {
-                        console.error('API response does not contain data.');
+                        console.error('La respuesta de la API no contiene una matriz de datos válida.');
                         showTemporaryMessage('Error: No se encontraron datos válidos.');
                     }
                 } catch (error) {
