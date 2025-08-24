@@ -226,15 +226,15 @@
                     <thead>
                         <tr>
                             <th style="width: 15px;"></th>
-                            <th>Placa</th>
                             <th>Orden ID</th>
+                            <th>Placa</th>
                             <th>Contacto</th>
                             <th>Fecha</th>
                             <th>Total Orden</th>
                             <th>Moneda</th>
                             <th>Tasa Ref</th>
-                            <th>Estado</th>
-                            <th>Comentarios</th>
+                            <th>Usuario Reg</th>
+                            <th>Fecha Reg</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -399,11 +399,11 @@
                     orderable: false,
                     className: 'text-center'
                 }, {
-                    data: 'Vehiculo_Placa',
-                    title: 'Placa'
-                }, {
                     data: 'Orden_ID',
                     title: 'Orden ID'
+                }, {
+                    data: 'Vehiculo_Placa',
+                    title: 'Placa'
                 }, {
                     data: 'Vehiculo_PersonaContacto',
                     title: 'Contacto'
@@ -431,11 +431,14 @@
                     className: 'text-right',
                     title: 'Tasa Ref'
                 }, {
-                    data: 'Orden_Estado',
-                    title: 'Estado'
+                    data: 'Orden_UsuarioReg',
+                    title: 'Usuario Reg'
                 }, {
-                    data: 'Orden_Comentarios',
-                    title: 'Comentarios'
+                    data: 'Orden_DataReg',
+                    render: function(data) {
+                        return formatDate(data);
+                    },
+                    title: 'Fecha Reg'
                 }, ],
                 fixedColumns: {
                     left: 2
