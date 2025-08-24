@@ -12,8 +12,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
     <!-- Incluye el CSS de DataTables -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
-    <!-- Incluye el CSS de FixedColumns (Enlace corregido) -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js">
+    <!-- Incluye el CSS de FixedColumns -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/css/fixedColumns.dataTables.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -146,6 +146,7 @@
         .dtfc-fixed-left {
             background-color: #ffffff !important;
             border-right: none !important;
+            z-index: 1000 !important; /* Asegura que la columna fija esté siempre al frente */
         }
         .dtfc-fixed-left td {
             background-color: #ffffff !important;
@@ -254,6 +255,8 @@
     <!-- Incluye el JS de FixedColumns -->
     <script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js"></script>
     <script>
+        // Declaramos la variable de la tabla fuera del scope de la función para poder acceder a ella globalmente
+        let ordenesTable = null;
         // Función para formatear un número con separador de miles y decimales
         function formatNumber(num) {
             if (typeof num !== 'number') {
@@ -354,15 +357,14 @@
             };
         });
     </script>
+    
     <script>
         // Lógica propia de la funcionabilidad de la página actual:
         document.addEventListener('DOMContentLoaded', () => {
             // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
             const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
             
-            // Cache para datos de vehículos y órdenes
-            let cachedData = {};
-            let allVehiculosData = [];
+            // Cache para datos de órdenes
             let allOrdenesData = [];
 
             // Referencias a los elementos del DOM
@@ -385,81 +387,21 @@
                 }, 3000);
             }
 
-            // Inicializa la tabla de DataTables
-            const ordenesTable = new DataTable('#ordenes-table', {
-                paging: false,
-                searching: true, 
-                dom: 'lt', 
-                data: [], // Inicializa la tabla sin datos
-                columns: [{
-                    data: null,
-                    render: function(data, type, row) {
-                        return `<button onclick="editOrden('${row.Orden_ID}')"><i class="fas fa-search"></i></button>`;
-                    },
-                    orderable: false,
-                    className: 'text-center'
-                }, {
-                    data: 'Orden_ID',
-                    title: 'Orden ID'
-                }, {
-                    data: 'Vehiculo_Placa',
-                    title: 'Placa'
-                }, {
-                    data: 'Vehiculo_PersonaContacto',
-                    title: 'Contacto'
-                }, {
-                    data: 'Orden_Fecha',
-                    render: function(data) {
-                        return formatDate(data);
-                    },
-                    title: 'Fecha'
-                }, {
-                    data: 'Orden_Total',
-                    render: function(data) {
-                        return formatNumber(data);
-                    },
-                    className: 'text-right',
-                    title: 'Total Orden'
-                }, {
-                    data: 'Orden_Moneda',
-                    title: 'Moneda'
-                }, {
-                    data: 'Orden_TasaCambio',
-                    render: function(data) {
-                        return formatNumber(data);
-                    },
-                    className: 'text-right',
-                    title: 'Tasa Ref'
-                }, {
-                    data: 'Orden_UsuarioReg',
-                    title: 'Usuario Reg'
-                }, {
-                    data: 'Orden_DataReg',
-                    render: function(data) {
-                        return formatDate(data);
-                    },
-                    title: 'Fecha Reg'
-                }, ],
-                fixedColumns: {
-                    left: 2
-                },
-                scrollX: true, 
-                info: false,
-                language: {
-                    url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',
-                }
-            });
-
             // Función asíncrona para obtener datos de Google Apps Script
             async function fetchData() {
-                if (allOrdenesData.length > 0) {
+                // Si los datos ya están en caché, simplemente actualiza la tabla
+                if (allOrdenesData.length > 0 && ordenesTable) {
                     ordenesTable.clear().rows.add(allOrdenesData).draw();
                     updateResultsCount();
+                    // Forzar el ajuste de columnas después de la carga
+                    ordenesTable.columns.adjust().draw();
                     return;
                 }
 
+                // Mostrar el cargador y ocultar la tabla
                 loaderContainer.classList.remove('hidden');
                 ordenesContainer.classList.add('hidden');
+
                 try {
                     const response = await fetch(`${GAS_READ_EDIT_URL}?action=getOrdenesCab`);
                     console.log('API Response:', response);
@@ -471,11 +413,86 @@
                     const data = await response.json();
                     console.log('API Data:', data);
                     
-                    // Se ha agregado un condicional para manejar una respuesta vacía o un error de formato.
                     if (data && data.data && Array.isArray(data.data)) {
                         allOrdenesData = data.data;
-                        ordenesTable.clear().rows.add(allOrdenesData).draw();
+
+                        // Inicializar la tabla aquí, después de cargar los datos
+                        if (ordenesTable === null) {
+                            ordenesTable = new DataTable('#ordenes-table', {
+                                paging: false,
+                                searching: true, 
+                                dom: 'lt', 
+                                data: allOrdenesData, 
+                                columns: [{
+                                    data: null,
+                                    render: function(data, type, row) {
+                                        return `<button onclick="editOrden('${row.Orden_ID}')"><i class="fas fa-search"></i></button>`;
+                                    },
+                                    orderable: false,
+                                    className: 'text-center'
+                                }, {
+                                    data: 'Orden_ID',
+                                    title: 'Orden ID'
+                                }, {
+                                    data: 'Vehiculo_Placa',
+                                    title: 'Placa'
+                                }, {
+                                    data: 'Vehiculo_PersonaContacto',
+                                    title: 'Contacto'
+                                }, {
+                                    data: 'Orden_Fecha',
+                                    render: function(data) {
+                                        return formatDate(data);
+                                    },
+                                    title: 'Fecha'
+                                }, {
+                                    data: 'Orden_Total',
+                                    render: function(data) {
+                                        return formatNumber(data);
+                                    },
+                                    className: 'text-right',
+                                    title: 'Total Orden'
+                                }, {
+                                    data: 'Orden_Moneda',
+                                    title: 'Moneda'
+                                }, {
+                                    data: 'Orden_TasaCambio',
+                                    render: function(data) {
+                                        return formatNumber(data);
+                                    },
+                                    className: 'text-right',
+                                    title: 'Tasa Ref'
+                                }, {
+                                    data: 'Orden_UsuarioReg',
+                                    title: 'Usuario Reg'
+                                }, {
+                                    data: 'Orden_DataReg',
+                                    render: function(data) {
+                                        return formatDate(data);
+                                    },
+                                    title: 'Fecha Reg'
+                                }, ],
+                                fixedColumns: {
+                                    left: 2
+                                },
+                                scrollX: true, 
+                                info: false,
+                                language: {
+                                    url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',
+                                }
+                            });
+                        } else {
+                            // Si la tabla ya está inicializada, simplemente carga los datos nuevos
+                            ordenesTable.clear().rows.add(allOrdenesData).draw();
+                        }
+                        
                         updateResultsCount();
+                        // Forzar el ajuste de columnas después de la carga
+                        if (ordenesTable) {
+                            setTimeout(() => {
+                                ordenesTable.columns.adjust().draw();
+                            }, 50);
+                        }
                     } else if (data && !data.data) {
                         console.warn('La respuesta de la API no contiene una matriz de datos. Tabla se mantendrá vacía.');
                         showTemporaryMessage('No hay datos disponibles para mostrar.');
@@ -494,14 +511,16 @@
 
             // Función para actualizar el conteo de resultados de búsqueda
             function updateResultsCount() {
-                const filteredRows = ordenesTable.rows({
-                    search: 'applied'
-                }).count();
-                const totalRows = ordenesTable.rows().count();
-                if (searchInput.value.length > 0) {
-                    searchResultsInfo.textContent = `Mostrando ${filteredRows} de ${totalRows} registros.`;
-                } else {
-                    searchResultsInfo.textContent = '';
+                if (ordenesTable) {
+                    const filteredRows = ordenesTable.rows({
+                        search: 'applied'
+                    }).count();
+                    const totalRows = ordenesTable.rows().count();
+                    if (searchInput.value.length > 0) {
+                        searchResultsInfo.textContent = `Mostrando ${filteredRows} de ${totalRows} registros.`;
+                    } else {
+                        searchResultsInfo.textContent = '';
+                    }
                 }
             }
 
@@ -512,15 +531,19 @@
 
             // Conecta el input de búsqueda personalizado con la tabla de DataTables
             searchInput.addEventListener('keyup', function() {
-                ordenesTable.search(this.value).draw();
-                updateResultsCount();
+                if (ordenesTable) {
+                    ordenesTable.search(this.value).draw();
+                    updateResultsCount();
+                }
             });
 
             // Conecta el botón de borrar con la tabla de DataTables
             clearSearchBtn.addEventListener('click', function() {
-                searchInput.value = '';
-                ordenesTable.search('').draw();
-                updateResultsCount();
+                if (ordenesTable) {
+                    searchInput.value = '';
+                    ordenesTable.search('').draw();
+                    updateResultsCount();
+                }
             });
 
             // Llama a la función al cargar la página para obtener y mostrar los datos
