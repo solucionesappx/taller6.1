@@ -125,6 +125,7 @@
         table.dataTable {
             color: #333; /* Color de texto de la tabla */
             font-size: 0.75rem; /* Tamaño de fuente menor para la tabla */
+            border-collapse: collapse; /* Elimina el espacio entre celdas */
         }
         table.dataTable thead th, table.dataTable tfoot th {
             background-color: #e5e7eb; /* Color de fondo del encabezado de la tabla (gris claro) */
@@ -134,14 +135,23 @@
         /* Se ha cambiado el fondo de las celdas a blanco */
         table.dataTable tbody td {
             background-color: #ffffff;
-        }
-        /* Se ha cambiado el color de fondo para las columnas fijas a un gris claro para que coincida con el encabezado */
-        table.dataTable .dtfc-fixed-left {
-            background-color: #e5e7eb !important;
+            white-space: nowrap; /* Mantiene el contenido en una sola línea */
+            padding: 0.25rem 0.5rem; /* Reduce la altura de las celdas */
         }
         /* Estilo de hover para las filas, se asegura de que funcione en todas las celdas */
         table.dataTable.hover tbody tr:hover {
             background-color: #e5e7eb !important; /* Color al pasar el cursor sobre las filas */
+        }
+        /* Estilos específicos para la extensión FixedColumns */
+        .dtfc-fixed-left {
+            background-color: #ffffff !important;
+            border-right: none !important;
+        }
+        .dtfc-fixed-left td {
+            background-color: #ffffff !important;
+        }
+        .dtfc-fixed-left td, .dtfc-fixed-left th {
+            border-right: none !important;
         }
         /* Estilos para los elementos de UI de DataTables fuera de la tabla */
         .dataTables_wrapper .dataTables_length,
