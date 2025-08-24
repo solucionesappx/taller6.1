@@ -13,7 +13,7 @@
     <!-- Incluye el CSS de DataTables -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
     <!-- Incluye el CSS de FixedColumns (Enlace corregido) -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/css/fixedColumns.dataTables.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -155,10 +155,13 @@
         }
         /* Estilos para los elementos de UI de DataTables fuera de la tabla */
         .dataTables_wrapper .dataTables_length,
-        .dataTables_wrapper .dataTables_filter,
         .dataTables_wrapper .dataTables_info,
         .dataTables_wrapper .dataTables_paginate {
             font-size: 0.4rem; /* Se ha reducido el tamaño de la fuente para este elemento */
+        }
+        /* Regla CSS para ocultar el cuadro de búsqueda nativo de DataTables */
+        .dataTables_wrapper .dataTables_filter {
+            display: none;
         }
     </style>
 </head>
@@ -209,6 +212,13 @@
                 <button id="clear-search-btn" class="search-button bg-gray-600 hover:bg-gray-700">
                     <i class="fas fa-times"></i>
                 </button>
+            </div>
+            <!-- Nuevo elemento para mostrar el conteo de resultados -->
+            <p id="search-results-info" class="text-sm text-gray-600 mb-4"></p>
+            <!-- Contenedor del loader -->
+            <div id="loader-container" class="flex items-center justify-center p-4 hidden">
+                <div class="loader"></div>
+                <p class="ml-2 text-gray-500">Cargando datos...</p>
             </div>
             <!-- Contenedor de la tabla de órdenes -->
             <div id="ordenes-container" class="table-container">
@@ -347,62 +357,44 @@
     <script>
         // Lógica propia de la funcionabilidad de la página actual:
         document.addEventListener('DOMContentLoaded', () => {
-            // Mock data for the 'Ordenes' table
-            const mockOrdenesData = [{
-                Orden_ID: 'ORD-001',
-                Vehiculo_Placa: 'ABC-123',
-                Vehiculo_PersonaContacto: 'Juan Perez',
-                Orden_Fecha: '2023-01-15',
-                Orden_Total: 150.75,
-                Orden_Moneda: 'USD',
-                Orden_TasaCambio: 1.0,
-                Orden_UsuarioReg: 'user1',
-                Orden_DataReg: 'data1',
-                Orden_Estado: 'Completado',
-                Orden_Comentarios: 'Servicio de mantenimiento'
-            }, {
-                Orden_ID: 'ORD-002',
-                Vehiculo_Placa: 'XYZ-987',
-                Vehiculo_PersonaContacto: 'Maria Gomez',
-                Orden_Fecha: '2023-01-16',
-                Orden_Total: 500000.00,
-                Orden_Moneda: 'VED',
-                Orden_TasaCambio: 35.0,
-                Orden_UsuarioReg: 'user2',
-                Orden_DataReg: 'data2',
-                Orden_Estado: 'Pendiente',
-                Orden_Comentarios: 'Cambio de aceite pendiente'
-            }, {
-                Orden_ID: 'ORD-003',
-                Vehiculo_Placa: 'ABC-123',
-                Vehiculo_PersonaContacto: 'Juan Perez',
-                Orden_Fecha: '2023-02-20',
-                Orden_Total: 250.50,
-                Orden_Moneda: 'USD',
-                Orden_TasaCambio: 1.0,
-                Orden_UsuarioReg: 'user1',
-                Orden_DataReg: 'data3',
-                Orden_Estado: 'En progreso',
-                Orden_Comentarios: 'Revisión del motor'
-            }, ];
-            // Get references to elements
+            // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
+            const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxiRogoHmvMPW7oo-q3_013L1DoLD3eG1qM8MxBJg8qvResNGEWXkXxxrld-XrBUUbt/exec';
+            
+            // Cache para datos de vehículos y órdenes
+            let cachedData = {};
+            let allVehiculosData = [];
+            let allOrdenesData = [];
+
+            // Referencias a los elementos del DOM
             const searchInput = document.getElementById('search-input');
             const clearSearchBtn = document.getElementById('clear-search-btn');
+            const searchResultsInfo = document.getElementById('search-results-info');
+            const loaderContainer = document.getElementById('loader-container');
+            const ordenesContainer = document.getElementById('ordenes-container');
+
+            // Función para mostrar mensajes de error
+            function showTemporaryMessage(message) {
+                const messageBox = document.getElementById('message-box');
+                const messageText = document.getElementById('message-text');
+                messageText.textContent = message;
+                messageBox.style.opacity = '1';
+                messageBox.style.visibility = 'visible';
+                setTimeout(() => {
+                    messageBox.style.opacity = '0';
+                    messageBox.style.visibility = 'hidden';
+                }, 3000);
+            }
+
             // Inicializa la tabla de DataTables
             const ordenesTable = new DataTable('#ordenes-table', {
-                // Habilitamos la paginación para poder usar el selector de registros
-                paging: true,
-                // Ocultamos el filtro nativo para usar el nuestro
-                searching: false,
-                // Controlamos qué elementos se muestran en el DOM de la tabla
-                // 'l' = selector de longitud (lengthChange), 'f' = filtro (search), 't' = tabla
-                dom: 'lft',
-                // Proporciona los datos y define las columnas
-                data: mockOrdenesData,
+                paging: false,
+                searching: true, 
+                dom: 'lt', 
+                data: [], // Inicializa la tabla sin datos
                 columns: [{
                     data: null,
                     render: function(data, type, row) {
-                        return `<button onclick="editOrden('${row.Orden_ID}')"><i class="fas fa-edit"></i></button>`;
+                        return `<button onclick="editOrden('${row.Orden_ID}')"><i class="fas fa-search"></i></button>`;
                     },
                     orderable: false,
                     className: 'text-center'
@@ -445,30 +437,86 @@
                     data: 'Orden_Comentarios',
                     title: 'Comentarios'
                 }, ],
-                // Configuración de la extensión FixedColumns para anclar columnas
                 fixedColumns: {
-                    left: 2 // Ancla las dos primeras columnas
+                    left: 2
                 },
-                scrollX: true, // Habilita el desplazamiento horizontal
-                // Deshabilita la paginación y la información de la tabla
+                scrollX: true, 
                 info: false,
                 language: {
                     url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',
                 }
             });
+
+            // Función asíncrona para obtener datos de Google Apps Script
+            async function fetchData() {
+                // Primero, comprueba si los datos ya están en caché
+                if (allOrdenesData.length > 0) {
+                    // Si los datos están en caché, simplemente actualiza la tabla
+                    ordenesTable.clear().rows.add(allOrdenesData).draw();
+                    updateResultsCount();
+                    return; // Termina la función aquí
+                }
+
+                // Si no están en caché, muestra el loader y carga los datos de la API
+                loaderContainer.classList.remove('hidden');
+                ordenesContainer.classList.add('hidden');
+                try {
+                    const response = await fetch(`${GAS_API_URL}?action=getOrdenesCab`);
+                    if (!response.ok) {
+                        throw new Error(`Error en la red: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    if (data.data) {
+                        // Almacena los datos en la caché y luego actualiza la tabla
+                        allOrdenesData = data.data;
+                        ordenesTable.clear().rows.add(allOrdenesData).draw();
+                        updateResultsCount();
+                    } else {
+                        console.error('API response does not contain data.');
+                        showTemporaryMessage('Error: No se encontraron datos válidos.');
+                    }
+                } catch (error) {
+                    console.error('Fallo al obtener los datos:', error);
+                    showTemporaryMessage('Error al cargar los datos. Por favor, intente de nuevo más tarde.');
+                } finally {
+                    loaderContainer.classList.add('hidden');
+                    ordenesContainer.classList.remove('hidden');
+                }
+            }
+
+            // Función para actualizar el conteo de resultados de búsqueda
+            function updateResultsCount() {
+                const filteredRows = ordenesTable.rows({
+                    search: 'applied'
+                }).count();
+                const totalRows = ordenesTable.rows().count();
+                if (searchInput.value.length > 0) {
+                    searchResultsInfo.textContent = `Mostrando ${filteredRows} de ${totalRows} registros.`;
+                } else {
+                    searchResultsInfo.textContent = '';
+                }
+            }
+
             // Función para editar una orden (Placeholder)
             window.editOrden = function(ordenId) {
                 console.log(`Editando orden con ID: ${ordenId}`);
             };
+
             // Conecta el input de búsqueda personalizado con la tabla de DataTables
             searchInput.addEventListener('keyup', function() {
                 ordenesTable.search(this.value).draw();
+                updateResultsCount();
             });
+
             // Conecta el botón de borrar con la tabla de DataTables
             clearSearchBtn.addEventListener('click', function() {
                 searchInput.value = '';
                 ordenesTable.search('').draw();
+                updateResultsCount();
             });
+
+            // Llama a la función al cargar la página para obtener y mostrar los datos
+            fetchData();
         });
     </script>
 </body>
