@@ -164,6 +164,87 @@
         .dataTables_wrapper .dataTables_filter {
             display: none;
         }
+        /* Estilos para el modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .close-btn {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close-btn:hover,
+        .close-btn:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .form-label {
+            display: block;
+            margin-top: 10px;
+            font-weight: 500;
+        }
+        .form-input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+        .form-button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .modal-details-table th, .modal-details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.8rem;
+        }
+        .modal-details-table th {
+            text-align: left;
+            background-color: #f9fafb;
+        }
+        .modal-details-table td {
+            white-space: nowrap;
+        }
+        .modal-header-table {
+            width: 100%;
+            margin-bottom: 1rem;
+            border-collapse: collapse;
+        }
+        .modal-header-table th, .modal-header-table td {
+            padding: 8px 0;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .modal-header-table th {
+            width: 35%;
+            font-weight: 500;
+            color: #4b5563;
+        }
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen flex flex-col transition-colors duration-300 pt-24 sm:pt-28">
@@ -248,6 +329,78 @@
             <span id="message-text"></span>
         </div>
     </div>
+    
+    <!-- Modal para ver y editar la orden -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('editModal')">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Editar Orden <span id="modal-orden-id" class="text-gray-500 font-normal"></span></h2>
+            
+            <!-- Sección de datos de cabecera (NO EDITABLE) -->
+            <h3 class="text-lg font-bold">Datos Principales</h3>
+            <hr class="my-2">
+            <div id="orden-header-details">
+                <!-- Los datos se inyectarán aquí dinámicamente -->
+            </div>
+            
+            <hr class="my-6">
+            
+            <!-- Sección para los detalles de la orden -->
+            <h3 class="text-lg font-bold mb-4">Detalles de la Orden</h3>
+            <div id="orderDetailsLoader" class="flex items-center justify-center p-4 hidden">
+                <div class="loader"></div>
+                <p class="ml-2 text-gray-500">Cargando detalles...</p>
+            </div>
+            <div id="orderDetailsContainer" class="overflow-x-auto">
+                <table id="orderDetailsTable" class="min-w-full modal-details-table">
+                    <thead>
+                        <tr>
+                            <th class="py-2">Orden ID</th>
+                            <th class="py-2">Posición</th>
+                            <th class="py-2">Tipo</th>
+                            <th class="py-2">Presentación</th>
+                            <th class="py-2">Costo</th>
+                            <th class="py-2">Cantidad</th>
+                            <th class="py-2">Subtotal</th>
+                            <th class="py-2">Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+             <!-- Agregamos el campo oculto necesario para que la función editOrden funcione correctamente -->
+             <input type="hidden" id="edit-orden-id">
+        </div>
+    </div>
+
+    <!-- Nuevo Modal para editar un solo detalle -->
+    <div id="editDetalleModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal('editDetalleModal')">&times;</span>
+            <h2 class="text-xl font-bold mb-4">Editar Detalle de Orden</h2>
+            <form id="editDetalleForm">
+                <input type="hidden" id="edit-detalle-orden-id">
+                <input type="hidden" id="edit-detalle-pos-id">
+
+                <label for="edit-detalle-tipo" class="form-label">Tipo:</label>
+                <input type="text" id="edit-detalle-tipo" class="form-input" required>
+
+                <label for="edit-detalle-presentacion" class="form-label">Presentación:</label>
+                <input type="text" id="edit-detalle-presentacion" class="form-input" required>
+
+                <label for="edit-detalle-costo" class="form-label">Costo:</label>
+                <input type="number" id="edit-detalle-costo" class="form-input" step="0.01" required>
+
+                <label for="edit-detalle-cantidad" class="form-label">Cantidad:</label>
+                <input type="number" id="edit-detalle-cantidad" class="form-input" step="1" required>
+
+                <button type="submit" class="form-button bg-blue-500 text-white hover:bg-blue-600">Guardar Cambios</button>
+                <button type="button" class="form-button bg-gray-500 text-white hover:bg-gray-600" onclick="closeModal('editDetalleModal')">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
     <!-- Incluye jQuery, un requisito de DataTables -->
     <script type="text/javascript" src="https://code.jquery.com/jquery-3.7.1.js"></script>
     <!-- Incluye el JS de DataTables -->
@@ -257,6 +410,8 @@
     <script>
         // Declaramos la variable de la tabla fuera del scope de la función para poder acceder a ella globalmente
         let ordenesTable = null;
+        let cachedDetallesData = []; // Caché para los detalles de la orden actual
+
         // Función para formatear un número con separador de miles y decimales
         function formatNumber(num) {
             if (typeof num !== 'number') {
@@ -274,6 +429,14 @@
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const year = d.getFullYear();
             return `${day}/${month}/${year}`;
+        }
+        // Función para formatear la fecha a aaaa-mm-dd (formato del input type="date")
+        function formatDateForInput(date) {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
         // Lógica propia de la barra de navegación y registro de historial:
         document.addEventListener('DOMContentLoaded', () => {
@@ -362,6 +525,7 @@
         // Lógica propia de la funcionabilidad de la página actual:
         document.addEventListener('DOMContentLoaded', () => {
             // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
+            // Asegúrate de que el script esté desplegado para "Cualquiera"
             const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
             
             // Cache para datos de órdenes
@@ -373,6 +537,10 @@
             const searchResultsInfo = document.getElementById('search-results-info');
             const loaderContainer = document.getElementById('loader-container');
             const ordenesContainer = document.getElementById('ordenes-container');
+            const editModal = document.getElementById('editModal');
+            const editDetalleModal = document.getElementById('editDetalleModal');
+            const orderDetailsLoader = document.getElementById('orderDetailsLoader');
+            const orderDetailsContainer = document.getElementById('orderDetailsContainer');
 
             // Función para mostrar mensajes de error
             function showTemporaryMessage(message) {
@@ -386,6 +554,16 @@
                     messageBox.style.visibility = 'hidden';
                 }, 3000);
             }
+            
+            // Función para mostrar el modal de edición
+            window.showModal = function(modalId) {
+                document.getElementById(modalId).style.display = 'flex';
+            };
+
+            // Función para cerrar el modal de edición
+            window.closeModal = function(modalId) {
+                document.getElementById(modalId).style.display = 'none';
+            };
 
             // Función asíncrona para obtener datos de Google Apps Script
             async function fetchData() {
@@ -426,6 +604,7 @@
                                 columns: [{
                                     data: null,
                                     render: function(data, type, row) {
+                                        // Ahora el botón llama a la función `editOrden` para abrir el modal
                                         return `<button onclick="editOrden('${row.Orden_ID}')"><i class="fas fa-search"></i></button>`;
                                     },
                                     orderable: false,
@@ -523,11 +702,126 @@
                     }
                 }
             }
+            
+            // Función para rellenar y mostrar el modal de edición
+            window.editOrden = async function(ordenId) {
+                // Ocultar la tabla de detalles y mostrar el loader mientras se cargan los datos
+                orderDetailsContainer.classList.add('hidden');
+                orderDetailsLoader.classList.remove('hidden');
+            
+                // Buscar los detalles de la orden en el caché local
+                const ordenToEdit = allOrdenesData.find(orden => orden.Orden_ID === ordenId);
+                
+                if (ordenToEdit) {
+                    // Rellenar la sección de cabecera con una tabla estática
+                    const headerDetailsDiv = document.getElementById('orden-header-details');
+                    headerDetailsDiv.innerHTML = `
+                        <table class="modal-header-table">
+                            <tr><th>Placa:</th><td>${ordenToEdit.Vehiculo_Placa}</td></tr>
+                            <tr><th>Contacto:</th><td>${ordenToEdit.Vehiculo_PersonaContacto}</td></tr>
+                            <tr><th>Fecha:</th><td>${formatDate(ordenToEdit.Orden_Fecha)}</td></tr>
+                            <tr><th>Total Orden:</th><td>${formatNumber(ordenToEdit.Orden_Total)}</td></tr>
+                            <tr><th>Moneda:</th><td>${ordenToEdit.Orden_Moneda}</td></tr>
+                            <tr><th>Tasa de Referencia:</th><td>${formatNumber(ordenToEdit.Orden_TasaCambio)}</td></tr>
+                        </table>
+                    `;
 
-            // Función para editar una orden (Placeholder)
-            window.editOrden = function(ordenId) {
-                console.log(`Editando orden con ID: ${ordenId}`);
+                    // Poner el ID en el título y en el campo oculto
+                    document.getElementById('modal-orden-id').textContent = `(ID: ${ordenToEdit.Orden_ID})`;
+                    // BUG FIX: Se ha añadido un campo oculto con id 'edit-orden-id' en el HTML.
+                    // La llamada anterior a document.getElementById('edit-orden-id') devolvía null y causaba un error.
+                    document.getElementById('edit-orden-id').value = ordenToEdit.Orden_ID;
+
+                    // Ahora, obtén los detalles de la orden
+                    try {
+                        const response = await fetch(`${GAS_READ_EDIT_URL}?action=getOrdenesDet&Orden_ID=${encodeURIComponent(ordenId)}`);
+                        if (!response.ok) {
+                            throw new Error(`Error de red: ${response.statusText}`);
+                        }
+                        const detailData = await response.json();
+                        cachedDetallesData = detailData.data || [];
+                        
+                        // Llenar la tabla de detalles con los datos recibidos
+                        const detailTableBody = document.querySelector('#orderDetailsTable tbody');
+                        detailTableBody.innerHTML = '';
+                        if (cachedDetallesData.length > 0) {
+                            cachedDetallesData.forEach(item => {
+                                const row = `
+                                    <tr>
+                                        <td>${item.Orden_ID}</td>
+                                        <td>${item.Orden_Pos_ID}</td>
+                                        <td>${item.Orden_Producto_Tipo}</td>
+                                        <td>${item.Orden_Producto_Presentacion}</td>
+                                        <td>${formatNumber(item.Orden_Producto_Costo)}</td>
+                                        <td>${item.Orden_Producto_Cantidad}</td>
+                                        <td>${formatNumber(item.Orden_Subtotal_Pos)}</td>
+                                        <td><button class="bg-gray-500 text-white px-2 py-1 rounded-md text-xs hover:bg-gray-600" onclick="editDetalleItem('${item.Orden_ID}', '${item.Orden_Pos_ID}')">Editar</button></td>
+                                    </tr>
+                                `;
+                                detailTableBody.innerHTML += row;
+                            });
+                        } else {
+                            detailTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500">No hay detalles para esta orden.</td></tr>';
+                        }
+                    } catch (error) {
+                        console.error('Fallo al obtener los detalles de la orden:', error);
+                        showTemporaryMessage(`Error al cargar los detalles: ${error.message}`);
+                    } finally {
+                        orderDetailsLoader.classList.add('hidden');
+                        orderDetailsContainer.classList.remove('hidden');
+                    }
+
+                    // Mostrar el modal principal
+                    showModal('editModal');
+                } else {
+                    showTemporaryMessage(`No se encontró la orden con ID: ${ordenId}`);
+                }
             };
+            
+            // Función para rellenar y mostrar el modal de edición de detalle
+            window.editDetalleItem = function(ordenId, posId) {
+                // Buscar el detalle de la orden en el caché
+                const detalleToEdit = cachedDetallesData.find(d => d.Orden_ID === ordenId && d.Orden_Pos_ID === posId);
+
+                if (detalleToEdit) {
+                    // Rellenar los campos del formulario con los datos del detalle
+                    document.getElementById('edit-detalle-orden-id').value = detalleToEdit.Orden_ID;
+                    document.getElementById('edit-detalle-pos-id').value = detalleToEdit.Orden_Pos_ID;
+                    document.getElementById('edit-detalle-tipo').value = detalleToEdit.Orden_Producto_Tipo;
+                    document.getElementById('edit-detalle-presentacion').value = detalleToEdit.Orden_Producto_Presentacion;
+                    document.getElementById('edit-detalle-costo').value = detalleToEdit.Orden_Producto_Costo;
+                    document.getElementById('edit-detalle-cantidad').value = detalleToEdit.Orden_Producto_Cantidad;
+                    
+                    // Mostrar el nuevo modal de edición de detalle
+                    showModal('editDetalleModal');
+                } else {
+                    showTemporaryMessage('No se encontró el detalle de la orden.');
+                }
+            };
+
+            // Manejar el evento de envío del formulario de edición de detalle
+            document.getElementById('editDetalleForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const updatedDetalle = {
+                    Orden_ID: document.getElementById('edit-detalle-orden-id').value,
+                    Orden_Pos_ID: document.getElementById('edit-detalle-pos-id').value,
+                    Orden_Producto_Tipo: document.getElementById('edit-detalle-tipo').value,
+                    Orden_Producto_Presentacion: document.getElementById('edit-detalle-presentacion').value,
+                    Orden_Producto_Costo: parseFloat(document.getElementById('edit-detalle-costo').value),
+                    Orden_Producto_Cantidad: parseFloat(document.getElementById('edit-detalle-cantidad').value)
+                };
+                
+                // Lógica para actualizar el subtotal
+                updatedDetalle.Orden_Subtotal_Pos = updatedDetalle.Orden_Producto_Costo * updatedDetalle.Orden_Producto_Cantidad;
+                
+                // Lógica de "guardar" (simulada en la consola)
+                console.log('Datos del detalle a guardar:', updatedDetalle);
+                showTemporaryMessage('¡Detalle de orden actualizado con éxito!');
+                
+                // Opcional: Cerrar el modal después de guardar
+                closeModal('editDetalleModal');
+            });
 
             // Conecta el input de búsqueda personalizado con la tabla de DataTables
             searchInput.addEventListener('keyup', function() {
