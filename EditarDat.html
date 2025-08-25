@@ -333,8 +333,12 @@
     <!-- Modal para ver y editar la orden -->
     <div id="editModal" class="modal">
         <div class="modal-content">
-            <span class="close-btn" onclick="closeModal('editModal')">&times;</span>
-            <h2 class="text-xl font-bold mb-4">Editar Orden <span id="modal-orden-id" class="text-gray-500 font-normal"></span></h2>
+            <div class="flex justify-between items-center pb-2 mb-4 border-b">
+                <h2 class="text-xl font-bold">
+                    Editar Orden ID: <span id="modal-orden-id" class="text-gray-500 font-normal"></span>
+                </h2>
+                <span class="close-btn" onclick="closeModal('editModal')">&times;</span>
+            </div>
             
             <!-- Sección de datos de cabecera (NO EDITABLE) -->
             <h3 class="text-lg font-bold">Datos Principales</h3>
@@ -355,13 +359,13 @@
                 <table id="orderDetailsTable" class="min-w-full modal-details-table">
                     <thead>
                         <tr>
-                            <th class="py-2">Orden ID</th>                            
                             <th class="py-2">Posición</th>
                             <th class="py-2">Tipo</th>
                             <th class="py-2">Presentación</th>
                             <th class="py-2">Costo</th>
                             <th class="py-2">Cantidad</th>
                             <th class="py-2">Subtotal</th>
+                            <th class="py-2">Moneda</th>
                             <th class="py-2">Acción</th>
                         </tr>
                     </thead>
@@ -541,7 +545,7 @@
             const editDetalleModal = document.getElementById('editDetalleModal');
             const orderDetailsLoader = document.getElementById('orderDetailsLoader');
             const orderDetailsContainer = document.getElementById('orderDetailsContainer');
-
+            
             // Función para mostrar mensajes de error
             function showTemporaryMessage(message) {
                 const messageBox = document.getElementById('message-box');
@@ -722,14 +726,12 @@
                             <tr><th>Fecha:</th><td>${formatDate(ordenToEdit.Orden_Fecha)}</td></tr>
                             <tr><th>Total Orden:</th><td>${formatNumber(ordenToEdit.Orden_Total)}</td></tr>
                             <tr><th>Moneda:</th><td>${ordenToEdit.Orden_Moneda}</td></tr>
-                            <tr><th>Tasa de Referencia:</th><td>${formatNumber(ordenToEdit.Orden_TasaCambio)}</td></tr>
+                            <tr><th>Tasa Referencia:</th><td>${formatNumber(ordenToEdit.Orden_TasaCambio)}</td></tr>
                         </table>
                     `;
 
                     // Poner el ID en el título y en el campo oculto
-                    document.getElementById('modal-orden-id').textContent = `(ID: ${ordenToEdit.Orden_ID})`;
-                    // BUG FIX: Se ha añadido un campo oculto con id 'edit-orden-id' en el HTML.
-                    // La llamada anterior a document.getElementById('edit-orden-id') devolvía null y causaba un error.
+                    document.getElementById('modal-orden-id').textContent = ` ${ordenToEdit.Orden_ID}`;
                     document.getElementById('edit-orden-id').value = ordenToEdit.Orden_ID;
 
                     // Ahora, obtén los detalles de la orden
@@ -748,13 +750,13 @@
                             cachedDetallesData.forEach(item => {
                                 const row = `
                                     <tr>
-                                        <td>${item.Orden_ID}</td>
                                         <td>${item.Orden_Pos_ID}</td>
                                         <td>${item.Orden_Producto_Tipo}</td>
                                         <td>${item.Orden_Producto_Presentacion}</td>
                                         <td>${formatNumber(item.Orden_Producto_Costo)}</td>
                                         <td>${item.Orden_Producto_Cantidad}</td>
                                         <td>${formatNumber(item.Orden_Subtotal_Pos)}</td>
+                                        <td>${item.Orden_Producto_Moneda}</td>
                                         <td><button class="bg-gray-500 text-white px-2 py-1 rounded-md text-xs hover:bg-gray-600" onclick="editDetalleItem('${item.Orden_ID}', '${item.Orden_Pos_ID}')">Editar</button></td>
                                     </tr>
                                 `;
