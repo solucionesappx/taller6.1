@@ -59,7 +59,6 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
             white-space: nowrap; /* Evita que el texto se envuelva */
         }
         .search-button:hover {
@@ -85,6 +84,10 @@
         /* Nuevo estilo para justificar el texto a la derecha */
         .text-right {
             text-align: right !important;
+        }
+        /* Estilo para centrar los valores de DataTables */
+        .dt-center {
+            text-align: center !important;
         }
         .loader {
             border: 4px solid #f3f3f3;
@@ -378,17 +381,17 @@
                 <p class="ml-2 text-gray-500">Cargando detalles...</p>
             </div>
             <div id="orderDetailsContainer" class="overflow-x-auto">
-                <table id="orderDetailsTable" class="min-w-full modal-details-table">
+                <table id="orderDetailsTable" class="display data-table" style="width:100%">
                     <thead>
                         <tr>
-                            <th class="py-2">Posición</th>
-                            <th class="py-2">Tipo</th>
-                            <th class="py-2">Presentación</th>
-                            <th class="py-2">Costo</th>
-                            <th class="py-2">Cantidad</th>
-                            <th class="py-2">Subtotal</th>
-                            <th class="py-2">Moneda</th>
-                            <th class="py-2">Acción</th>
+                            <th>Posición</th>
+                            <th>Tipo</th>
+                            <th>Presentación</th>
+                            <th>Costo</th>
+                            <th>Cantidad</th>
+                            <th>Subtotal</th>
+                            <th>Moneda</th>
+                            <th>Acción</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -471,8 +474,9 @@
     <script>
         console.log("Script 'EditarDat.html' está siendo ejecutado.");
         
-        // Declaramos la variable de la tabla fuera del scope de la función para poder acceder a ella globalmente
+        // Declaramos las variables de la tabla fuera del scope de la función para poder acceder a ellas globalmente
         let ordenesTable = null;
+        let orderDetailsTable = null;
         let cachedDetallesData = []; // Caché para los detalles de la orden actual
 
         // Función para formatear un número con separador de miles y decimales
@@ -646,7 +650,7 @@
                                         return `<button onclick="editOrden('${row.Orden_ID}')"><i class="fas fa-search"></i></button>`;
                                     },
                                     orderable: false,
-                                    className: 'text-center'
+                                    className: 'dt-center'
                                 }, {
                                     data: 'Orden_ID',
                                     title: 'Orden ID'
@@ -768,7 +772,7 @@
                     document.getElementById('modal-orden-id').textContent = ` ${ordenToEdit.Orden_ID}`;
                     document.getElementById('edit-orden-id').value = ordenToEdit.Orden_ID;
 
-                    // Ahora, obtén los detalles de la orden
+                    // Obtener los detalles de la orden
                     try {
                         const response = await fetch(`${GAS_READ_EDIT_URL}?action=getOrdenesDet&Orden_ID=${encodeURIComponent(ordenId)}`);
                         if (!response.ok) {
@@ -776,32 +780,54 @@
                         }
                         const detailData = await response.json();
                         cachedDetallesData = detailData.data || [];
-                        console.log('Detalles de la orden cargados:', cachedDetallesData); // NUEVO: Muestra los detalles en la consola
-                        
-                        // Llenar la tabla de detalles con los datos recibidos
-                        const detailTableBody = document.querySelector('#orderDetailsTable tbody');
-                        detailTableBody.innerHTML = '';
-                        if (cachedDetallesData.length > 0) {
-                            cachedDetallesData.forEach(item => {
-                                // CAMBIO: Usamos atributos de datos en lugar de `onclick` para mayor seguridad y robustez.
-                                // La lógica del evento se manejará con un event listener más abajo.
-                                const row = `
-                                    <tr>
-                                        <td>${item.Orden_Pos_ID}</td>
-                                        <td>${item.Orden_Producto_Tipo}</td>
-                                        <td>${item.Orden_Producto_Presentacion}</td>
-                                        <td>${formatNumber(item.Orden_Producto_Costo)}</td>
-                                        <td>${item.Orden_Producto_Cantidad}</td>
-                                        <td>${formatNumber(item.Orden_Subtotal_Pos)}</td>
-                                        <td>${item.Orden_Producto_Moneda}</td>
-                                        <td><button class="edit-detalle-btn bg-gray-500 text-white px-2 py-1 rounded-md text-xs hover:bg-gray-600" data-orden-id="${item.Orden_ID}" data-pos-id="${item.Orden_Pos_ID}">Editar</button></td>
-                                    </tr>
-                                `;
-                                detailTableBody.innerHTML += row;
-                            });
-                        } else {
-                            detailTableBody.innerHTML = '<tr><td colspan="8" class="text-center text-gray-500">No hay detalles para esta orden.</td></tr>';
+                        console.log('Detalles de la orden cargados:', cachedDetallesData);
+
+                        // Destruir la instancia de DataTables si ya existe antes de inicializarla nuevamente
+                        if ($.fn.DataTable.isDataTable('#orderDetailsTable')) {
+                            $('#orderDetailsTable').DataTable().destroy();
                         }
+                        
+                        // Inicializar DataTables para la tabla de detalles
+                        orderDetailsTable = new DataTable('#orderDetailsTable', {
+                            dom: 't', // 't' para solo mostrar la tabla, sin paginación, búsqueda o info
+                            paging: false,
+                            searching: false,
+                            data: cachedDetallesData,
+                            columns: [
+                                { data: 'Orden_Pos_ID', title: 'Pos', className: 'dt-center' }, // CLASE CORREGIDA A 'dt-center'
+                                { data: 'Orden_Producto_Tipo', title: 'Tipo' },
+                                { data: 'Orden_Producto_Presentacion', title: 'Presentación' },
+                                {
+                                    data: 'Orden_Producto_Costo',
+                                    render: (data) => formatNumber(data),
+                                    title: 'Costo',
+                                    className: 'text-right'
+                                },
+                                { data: 'Orden_Producto_Cantidad', title: 'Cantidad' },
+                                {
+                                    data: 'Orden_Subtotal_Pos',
+                                    render: (data) => formatNumber(data),
+                                    title: 'Subtotal',
+                                    className: 'text-right'
+                                },
+                                { data: 'Orden_Producto_Moneda', title: 'Moneda' },
+                                {
+                                    data: null,
+                                    render: (data, type, row) => `<button class="edit-detalle-btn bg-gray-500 text-white px-2 py-1 rounded-md text-xs hover:bg-gray-600" data-orden-id="${row.Orden_ID}" data-pos-id="${row.Orden_Pos_ID}">Editar</button>`,
+                                    orderable: false,
+                                    className: 'dt-center'
+                                }
+                            ],
+                            fixedColumns: {
+                                left: 1 // Fija la primera columna
+                            },
+                            scrollX: true, // Habilita el scroll horizontal
+                            info: false,
+                            language: {
+                                url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/es-ES.json',
+                            }
+                        });
+
                     } catch (error) {
                         console.error('Fallo al obtener los detalles de la orden:', error);
                         showTemporaryMessage(`Error al cargar los detalles: ${error.message}`);
