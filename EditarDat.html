@@ -1,3 +1,4 @@
+<!-- versión base creada por le cliente -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -349,6 +350,7 @@
                 </table>
             </div>
         </div>
+        
         <!-- Ventana de mensaje personalizada (oculta por defecto) -->
         <div id="message-box" class="message-box">
             <span id="message-text"></span>
@@ -463,6 +465,8 @@
                 <button type="button" class="form-button bg-gray-500 text-white hover:bg-gray-600" onclick="closeModal('editDetalleModal')">Cancelar</button>
             </form>
         </div>
+    </div>
+    
     </div>
 
     <!-- Incluye jQuery, un requisito de DataTables -->
@@ -593,6 +597,11 @@
             // Asegúrate de que el script esté desplegado para "Cualquiera"
             const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
             
+            // --- NUEVO: URL para la petición DELETE que eliminará la fila por ID de Orden y Posición ---
+            // IMPORTANTE: DEBES CREAR Y DESPLEGAR ESTA FUNCIÓN EN TU SCRIPT DE GOOGLE APPS
+            // La función en el lado del servidor debe llamarse 'doDelete(e)'
+            const GAS_DELETE_URL = 'https://script.google.com/macros/s/AKfycbwW_MuzL5gi6yqZJv3qGhQpmCnIUghJlQFeWZDEFovphMQTrZRwXpPB_QON1KgQ0cgiog/exec';
+
             // Cache para datos de órdenes
             let allOrdenesData = [];
 
@@ -867,27 +876,112 @@
             };
 
             // Manejar el evento de envío del formulario de edición de detalle
-            document.getElementById('editDetalleForm').addEventListener('submit', function(event) {
+            document.getElementById('editDetalleForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
 
-                const updatedDetalle = {
-                    Orden_ID: document.getElementById('edit-detalle-orden-id').value,
-                    Orden_Pos_ID: document.getElementById('edit-detalle-pos-id').value,
-                    Orden_Producto_Tipo: document.getElementById('edit-detalle-tipo').value,
-                    Orden_Producto_Presentacion: document.getElementById('edit-detalle-presentacion').value,
-                    Orden_Producto_Costo: parseFloat(document.getElementById('edit-detalle-costo').value),
-                    Orden_Producto_Cantidad: parseFloat(document.getElementById('edit-detalle-cantidad').value)
-                };
+                // Obtener los valores del formulario
+                const ordenId = document.getElementById('edit-detalle-orden-id').value;
+                const posId = document.getElementById('edit-detalle-pos-id').value;
                 
-                // Lógica para actualizar el subtotal
-                updatedDetalle.Orden_Subtotal_Pos = updatedDetalle.Orden_Producto_Costo * updatedDetalle.Orden_Producto_Cantidad;
+                // Mostrar un mensaje de "guardando..."
+                showTemporaryMessage('Guardando cambios...');
                 
-                // Lógica de "guardar" (simulada en la consola)
-                console.log('Datos del detalle a guardar:', updatedDetalle);
-                showTemporaryMessage('¡Detalle de orden actualizado con éxito!');
-                
-                // Opcional: Cerrar el modal después de guardar
-                closeModal('editDetalleModal');
+                try {
+                    // Paso 1: Enviar solicitud DELETE al Google Apps Script
+                    const deletePayload = {
+                        Orden_ID: ordenId,
+                        Orden_Pos_ID: posId
+                    };
+                    
+                    console.log('Enviando solicitud DELETE:', deletePayload);
+
+                    // Se envía un DELETE. El cuerpo de la petición se envía en el body.
+                    const deleteResponse = await fetch(GAS_DELETE_URL, {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(deletePayload)
+                    });
+                    
+                    if (!deleteResponse.ok) {
+                        const errorText = await deleteResponse.text();
+                        throw new Error(`Error en la eliminación: ${deleteResponse.status} - ${errorText}`);
+                    }
+                    
+                    const deleteResult = await deleteResponse.json();
+                    console.log('Respuesta de la eliminación:', deleteResult);
+                    
+                    // Paso 2: Si la eliminación fue exitosa, enviar la solicitud POST con los datos actualizados
+                    console.log('Eliminación exitosa. Procediendo con la inserción de datos actualizados.');
+                    
+                    // Buscar los datos completos de la orden y del detalle en los cachés
+                    const ordenHeader = allOrdenesData.find(o => o.Orden_ID === ordenId);
+                    const originalDetalle = cachedDetallesData.find(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
+                    
+                    // Construir el objeto updatedDetalle con todos los campos solicitados
+                    const updatedDetalle = {
+                        Orden_ID: ordenId,
+                        Vehiculo_Placa: ordenHeader ? ordenHeader.Vehiculo_Placa : '',
+                        Orden_Pos_ID: posId,
+                        Vehiculo_PersonaContacto: ordenHeader ? ordenHeader.Vehiculo_PersonaContacto : '',
+                        Orden_Producto_Tipo: document.getElementById('edit-detalle-tipo').value,
+                        Orden_Producto_Presentacion: document.getElementById('edit-detalle-presentacion').value,
+                        Orden_Producto_Costo: parseFloat(document.getElementById('edit-detalle-costo').value),
+                        Orden_Producto_Moneda: originalDetalle ? originalDetalle.Orden_Producto_Moneda : '',
+                        Orden_TasaCambio: ordenHeader ? ordenHeader.Orden_TasaCambio : 1.00, // Se corrige el valor predeterminado a 1.00
+                        Orden_Producto_Cantidad: parseFloat(document.getElementById('edit-detalle-cantidad').value),
+                    };
+                    
+                    // Lógica para actualizar el subtotal
+                    updatedDetalle.Orden_Subtotal_Pos = updatedDetalle.Orden_Producto_Costo * updatedDetalle.Orden_Producto_Cantidad;
+                    
+                    // Construir el payload para el envío a Google Apps Script
+                    const payload = {
+                        action: 'updateDetalle',
+                        detalle: updatedDetalle
+                    };
+                    
+                    // MOSTRAR EL JSON EN LA CONSOLA ANTES DE ENVIARLO
+                    console.log('Payload a enviar (POST):', JSON.stringify(payload, null, 2));
+
+                    const GAS_UPDATE_URL = 'https://script.google.com/macros/s/AKfycby46bh-pYGN43EWUn1xzqts04FYHbWBEn6opWfFGa34JGMIPEQL8z-85WnQlqSLZLtfCA/exec'; // URL para la actualización
+
+                    const postResponse = await fetch(GAS_UPDATE_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!postResponse.ok) {
+                        const errorText = await postResponse.text();
+                        throw new Error(`Error en la inserción: ${postResponse.status} - ${errorText}`);
+                    }
+                    
+                    const postResult = await postResponse.json();
+                    showTemporaryMessage(postResult.message);
+                    console.log('Respuesta del servidor:', postResult);
+                    
+                    // Actualizar los datos en el caché para reflejar los cambios en la UI
+                    const detalleIndex = cachedDetallesData.findIndex(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
+                    if (detalleIndex > -1) {
+                        // Se encontró el detalle en el caché, se actualiza
+                        cachedDetallesData[detalleIndex] = updatedDetalle;
+                        // Se refresca la tabla de detalles del modal
+                        if (orderDetailsTable) {
+                            orderDetailsTable.clear().rows.add(cachedDetallesData).draw();
+                        }
+                    }
+
+                } catch (error) {
+                    showTemporaryMessage(`Error al actualizar el detalle: ${error.message}`);
+                    console.error('Error durante el proceso de actualización:', error);
+                } finally {
+                    // Cerrar el modal después de intentar guardar
+                    closeModal('editDetalleModal');
+                }
             });
 
             // Conecta el input de búsqueda personalizado con la tabla de DataTables
