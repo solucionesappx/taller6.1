@@ -168,7 +168,7 @@
         .modal {
             display: none;
             position: fixed;
-            z-index: 2000;
+            z-index: 1000; /* Z-index para el modal principal */
             left: 0;
             top: 0;
             width: 100%;
@@ -179,6 +179,10 @@
             justify-content: center;
             align-items: center;
         }
+        /* Aumentamos el z-index del modal de edición de detalles para que esté por encima del modal principal */
+        #editDetalleModal {
+            z-index: 1001;
+        }
         .modal-content {
             background-color: #fefefe;
             margin: auto;
@@ -187,6 +191,10 @@
             width: 90%;
             max-width: 900px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        /* Nuevo estilo para reducir el ancho del modal de detalle */
+        #editDetalleModal .modal-content {
+            max-width: 500px; /* Ancho reducido para el modal de detalle */
         }
         .close-btn {
             color: #aaa;
@@ -211,6 +219,11 @@
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 6px;
+        }
+        /* Estilo para campos de entrada deshabilitados */
+        .form-input:disabled {
+            background-color: #e9ecef;
+            cursor: not-allowed;
         }
         .form-button {
             margin-top: 20px;
@@ -244,6 +257,15 @@
             width: 35%;
             font-weight: 500;
             color: #4b5563;
+        }
+        /* Estilos para los botones de cantidad */
+        .quantity-btn {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
     </style>
 </head>
@@ -384,20 +406,55 @@
             <span class="close-btn" onclick="closeModal('editDetalleModal')">&times;</span>
             <h2 class="text-xl font-bold mb-4">Editar Detalle de Orden</h2>
             <form id="editDetalleForm">
-                <input type="hidden" id="edit-detalle-orden-id">
-                <input type="hidden" id="edit-detalle-pos-id">
+                <!-- Campo no editable para la posición -->
+                <label for="edit-detalle-pos-id" class="form-label">Posición:</label>
+                <input type="text" id="edit-detalle-pos-id" class="form-input" disabled readonly>
 
+                <!-- Campos de Tipo y Presentación -->
                 <label for="edit-detalle-tipo" class="form-label">Tipo:</label>
                 <input type="text" id="edit-detalle-tipo" class="form-input" required>
 
                 <label for="edit-detalle-presentacion" class="form-label">Presentación:</label>
                 <input type="text" id="edit-detalle-presentacion" class="form-input" required>
 
-                <label for="edit-detalle-costo" class="form-label">Costo:</label>
-                <input type="number" id="edit-detalle-costo" class="form-input" step="0.01" required>
+                <!-- 
+                    COMENTARIO SOBRE EL DISEÑO:
+                    Hemos eliminado la clase 'flex-1' y ahora usamos la clase 'w-1/3' en cada
+                    div hijo para controlar el ancho manualmente, asegurando que los tres
+                    campos ocupen el mismo espacio dentro del contenedor. La clase 'gap-4'
+                    mantiene la separación entre ellos.
+                -->
+                <div class="flex items-center gap-4 mt-4">
+                    <!-- Campo de Moneda (no editable) -->
+                    <div class="w-1/3">
+                        <label for="edit-detalle-moneda" class="form-label !mt-0">Moneda:</label>
+                        <input type="text" id="edit-detalle-moneda" class="form-input !mt-0" disabled readonly>
+                    </div>
 
-                <label for="edit-detalle-cantidad" class="form-label">Cantidad:</label>
-                <input type="number" id="edit-detalle-cantidad" class="form-input" step="1" required>
+                    <!-- Campo de Costo -->
+                    <div class="w-1/3">
+                        <label for="edit-detalle-costo" class="form-label !mt-0">Costo:</label>
+                        <input type="number" id="edit-detalle-costo" class="form-input !mt-0" step="0.01" required>
+                    </div>
+
+                    <!-- LÓGICA DE CANTIDAD CON BOTONES DE CONTROL INTEGRADOS -->
+                    <div class="w-1/3">
+                        <label for="edit-detalle-cantidad" class="form-label !mt-0">Cantidad:</label>
+                        <div class="flex items-center border border-gray-300 rounded-lg focus-within:ring-2 focus-within:ring-indigo-400">
+                            <button type="button" id="decrease-qty-btn" class="flex-shrink-0 bg-gray-200 text-gray-800 p-2 rounded-l-lg hover:bg-gray-300 transition-colors duration-200">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <!-- El input ahora tiene la clase w-1/3 según la solicitud del usuario -->
+                            <input type="number" step="1" id="edit-detalle-cantidad" class="orden-cantidad w-1/3 flex-grow text-center p-2 bg-white text-gray-900 focus:outline-none border-none" placeholder="1" required>
+                            <button type="button" id="increase-qty-btn" class="flex-shrink-0 bg-gray-200 text-gray-800 p-2 rounded-r-lg hover:bg-gray-300 transition-colors duration-200">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Este campo oculto es necesario para saber qué detalle actualizar -->
+                <input type="hidden" id="edit-detalle-orden-id">
 
                 <button type="submit" class="form-button bg-blue-500 text-white hover:bg-blue-600">Guardar Cambios</button>
                 <button type="button" class="form-button bg-gray-500 text-white hover:bg-gray-600" onclick="closeModal('editDetalleModal')">Cancelar</button>
@@ -412,6 +469,8 @@
     <!-- Incluye el JS de FixedColumns -->
     <script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js"></script>
     <script>
+        console.log("Script 'EditarDat.html' está siendo ejecutado.");
+        
         // Declaramos la variable de la tabla fuera del scope de la función para poder acceder a ella globalmente
         let ordenesTable = null;
         let cachedDetallesData = []; // Caché para los detalles de la orden actual
@@ -442,8 +501,30 @@
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-        // Lógica propia de la barra de navegación y registro de historial:
+        // Función para mostrar mensajes de error
+        function showTemporaryMessage(message) {
+            const messageBox = document.getElementById('message-box');
+            const messageText = document.getElementById('message-text');
+            messageText.textContent = message;
+            messageBox.style.opacity = '1';
+            messageBox.style.visibility = 'visible';
+            setTimeout(() => {
+                messageBox.style.opacity = '0';
+                messageBox.style.visibility = 'hidden';
+            }, 3000);
+        }
+        // Función para mostrar el modal de edición
+        window.showModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        };
+        // Función para cerrar el modal de edición
+        window.closeModal = function(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        };
+        
+        // LÓGICA DE LA PÁGINA PRINCIPAL
         document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM content is loaded.");
             // --- Lógica del menú y redirección ---
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
@@ -452,7 +533,7 @@
                 'buscarBtn': 'buscarDat.html',
                 'EditarBtn': 'EditarDat.html'
             };
-            const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqn2w9eJrKTqVUbRQX96ChZFCdyXA8_IdQaTcqrXRpOnF6F_9PzOaYFw/exec';
+            const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqs-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
             async function registerHistory(cliente_id, nombre, action) {
                 console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
                 const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
@@ -502,32 +583,8 @@
                     window.location.href = 'index.html';
                 });
             }
-            // --- LÓGICA DEL POPUP DE MENSAJE ---
-            function showMessage(message) {
-                const messageBox = document.getElementById('messageBox');
-                const messageText = document.getElementById('messageText');
-                const modalContent = messageBox.querySelector('div');
-                messageText.innerText = message;
-                messageBox.classList.remove('hidden');
-                void messageBox.offsetWidth;
-                messageBox.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
-            }
-            window.closeMessage = function() {
-                const messageBox = document.getElementById('messageBox');
-                const modalContent = messageBox.querySelector('div');
-                messageBox.classList.add('opacity-0');
-                modalContent.classList.add('scale-95');
-                setTimeout(() => {
-                    messageBox.classList.add('hidden');
-                }, 300);
-            };
-        });
-    </script>
-    
-    <script>
-        // Lógica propia de la funcionabilidad de la página actual:
-        document.addEventListener('DOMContentLoaded', () => {
+            
+            // Lógica propia de la funcionabilidad de la página actual:
             // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
             // Asegúrate de que el script esté desplegado para "Cualquiera"
             const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
@@ -546,29 +603,6 @@
             const orderDetailsLoader = document.getElementById('orderDetailsLoader');
             const orderDetailsContainer = document.getElementById('orderDetailsContainer');
             
-            // Función para mostrar mensajes de error
-            function showTemporaryMessage(message) {
-                const messageBox = document.getElementById('message-box');
-                const messageText = document.getElementById('message-text');
-                messageText.textContent = message;
-                messageBox.style.opacity = '1';
-                messageBox.style.visibility = 'visible';
-                setTimeout(() => {
-                    messageBox.style.opacity = '0';
-                    messageBox.style.visibility = 'hidden';
-                }, 3000);
-            }
-            
-            // Función para mostrar el modal de edición
-            window.showModal = function(modalId) {
-                document.getElementById(modalId).style.display = 'flex';
-            };
-
-            // Función para cerrar el modal de edición
-            window.closeModal = function(modalId) {
-                document.getElementById(modalId).style.display = 'none';
-            };
-
             // Función asíncrona para obtener datos de Google Apps Script
             async function fetchData() {
                 // Si los datos ya están en caché, simplemente actualiza la tabla
@@ -742,12 +776,15 @@
                         }
                         const detailData = await response.json();
                         cachedDetallesData = detailData.data || [];
+                        console.log('Detalles de la orden cargados:', cachedDetallesData); // NUEVO: Muestra los detalles en la consola
                         
                         // Llenar la tabla de detalles con los datos recibidos
                         const detailTableBody = document.querySelector('#orderDetailsTable tbody');
                         detailTableBody.innerHTML = '';
                         if (cachedDetallesData.length > 0) {
                             cachedDetallesData.forEach(item => {
+                                // CAMBIO: Usamos atributos de datos en lugar de `onclick` para mayor seguridad y robustez.
+                                // La lógica del evento se manejará con un event listener más abajo.
                                 const row = `
                                     <tr>
                                         <td>${item.Orden_Pos_ID}</td>
@@ -757,7 +794,7 @@
                                         <td>${item.Orden_Producto_Cantidad}</td>
                                         <td>${formatNumber(item.Orden_Subtotal_Pos)}</td>
                                         <td>${item.Orden_Producto_Moneda}</td>
-                                        <td><button class="bg-gray-500 text-white px-2 py-1 rounded-md text-xs hover:bg-gray-600" onclick="editDetalleItem('${item.Orden_ID}', '${item.Orden_Pos_ID}')">Editar</button></td>
+                                        <td><button class="edit-detalle-btn bg-gray-500 text-white px-2 py-1 rounded-md text-xs hover:bg-gray-600" data-orden-id="${item.Orden_ID}" data-pos-id="${item.Orden_Pos_ID}">Editar</button></td>
                                     </tr>
                                 `;
                                 detailTableBody.innerHTML += row;
@@ -782,13 +819,15 @@
             
             // Función para rellenar y mostrar el modal de edición de detalle
             window.editDetalleItem = function(ordenId, posId) {
-                // Buscar el detalle de la orden en el caché
-                const detalleToEdit = cachedDetallesData.find(d => d.Orden_ID === ordenId && d.Orden_Pos_ID === posId);
+                // CORRECCIÓN: No se usa parseInt en el ordenId, ya que es un string.
+                // Se busca el detalle en el caché sin convertir el ID de la orden.
+                const detalleToEdit = cachedDetallesData.find(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
 
                 if (detalleToEdit) {
                     // Rellenar los campos del formulario con los datos del detalle
                     document.getElementById('edit-detalle-orden-id').value = detalleToEdit.Orden_ID;
                     document.getElementById('edit-detalle-pos-id').value = detalleToEdit.Orden_Pos_ID;
+                    document.getElementById('edit-detalle-moneda').value = detalleToEdit.Orden_Producto_Moneda; // NUEVO: Se rellena el campo de moneda
                     document.getElementById('edit-detalle-tipo').value = detalleToEdit.Orden_Producto_Tipo;
                     document.getElementById('edit-detalle-presentacion').value = detalleToEdit.Orden_Producto_Presentacion;
                     document.getElementById('edit-detalle-costo').value = detalleToEdit.Orden_Producto_Costo;
@@ -841,9 +880,41 @@
                     updateResultsCount();
                 }
             });
+            
+            // LÓGICA PARA LOS BOTONES DE CANTIDAD
+            const quantityInput = document.getElementById('edit-detalle-cantidad');
+            const increaseBtn = document.getElementById('increase-qty-btn');
+            const decreaseBtn = document.getElementById('decrease-qty-btn');
+            
+            increaseBtn.addEventListener('click', () => {
+                let currentValue = parseInt(quantityInput.value) || 0;
+                quantityInput.value = currentValue + 1;
+            });
+
+            decreaseBtn.addEventListener('click', () => {
+                let currentValue = parseInt(quantityInput.value) || 0;
+                if (currentValue > 1) {
+                    quantityInput.value = currentValue - 1;
+                }
+            });
 
             // Llama a la función al cargar la página para obtener y mostrar los datos
             fetchData();
+
+            // NUEVA LÓGICA PARA MANEJAR CLICS EN LOS BOTONES DE LA TABLA DE DETALLES
+            // Se utiliza la delegación de eventos para capturar los clics en los botones "Editar".
+            // Esto es más eficiente y robusto que usar `onclick` en el HTML.
+            document.addEventListener('click', (event) => {
+                // Verificamos si el clic fue en un botón con la clase 'edit-detalle-btn'
+                const target = event.target.closest('.edit-detalle-btn');
+                if (target) {
+                    // Obtenemos los datos de los atributos de datos del botón
+                    const ordenId = target.getAttribute('data-orden-id');
+                    const posId = target.getAttribute('data-pos-id');
+                    // Llamamos a la función `editDetalleItem` con los datos obtenidos
+                    editDetalleItem(ordenId, posId);
+                }
+            });
         });
     </script>
 </body>
