@@ -10,7 +10,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <!-- Incluye la biblioteca de íconos Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    <!-- Incluye DataTables CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.css" />
+    <!-- Hoja de estilos para la extensión FixedColumns de DataTables -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/fixedcolumns/5.0.0/css/fixedColumns.dataTables.css">
     <style>
+        /* Estilos generales */
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f3f4f6; /* Un gris muy suave para el fondo de la página */
@@ -21,13 +26,13 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 0; 
+            padding: 0;
             transition: all 0.2s ease-in-out;
             font-weight: 600;
         }
         /* Oculta los botones de incremento/decremento del input de tipo 'number' */
-        input[type=number]::-webkit-inner-spin-button, 
-        input[type=number]::-webkit-outer-spin-button { 
+        input[type=number]::-webkit-inner-spin-button,
+        input[type=number]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
@@ -40,7 +45,6 @@
             overflow-y: auto;
             padding: 1rem;
         }
-
         /* Contenedor del motor de búsqueda del botón buscarBtn */
         .search-container {
             display: flex;
@@ -48,7 +52,6 @@
             margin-bottom: 20px;
             align-items: center;
         }
-
         .search-input {
             flex-grow: 1;
             padding: 10px;
@@ -56,7 +59,6 @@
             border-radius: 8px;
             font-size: 16px;
         }
-
         .search-button {
             padding: 10px 15px;
             background-color: #6c757d;
@@ -67,88 +69,59 @@
             transition: background-color 0.3s ease;
             white-space: nowrap; /* Evita que el texto se envuelva */
         }
-
         .search-button:hover {
             background-color: #5a6268;
         }
-
         /* Contenedor principal de la tabla */
         .table-container {
             margin-top: 20px;
             overflow-x: auto; /* Habilita el desplazamiento horizontal */
         }
-        
         .table-container + .table-container {
             margin-top: 40px; /* Agrega más espacio entre las tablas */
         }
 
-        /* Estilos de la tabla de datos */
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
+        /* --- Estilos de tablas proporcionados por el usuario --- */
+        body {
+            background-color: #f3f4f6; /* Fondo de la página */
         }
-
-        /* Estilo para todos los encabezados de la tabla */
-        .data-table th {
-            background-color: #e2e8f0; /* Color de fondo claro para todos los encabezados */
-            color: #1a202c; /* Color de texto oscuro para el contraste */
-            border: 1px solid #ddd;
-            padding: 5px;
-            text-align: left;
+        .bg-card {
+            background-color: #ffffff; /* Fondo del contenedor de datos */
+        }
+        table.dataTable {
+            color: #333; /* Color de texto de la tabla */
+            font-size: 0.75rem; /* Tamaño de fuente menor para la tabla */
+            border-collapse: collapse; /* Elimina el espacio entre celdas */
+        }
+        table.dataTable thead th, table.dataTable tfoot th {
+            background-color: #e5e7eb; /* Color de fondo del encabezado de la tabla (gris claro) */
+            color: #4b5563; /* Color de texto del encabezado */
+            white-space: nowrap; /* Evita el salto de línea en los encabezados */
+        }
+        /* Se ha cambiado el fondo de las celdas a blanco */
+        table.dataTable tbody td {
+            background-color: #ffffff;
             white-space: nowrap;
+            padding: 0.25rem 0.5rem; /* Reduce la altura de las celdas */
         }
+        /* Estilo de hover para las filas, se asegura de que funcione en todas las celdas */
+        table.dataTable.hover tbody tr:hover {
+            background-color: #e5e7eb !important; /* Color al pasar el cursor sobre las filas */
+        }
+        /* Estilos específicos para la extensión FixedColumns */
+        .dtfc-fixed-left {
+            background-color: #ffffff !important;
+            border-right: none !important;
+            z-index: 1000 !important; /* Asegura que la columna fija esté siempre al frente */
+        }
+        .dtfc-fixed-left td {
+            background-color: #ffffff !important;
+        }
+        .dtfc-fixed-left td, .dtfc-fixed-left th {
+            border-right: none !important;
+        }
+        /* --- Fin de estilos de tablas proporcionados por el usuario --- */
 
-        /* Estilo para las celdas normales de la tabla */
-        .data-table td {
-            border: 1px solid #ddd;
-            padding: 3px;
-            text-align: left;
-            white-space: nowrap; /* Evita que el texto se envuelva */
-        }
-        
-        /* Estilos para las columnas fijas (las celdas, no el encabezado) */
-        .data-table .sticky-col {
-            position: sticky;
-            background-color: #e2e8f0; /* Color de fondo para las celdas fijas */
-            z-index: 2; /* Mayor que el resto de celdas para que se superponga */
-        }
-
-        /* Sobreescribe el estilo de las celdas fijas para que se mantengan en su lugar */
-        .data-table th.sticky-col {
-            top: 0; /* Asegura que el encabezado también sea anclado verticalmente */
-        }
-
-        /* Estilos específicos para las columnas ancladas de la tabla de vehículos */
-        .data-table th.sticky-col-0, .data-table td.sticky-col-0 { 
-            left: 0; 
-            width: 15px; /* Ancho fijo para la columna del botón */
-        }
-        .data-table th.sticky-col-1, .data-table td.sticky-col-1 { 
-            left: 35px; /* Comienza donde termina la columna 0 */
-            width: 115px; /* ANCHO AJUSTADO para que coincida con la tabla de órdenes */
-        }
-        .data-table th.sticky-col-2, .data-table td.sticky-col-2 { 
-            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
-            left: 125px; 
-            width: 500px; /* Ancho ajustado para esta columna */
-        }
-        
-        /* Estilos específicos para las columnas ancladas de la tabla de órdenes */
-        .ordenes-table th.sticky-col-0, .ordenes-table td.sticky-col-0 {
-            left: 0;
-            width: 15px; /* Ancho fijo para la columna del botón */
-        }
-        .ordenes-table th.sticky-col-1, .ordenes-table td.sticky-col-1 {
-            left: 35px; /* Comienza donde termina la columna 0 */
-            width: 80px; /* Ancho reducido para el Orden_ID */
-        }
-        .ordenes-table th.sticky-col-2, .ordenes-table td.sticky-col-2 {
-            /* Se basa en el ancho de las columnas anteriores: 35px (columna 0) + 80px (columna 1) */
-            left: 115px; 
-            width: 80px; /* Ancho reducido para el Orden_ID */
-        }
-        
         /* Estilos para los botones de la tabla */
         .data-table button {
             background-color: #007bff;
@@ -159,16 +132,13 @@
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
-
         .data-table button:hover {
             background-color: #0056b3;
         }
-
         /* Nuevo estilo para justificar el texto a la derecha */
         .data-table .text-right {
             text-align: right;
         }
-
         .loader {
             border: 4px solid #f3f3f3;
             border-top: 4px solid #007bff;
@@ -178,12 +148,10 @@
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
-
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
         /* Estilos para la ventana de mensaje personalizada */
         .message-box {
             position: fixed;
@@ -200,7 +168,6 @@
             visibility: hidden;
             transition: opacity 0.5s ease-in-out, visibility 0.5s ease-in-out;
         }
-        
         /* Clase para un ancho de columna reducido */
         .col-narrow {
             width: 100px;
@@ -229,7 +196,7 @@
                         <span class="mt-1 text-xs sm:text-sm">Servicios</span>
                 </li>
                 <li class="flex-1">
-                    <button id="buscarBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
+                    <button id="buscarLinkBtn" class="nav-link w-full text-gray-800 border-2 border-transparent hover:bg-gray-200 hover:border-gray-500 hover:rounded-lg">
                         <i class="fas fa-search text-lg"></i>
                         <span class="mt-1 text-xs sm:text-sm">Buscar</span>
                 </li>
@@ -245,19 +212,17 @@
                 </li>
             </ul>
         </div>
-    </nav>   
+    </nav>
 
 
     <!-- Contenedor principal para el formulario  -->
     <div class="container mx-auto px-4 mt-20"> <!-- Margen superior para evitar que la barra de navegación la oculte -->
         <h1>Listado de Vehículos y Órdenes</h1>
-            
-        <!-- Contenedor del motor de búsqueda -->
+        
+        <!-- Contenedor del motor de búsqueda personalizado -->
         <div class="search-container">
-            <input type="text" id="search-input" class="search-input" placeholder="Buscar en todas las tablas...">
-            <button id="clear-search-btn" class="search-button">
-                <i class="fas fa-times"></i>
-            </button>
+            <input type="text" id="searchInput" class="search-input" placeholder="Buscar por placa, contacto o ID...">
+            <button id="buscarBtn" class="search-button">Buscar</button>
         </div>
 
         <!-- Contenedor de la tabla de vehículos -->
@@ -276,20 +241,25 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.7.1.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.js"></script>
+    <!-- JavaScript para la extensión FixedColumns de DataTables -->
+    <script src="https://cdn.datatables.net/fixedcolumns/5.0.0/js/dataTables.fixedColumns.js"></script>
+
     <script>
         // Lógica propia de la barra de navegación y registro de historial:
 
         document.addEventListener('DOMContentLoaded', () => {
 
             // --- Lógica del menú y redirección ---
-            
+
             // Definición de las rutas para todos los botones.
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
-                'vehiculosBtn': 'registerVeh.html',  
-                'ordenesBtn': 'registerOrd.html',      
-                'buscarBtn': 'buscarDat.html',        
-                'EditarBtn': 'EditarDat.html'   
+                'vehiculosBtn': 'registerVeh.html',
+                'ordenesBtn': 'registerOrd.html',
+                'buscarLinkBtn': 'buscarDat.html',
+                'EditarBtn': 'EditarDat.html'
             };
 
             // URL del Google Apps Script para registrar el historial.
@@ -326,7 +296,7 @@
                 'homeBtn': 'Menú Principal',
                 'vehiculosBtn': 'Vehículos',
                 'ordenesBtn': 'Órdenes',
-                'buscarBtn': 'Buscar',
+                'buscarLinkBtn': 'Buscar',
                 'EditarBtn': 'Editar'
             };
 
@@ -355,7 +325,7 @@
             }
 
             // --- LÓGICA DEL POPUP DE MENSAJE ---
-            
+
             // Función para mostrar un mensaje personalizado en el cuadro de diálogo con animaciones.
             function showMessage(message) {
                 const messageBox = document.getElementById('messageBox');
@@ -377,7 +347,7 @@
             window.closeMessage = function() {
                 const messageBox = document.getElementById('messageBox');
                 const modalContent = messageBox.querySelector('div');
-                
+
                 // Animar el fade-out y el scale-out
                 messageBox.classList.add('opacity-0');
                 modalContent.classList.add('scale-95');
@@ -393,18 +363,18 @@
 
     <script>
         // Lógica propia de la funcionabilidad de la página actual:
-        
+
         document.addEventListener('DOMContentLoaded', () => {
             // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
             const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbxiRogoHmvMPW7oo-q3_013L1DoLD3eG1qM8MxBJg8qvResNGEWXkXxxrld-XrBUUbt/exec';
-            
+
             // Referencias a los elementos del DOM
             const vehiculosContainer = document.getElementById('vehiculos-container');
             const ordenesContainer = document.getElementById('ordenes-container');
             const messageBox = document.getElementById('message-box');
             const messageText = document.getElementById('message-text');
-            const searchInput = document.getElementById('search-input');
-            const clearSearchBtn = document.getElementById('clear-search-btn');
+            const searchInput = document.getElementById('searchInput');
+            const buscarBtn = document.getElementById('buscarBtn');
 
             // Mapas de nombres para los encabezados de las tablas
             const ordenesHeadersMap = {
@@ -432,9 +402,8 @@
             };
 
             // Cache para datos de vehículos y órdenes
-            let cachedData = {}; 
-            let allVehiculosData = []; 
-            let allOrdenesData = [];  
+            let allVehiculosData = [];
+            let allOrdenesData = [];
 
             // Función para mostrar la ventana de mensaje
             function showMessage(message) {
@@ -469,62 +438,71 @@
             }
 
             // Función para adjuntar los listeners de copia para la tabla de vehículos
-            function attachVehiculosCopyListeners(headers) {
-                const copyButtons = vehiculosContainer.querySelectorAll('.copy-button');
+            function attachVehiculosCopyListeners(tableId, headers) {
+                const tableElement = document.getElementById(tableId);
+                // Si el elemento de la tabla no existe, sal de la función.
+                if (!tableElement) {
+                    console.error('Error: Elemento de tabla no encontrado con el ID:', tableId);
+                    return;
+                }
+                const copyButtons = tableElement.querySelectorAll('.copy-button');
                 copyButtons.forEach(button => {
                     if (button.dataset.listenerAttached) {
                         return;
                     }
                     button.dataset.listenerAttached = true;
-                    
+
                     button.addEventListener('click', () => {
                         const row = button.closest('tr');
                         const cells = row.querySelectorAll('td');
 
+                        // NUEVA LÓGICA: Solo copia la placa del vehículo
                         const vehiculoPlacaIndex = headers.indexOf('Vehiculo_Placa') + 1;
-                        const vehiculoPersonaContactoIndex = headers.indexOf('Vehiculo_PersonaContacto') + 1;
-                        
                         const vehiculoPlaca = cells[vehiculoPlacaIndex].textContent.trim();
-                        const vehiculoPersonaContacto = cells[vehiculoPersonaContactoIndex].textContent.trim();
+                        const combinedText = vehiculoPlaca;
 
-                        const combinedText = `Placa: ${vehiculoPlaca}, Contacto: ${vehiculoPersonaContacto}`;
-                        
                         const tempInput = document.createElement('textarea');
                         tempInput.value = combinedText;
                         document.body.appendChild(tempInput);
                         tempInput.select();
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
-                        
-                        showMessage('Datos de Vehículo copiados.');
+
+                        showMessage('Placa de Vehículo copiada.');
                     });
                 });
             }
 
             // Función para adjuntar los listeners de copia para la tabla de órdenes
-            function attachOrdenesCopyListeners(headers) {
-                const copyButtons = ordenesContainer.querySelectorAll('.copy-button');
+            function attachOrdenesCopyListeners(tableId, headers) {
+                const tableElement = document.getElementById(tableId);
+                // Si el elemento de la tabla no existe, sal de la función.
+                if (!tableElement) {
+                    console.error('Error: Elemento de tabla no encontrado con el ID:', tableId);
+                    return;
+                }
+                const copyButtons = tableElement.querySelectorAll('.copy-button');
                 copyButtons.forEach(button => {
                     if (button.dataset.listenerAttached) {
                         return;
                     }
                     button.dataset.listenerAttached = true;
-                    
+
                     button.addEventListener('click', () => {
                         const row = button.closest('tr');
                         const cells = row.querySelectorAll('td');
 
+                        // LÓGICA EXISTENTE: Solo copia el ID de la orden
                         const ordenIdIndex = headers.indexOf('Orden_ID') + 1;
-
                         const ordenId = cells[ordenIdIndex].textContent.trim();
-                        
+
                         const tempInput = document.createElement('textarea');
                         tempInput.value = ordenId;
                         document.body.appendChild(tempInput);
                         tempInput.select();
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
-                        
+
                         showMessage('ID de la Orden copiada.');
                     });
                 });
@@ -537,7 +515,7 @@
                 try {
                     const response = await fetch(`${GAS_API_URL}?sheet=Vehiculos`);
                     const result = await response.json();
-                    
+
                     if (result.error) {
                         vehiculosContainer.innerHTML = `<p style="color: red;">Error al cargar los datos: ${result.error}</p>`;
                         console.error('GAS API Error:', result.error);
@@ -546,7 +524,6 @@
 
                     allVehiculosData = result.data;
                     renderTable(allVehiculosData, vehiculosContainer, 'Vehículos');
-                    attachVehiculosCopyListeners(result.headers.filter(h => h && h.trim() !== ''));
                     console.log("Datos de vehículos cargados correctamente.");
                     showMessage("Datos de vehículos cargados.");
 
@@ -563,7 +540,7 @@
                 try {
                     const response = await fetch(`${GAS_API_URL}?sheet=OrdenesCab`);
                     const result = await response.json();
-                    
+
                     if (result.error) {
                         ordenesContainer.innerHTML = `<p style="color: red;">Error al cargar los datos: ${result.error}</p>`;
                         console.error('GAS API Error:', result.error);
@@ -572,7 +549,6 @@
 
                     allOrdenesData = result.data;
                     renderTable(allOrdenesData, ordenesContainer, 'Órdenes');
-                    attachOrdenesCopyListeners(result.headers.filter(h => h && h.trim() !== ''));
                     console.log("Datos de órdenes cargados correctamente.");
                     showMessage("Datos de órdenes cargados.");
 
@@ -582,34 +558,58 @@
                 }
             }
 
+            // Función para manejar el filtro de búsqueda
+            function handleSearch() {
+                const searchTerm = searchInput.value.toLowerCase();
+
+                // Filtra los datos de vehículos
+                const filteredVehiculos = allVehiculosData.filter(row => {
+                    const vehiculoPlaca = (row.Vehiculo_Placa || '').toLowerCase();
+                    const vehiculoPersonaContacto = (row.Vehiculo_PersonaContacto || '').toLowerCase();
+                    const vehiculoID = (row.Vehiculo_ID || '').toString().toLowerCase();
+                    return vehiculoPlaca.includes(searchTerm) || vehiculoPersonaContacto.includes(searchTerm) || vehiculoID.includes(searchTerm);
+                });
+                renderTable(filteredVehiculos, vehiculosContainer, 'Vehículos');
+
+                // Filtra los datos de órdenes
+                const filteredOrdenes = allOrdenesData.filter(row => {
+                    const ordenID = (row.Orden_ID || '').toString().toLowerCase();
+                    const vehiculoPlaca = (row.Vehiculo_Placa || '').toLowerCase();
+                    const vehiculoPersonaContacto = (row.Vehiculo_PersonaContacto || '').toLowerCase();
+                    return ordenID.includes(searchTerm) || vehiculoPlaca.includes(searchTerm) || vehiculoPersonaContacto.includes(searchTerm);
+                });
+                renderTable(filteredOrdenes, ordenesContainer, 'Órdenes');
+                
+                showMessage("Búsqueda finalizada.");
+            }
+
             // Nueva función para renderizar tablas genéricas
             function renderTable(data, container, title) {
+                // Destruir la instancia de DataTables si ya existe en el contenedor
+                const existingTable = $(`#${title.toLowerCase()}-table`).DataTable();
+                if (existingTable) {
+                    existingTable.destroy();
+                }
+
                 if (data.length === 0) {
                     container.innerHTML = `<p>No se encontraron datos para ${title}.</p>`;
                     return;
                 }
 
+                const tableId = `${title.toLowerCase()}-table`;
                 // Obtener el mapa de encabezados correcto
                 const headersMap = (title === 'Vehículos') ? vehiculosHeadersMap : ordenesHeadersMap;
                 const headers = Object.keys(data[0] || {});
-                const fixedHeaderNames = (title === 'Vehículos') ? ['Vehiculo_ID', 'Vehiculo_PersonaContacto'] : ['Orden_ID', 'Vehiculo_Placa'];
-                const fixedIndices = fixedHeaderNames.map(name => headers.indexOf(name));
-                
-                let tableHTML = `<h2>${title}</h2><table class="data-table ${title.toLowerCase()}-table"><thead><tr>`;
-                tableHTML += `<th class="sticky-col sticky-col-0"></th>`;
-                
+
+                let tableHTML = `<h2>${title}</h2><table id="${tableId}" class="data-table ${title.toLowerCase()}-table display nowrap"><thead><tr>`;
+                tableHTML += `<th></th>`;
+
                 // Usar el mapa para generar los encabezados de la tabla
                 Object.values(headersMap).forEach((header, index) => {
                     const technicalKey = Object.keys(headersMap)[index];
                     let className = '';
-                    const isFixed = fixedHeaderNames.includes(technicalKey);
-                    if (isFixed) {
-                         className += ` sticky-col sticky-col-${fixedHeaderNames.indexOf(technicalKey) + 1}`;
-                    }
                     if (technicalKey === 'Orden_Total') {
-                        className += ' text-right col-narrow';
-                    } else if (technicalKey === 'Orden_Fecha' || technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') {
-                        className += ' col-narrow';
+                        className += ' text-right';
                     }
                     tableHTML += `<th class="${className.trim()}">${header}</th>`;
                 });
@@ -617,26 +617,20 @@
 
                 data.forEach(row => {
                     tableHTML += '<tr>';
-                    tableHTML += `<td class="sticky-col sticky-col-0"><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
-                    
+                    tableHTML += `<td><button class="copy-button"><i class="fas fa-copy"></i></button></td>`;
+
                     // Usar el mapa para renderizar las celdas en el orden correcto
                     Object.keys(headersMap).forEach((technicalKey, index) => {
                         let className = '';
-                        const isFixed = fixedHeaderNames.includes(technicalKey);
-                        if (isFixed) {
-                            className += ` sticky-col sticky-col-${fixedHeaderNames.indexOf(technicalKey) + 1}`;
-                        }
                         if (technicalKey === 'Orden_Total') {
-                            className += ' text-right col-narrow';
-                        } else if (technicalKey === 'Orden_Fecha' || technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') {
-                            className += ' col-narrow';
+                            className += ' text-right';
                         }
-                        
+
                         let cellValue = row[technicalKey] || '';
                         // Formatea la fecha según el campo
                         if (technicalKey === 'Orden_Fecha') {
                             cellValue = formatDate(cellValue);
-                        } else if (technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') { 
+                        } else if (technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') {
                             cellValue = formatDateTime(cellValue);
                         }
                         tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
@@ -645,63 +639,46 @@
                 });
                 tableHTML += '</tbody></table>';
                 container.innerHTML = tableHTML;
+
+                // Inicializar DataTables sin paginación, búsqueda o información nativa
+                $(document).ready(function() {
+                    $('#' + tableId).DataTable({
+                        scrollX: true,
+                        scrollY: '400px', // Altura del scroll
+                        scrollCollapse: true,
+                        paging: false, // Desactiva la paginación
+                        lengthChange: false, // Desactiva la selección de entradas por página
+                        searching: false, // Desactiva la búsqueda nativa
+                        ordering: true,
+                        info: false, // Desactiva la información de la tabla
+                        autoWidth: true,
+                        // Configuración para anclar las primeras 2 columnas a la izquierda
+                        fixedColumns: {
+                            leftColumns: 2
+                        }
+                    });
+                });
+                 // Adjuntar listeners de copia después de que la tabla se haya renderizado
+                if (title === 'Vehículos') {
+                    attachVehiculosCopyListeners(tableId, headers);
+                } else if (title === 'Órdenes') {
+                    attachOrdenesCopyListeners(tableId, headers);
+                }
             }
 
-
-            // Función para filtrar las tablas según el valor de búsqueda
-            function filterTables() {
-                const searchTerm = searchInput.value.toLowerCase().trim();
-                console.log("Buscando el término:", searchTerm);
-
-                // Re-renderiza las tablas con los datos filtrados
-                const filteredVehiculos = allVehiculosData.filter(row => 
-                    Object.values(row).some(value => 
-                        String(value).toLowerCase().includes(searchTerm)
-                    )
-                );
-                
-                const filteredOrdenes = allOrdenesData.filter(row => 
-                    Object.values(row).some(value => 
-                        String(value).toLowerCase().includes(searchTerm)
-                    )
-                );
-                
-                console.log("Vehículos encontrados:", filteredVehiculos.length);
-                console.log("Órdenes encontradas:", filteredOrdenes.length);
-
-                // Solo renderiza si hay datos o si la búsqueda está vacía
-                if (searchTerm === '' || filteredVehiculos.length > 0) {
-                    renderTable(filteredVehiculos, vehiculosContainer, 'Vehículos');
-                    attachVehiculosCopyListeners(Object.keys(allVehiculosData[0] || {}));
-                } else {
-                    vehiculosContainer.innerHTML = '<p>No se encontraron vehículos.</p>';
-                }
-
-                if (searchTerm === '' || filteredOrdenes.length > 0) {
-                    renderTable(filteredOrdenes, ordenesContainer, 'Órdenes');
-                    attachOrdenesCopyListeners(Object.keys(allOrdenesData[0] || {}));
-                } else {
-                    ordenesContainer.innerHTML = '<p>No se encontraron órdenes.</p>';
-                }
-
-            }
-
-            // Agrega el listener para el campo de búsqueda
-            searchInput.addEventListener('input', filterTables);
-
-            // Agrega el listener para el botón de borrar búsqueda
-            clearSearchBtn.addEventListener('click', () => {
-                searchInput.value = '';
-                filterTables();
-            });
 
             // Estas llamadas son las que inician la carga de las tablas al cargar la página
             loadVehiculos();
             loadOrdenes();
+
+            // Adjuntar evento de clic y 'Enter' al botón y campo de búsqueda
+            buscarBtn.addEventListener('click', handleSearch);
+            searchInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    handleSearch();
+                }
+            });
         });
-
-
-        
     </script>
 </body>
 </html>
