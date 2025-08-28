@@ -1,5 +1,5 @@
-<!-- versión base creada por le cliente V5 -->
-<!DOCTYPE ahtml>
+<!-- versión base creada por le cliente Vx2 -->
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
     <!-- Incluye el CSS de DataTables -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
     <!-- Incluye el CSS de FixedColumns -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/css/fixedColumns.dataTables.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -139,7 +139,7 @@
         /* Se ha cambiado el fondo de las celdas a blanco */
         table.dataTable tbody td {
             background-color: #ffffff;
-            white-space: nowrap;
+            white-space: nowrap; /* Mantiene el contenido en una sola línea */
             padding: 0.25rem 0.5rem; /* Reduce la altura de las celdas */
         }
         /* Estilo de hover para las filas, se asegura de que funcione en todas las celdas */
@@ -377,8 +377,11 @@
             <hr class="my-6">
             
             <!-- Sección para los detalles de la orden -->
-            <h3 class="text-lg font-bold mb-4">Detalles de la Orden</h3>
-            <div id="orderDetailsLoader" class="flex items-center justify-center p-4 hidden">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold">Detalles de la Orden</h3>
+                <!-- Se ha eliminado el botón "Actualizar" ya que la tabla se actualiza automáticamente al guardar los cambios de un detalle. -->
+            </div>
+            <div id="orderDetailsLoader" class="flex items-center justify-content-center p-4 hidden">
                 <div class="loader"></div>
                 <p class="ml-2 text-gray-500">Cargando detalles...</p>
             </div>
@@ -411,7 +414,7 @@
             <span class="close-btn" onclick="closeModal('editDetalleModal')">&times;</span>
             <h2 class="text-xl font-bold mb-4">Editar Detalle de Orden</h2>
             <form id="editDetalleForm">
-                <!-- Campo no editable para la posición -->
+                <!-- Campos no editables para la posición -->
                 <label for="edit-detalle-pos-id" class="form-label">Posición:</label>
                 <input type="text" id="edit-detalle-pos-id" class="form-input" disabled readonly>
 
@@ -458,8 +461,13 @@
                     </div>
                 </div>
                 
-                <!-- Este campo oculto es necesario para saber qué detalle actualizar -->
+                <!-- Campos ocultos agregados para enviar los datos de cabecera -->
                 <input type="hidden" id="edit-detalle-orden-id">
+                <input type="hidden" id="edit-detalle-fecha">
+                <input type="hidden" id="edit-detalle-total">
+                <input type="hidden" id="edit-detalle-moneda-cab">
+                <input type="hidden" id="edit-detalle-tasa-cambio">
+                <input type="hidden" id="edit-detalle-usuario-reg">
 
                 <button type="submit" class="form-button bg-blue-500 text-white hover:bg-blue-600">Guardar Cambios</button>
                 <button type="button" class="form-button bg-gray-500 text-white hover:bg-gray-600" onclick="closeModal('editDetalleModal')">Cancelar</button>
@@ -476,12 +484,17 @@
     <!-- Incluye el JS de FixedColumns -->
     <script type="text/javascript" src="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js"></script>
     <script>
-        console.log("Script 'EditarDat.html' está siendo ejecutado.");
+        // console.log("Script 'EditarDat.html' está siendo ejecutado.");
         
         // Declaramos las variables de la tabla fuera del scope de la función para poder acceder a ellas globalmente
         let ordenesTable = null;
         let orderDetailsTable = null;
         let cachedDetallesData = []; // Caché para los detalles de la orden actual
+
+        // *** Solución al error: Se mueven las declaraciones de URL al inicio del script ***
+        const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
+        const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqs-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
+        const GAS_UPDATE_URL = 'https://script.google.com/macros/s/AKfycbwXGp1JhH8E6dSc2L5zHboiSUBkMVTDFUPp9L5dBzjDid49yDkyY8mNMnbCJreCKXQ2uA/exec'; // URL para la actualización
 
         // Función para formatear un número con separador de miles y decimales
         function formatNumber(num) {
@@ -493,13 +506,13 @@
                 maximumFractionDigits: 2
             }).format(num);
         }
-        // Función para formatear la fecha a dd/mm/aaaa
+        // Función para formatear la fecha a dd.mm.aaaa
         function formatDate(date) {
             const d = new Date(date);
             const day = String(d.getDate()).padStart(2, '0');
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const year = d.getFullYear();
-            return `${day}/${month}/${year}`;
+            return `${day}.${month}.${year}`;
         }
         // Función para formatear la fecha a aaaa-mm-dd (formato del input type="date")
         function formatDateForInput(date) {
@@ -508,6 +521,17 @@
             const month = String(d.getMonth() + 1).padStart(2, '0');
             const day = String(d.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
+        }
+        // Función para formatear la fecha y hora a dd/mm/aaaa hh:mm:ss
+        function formatDateTime(date) {
+            const d = new Date(date);
+            const day = String(d.getDate()).padStart(2, '0');
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = String(d.getSeconds()).padStart(2, '0');
+            return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
         }
         // Función para mostrar mensajes de error
         function showTemporaryMessage(message) {
@@ -532,7 +556,7 @@
         
         // LÓGICA DE LA PÁGINA PRINCIPAL
         document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM content is loaded.");
+            // console.log("DOM content is loaded.");
             // --- Lógica del menú y redirección ---
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
@@ -541,20 +565,21 @@
                 'buscarBtn': 'buscarDat.html',
                 'EditarBtn': 'EditarDat.html'
             };
-            const GAS_REGISTER_HISTORY_URL = 'https://script.google.com/macros/s/AKfycbz3x4bm5RETRKsqs-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
+            
             async function registerHistory(cliente_id, nombre, action) {
-                console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
-                const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
+                // console.log("Iniciando registro de historial para:", nombre, "con acción:", action);
+                const fechaHora = new Date().toISOString();
+                const url = `${GAS_REGISTER_HISTORY_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}&fecha_hora=${encodeURIComponent(fechaHora)}`;
                 try {
                     const response = await fetch(url);
                     const data = await response.json();
                     if (data.success) {
-                        console.log("Registro de historial exitoso:", data.message);
+                        // console.log("Registro de historial exitoso:", data.message);
                     } else {
-                        console.error("Fallo al registrar historial:", data.message);
+                        // console.error("Fallo al registrar historial:", data.message);
                     }
                 } catch (error) {
-                    console.error("Error al conectar para registrar historial:", error);
+                    // console.error("Error al conectar para registrar historial:", error);
                 }
             }
             const handleButtonClick = async (id, action) => {
@@ -593,14 +618,6 @@
             }
             
             // Lógica propia de la funcionabilidad de la página actual:
-            // Importante: Reemplaza esta URL con la URL de despliegue de tu script GAS
-            // Asegúrate de que el script esté desplegado para "Cualquiera"
-            const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
-            
-            // --- CORRECCIÓN: SE MUEVE LA DECLARACIÓN DE LA URL AQUÍ PARA EVITAR EL ERROR DE INICIALIZACIÓN ---
-            const GAS_UPDATE_URL = 'https://script.google.com/macros/s/AKfycby46bh-pYGN43EWUn1xzqts04FYHbWBEn6opWfFGa34JGMIPEQL8z-85WnQlqSLZLtfCA/exec';
-            // ---------------------------------------------------------------------------------------------------
-
             // Cache para datos de órdenes
             let allOrdenesData = [];
 
@@ -632,14 +649,14 @@
 
                 try {
                     const response = await fetch(`${GAS_READ_EDIT_URL}?action=getOrdenesCab`);
-                    console.log('API Response:', response);
+                    // console.log('API Response:', response);
 
                     if (!response.ok) {
                         throw new Error(`Error en la red: ${response.statusText}`);
                     }
                     
                     const data = await response.json();
-                    console.log('API Data:', data);
+                    // console.log('API Data:', data);
                     
                     if (data && data.data && Array.isArray(data.data)) {
                         allOrdenesData = data.data;
@@ -723,21 +740,21 @@
                             }, 50);
                         }
                     } else if (data && !data.data) {
-                        console.warn('La respuesta de la API no contiene una matriz de datos. Tabla se mantendrá vacía.');
+                        // console.warn('La respuesta de la API no contiene una matriz de datos. Tabla se mantendrá vacía.');
                         showTemporaryMessage('No hay datos disponibles para mostrar.');
                     } else {
-                        console.error('La respuesta de la API no contiene una matriz de datos válida.');
+                        // console.error('La respuesta de la API no contiene una matriz de datos válida.');
                         showTemporaryMessage('Error: No se encontraron datos válidos.');
                     }
                 } catch (error) {
-                    console.error('Fallo al obtener los datos:', error);
+                    // console.error('Fallo al obtener los datos:', error);
                     showTemporaryMessage('Error al cargar los datos. Por favor, intente de nuevo más tarde.');
                 } finally {
                     loaderContainer.classList.add('hidden');
                     ordenesContainer.classList.remove('hidden');
                 }
             }
-            
+
             // Función para actualizar el conteo de resultados de búsqueda
             function updateResultsCount() {
                 if (ordenesTable) {
@@ -752,6 +769,9 @@
                     }
                 }
             }
+
+
+            
             
             // Función para rellenar y mostrar el modal de edición
             window.editOrden = async function(ordenId) {
@@ -769,8 +789,9 @@
                         <table class="modal-header-table">
                             <tr><th>Placa:</th><td>${ordenToEdit.Vehiculo_Placa}</td></tr>
                             <tr><th>Contacto:</th><td>${ordenToEdit.Vehiculo_PersonaContacto}</td></tr>
+                            <!-- El campo Orden_Fecha ahora está formateado con formatDate() -->
                             <tr><th>Fecha:</th><td>${formatDate(ordenToEdit.Orden_Fecha)}</td></tr>
-                            <tr><th>Total Orden:</th><td>${formatNumber(ordenToEdit.Orden_Total)}</td></tr>
+                            <tr id="modal-orden-total-row"><th>Total Orden:</th><td id="modal-orden-total-value">${formatNumber(ordenToEdit.Orden_Total)}</td></tr>
                             <tr><th>Moneda:</th><td>${ordenToEdit.Orden_Moneda}</td></tr>
                             <tr><th>Tasa Referencia:</th><td>${formatNumber(ordenToEdit.Orden_TasaCambio)}</td></tr>
                         </table>
@@ -788,7 +809,7 @@
                         }
                         const detailData = await response.json();
                         cachedDetallesData = detailData.data || [];
-                        console.log('Detalles de la orden cargados:', cachedDetallesData);
+                        // console.log('Detalles de la orden cargados:', cachedDetallesData);
 
                         // Destruir la instancia de DataTables si ya existe antes de inicializarla nuevamente
                         if ($.fn.DataTable.isDataTable('#orderDetailsTable')) {
@@ -802,7 +823,7 @@
                             searching: false,
                             data: cachedDetallesData,
                             columns: [
-                                { data: 'Orden_Pos_ID', title: 'Pos', className: 'dt-center' }, // CLASE CORREGIDA A 'dt-center'
+                                { data: 'Orden_Pos_ID', title: 'Pos', className: 'dt-center' },
                                 { data: 'Orden_Producto_Tipo', title: 'Tipo' },
                                 { data: 'Orden_Producto_Presentacion', title: 'Presentación' },
                                 {
@@ -837,7 +858,7 @@
                         });
 
                     } catch (error) {
-                        console.error('Fallo al obtener los detalles de la orden:', error);
+                        // console.error('Fallo al obtener los detalles de la orden:', error);
                         showTemporaryMessage(`Error al cargar los detalles: ${error.message}`);
                     } finally {
                         orderDetailsLoader.classList.add('hidden');
@@ -853,130 +874,141 @@
             
             // Función para rellenar y mostrar el modal de edición de detalle
             window.editDetalleItem = function(ordenId, posId) {
-                // CORRECCIÓN: No se usa parseInt en el ordenId, ya que es un string.
-                // Se busca el detalle en el caché sin convertir el ID de la orden.
                 const detalleToEdit = cachedDetallesData.find(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
+                const ordenToEdit = allOrdenesData.find(o => o.Orden_ID === ordenId);
 
-                if (detalleToEdit) {
+                if (detalleToEdit && ordenToEdit) {
                     // Rellenar los campos del formulario con los datos del detalle
                     document.getElementById('edit-detalle-orden-id').value = detalleToEdit.Orden_ID;
                     document.getElementById('edit-detalle-pos-id').value = detalleToEdit.Orden_Pos_ID;
-                    document.getElementById('edit-detalle-moneda').value = detalleToEdit.Orden_Producto_Moneda; // NUEVO: Se rellena el campo de moneda
+                    document.getElementById('edit-detalle-moneda').value = detalleToEdit.Orden_Producto_Moneda;
                     document.getElementById('edit-detalle-tipo').value = detalleToEdit.Orden_Producto_Tipo;
                     document.getElementById('edit-detalle-presentacion').value = detalleToEdit.Orden_Producto_Presentacion;
                     document.getElementById('edit-detalle-costo').value = detalleToEdit.Orden_Producto_Costo;
                     document.getElementById('edit-detalle-cantidad').value = detalleToEdit.Orden_Producto_Cantidad;
                     
+                    // Rellenar los nuevos campos ocultos con los datos de cabecera
+                    // Se usa el valor del campo oculto que ya ha sido formateado
+                    const formattedFecha = formatDate(new Date(ordenToEdit.Orden_Fecha));
+                    document.getElementById('edit-detalle-fecha').value = formattedFecha;
+                    document.getElementById('edit-detalle-total').value = ordenToEdit.Orden_Total;
+                    document.getElementById('edit-detalle-moneda-cab').value = ordenToEdit.Orden_Moneda;
+                    document.getElementById('edit-detalle-tasa-cambio').value = ordenToEdit.Orden_TasaCambio;
+                    document.getElementById('edit-detalle-usuario-reg').value = ordenToEdit.Orden_UsuarioReg;
+
                     // Mostrar el nuevo modal de edición de detalle
                     showModal('editDetalleModal');
                 } else {
-                    showTemporaryMessage('No se encontró el detalle de la orden.');
+                    showTemporaryMessage('No se encontró el detalle de la orden o los datos de cabecera.');
                 }
             };
-
+            
             // Manejar el evento de envío del formulario de edición de detalle
             document.getElementById('editDetalleForm').addEventListener('submit', async function(event) {
                 event.preventDefault();
-
-                // Obtener los valores del formulario
+                
                 const ordenId = document.getElementById('edit-detalle-orden-id').value;
                 const posId = document.getElementById('edit-detalle-pos-id').value;
                 
                 // Mostrar un mensaje de "guardando..."
                 showTemporaryMessage('Guardando cambios...');
-                
+
                 try {
-                    // Paso 1: Enviar solicitud POST con la acción de eliminación al Google Apps Script
-                    const deletePayload = {
-                        action: 'deleteDetail', // Agregamos la acción 'deleteDetail'
-                        referentialId: `${ordenId}.${posId}` // Concatenación de IDs
-                    };
-                    
-                    console.log('Enviando solicitud POST para eliminar:', deletePayload);
-
-                    // Se envía un POST. Se incluye mode: 'no-cors' para evitar errores de CORS en el cliente.
-                    await fetch(GAS_UPDATE_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: {
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify(deletePayload)
-                    });
-
-                    // Nota: En modo 'no-cors', no podemos leer la respuesta del servidor para verificar el éxito.
-                    // Procedemos directamente con la inserción asumiendo que la petición de eliminación fue enviada.
-
-                    console.log('Solicitud de eliminación enviada. Procediendo con la inserción de datos actualizados.');
-                    
-                    // Buscar los datos completos de la orden y del detalle en los cachés
+                    // Paso 1: Obtener los datos completos de la orden y del detalle en los cachés
                     const ordenHeader = allOrdenesData.find(o => o.Orden_ID === ordenId);
                     const originalDetalle = cachedDetallesData.find(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
                     
-                    // Construir el objeto updatedDetalle con todos los campos solicitados
+                    // Paso 2: Recalcular el subtotal con los nuevos valores del formulario
+                    const nuevoCosto = parseFloat(document.getElementById('edit-detalle-costo').value);
+                    const nuevaCantidad = parseFloat(document.getElementById('edit-detalle-cantidad').value);
+                    const nuevoSubtotal = nuevoCosto * nuevaCantidad;
+
+                    // Paso 3: Construir el objeto updatedDetalle con todos los campos solicitados
+                    const Orden_DataReg = formatDateTime(new Date()); // Formatea la fecha y hora antes de enviar
                     const updatedDetalle = {
-                        // NUEVO CAMPO AGREGADO: Orden_Detalle_ID
-                        Orden_Detalle_ID: `${ordenId}.${posId}`, 
                         Orden_ID: ordenId,
                         Vehiculo_Placa: ordenHeader ? ordenHeader.Vehiculo_Placa : '',
                         Orden_Pos_ID: posId,
                         Vehiculo_PersonaContacto: ordenHeader ? ordenHeader.Vehiculo_PersonaContacto : '',
                         Orden_Producto_Tipo: document.getElementById('edit-detalle-tipo').value,
                         Orden_Producto_Presentacion: document.getElementById('edit-detalle-presentacion').value,
-                        Orden_Producto_Costo: parseFloat(document.getElementById('edit-detalle-costo').value),
+                        Orden_Producto_Costo: nuevoCosto,
                         Orden_Producto_Moneda: originalDetalle ? originalDetalle.Orden_Producto_Moneda : '',
-                        Orden_TasaCambio: ordenHeader ? ordenHeader.Orden_TasaCambio : 1.00, // Se corrige el valor predeterminado a 1.00
-                        Orden_Producto_Cantidad: parseFloat(document.getElementById('edit-detalle-cantidad').value),
+                        Orden_TasaCambio: ordenHeader ? ordenHeader.Orden_TasaCambio : 1.00,
+                        Orden_Producto_Cantidad: nuevaCantidad,
+                        Orden_Subtotal_Pos: nuevoSubtotal, // Aquí se asigna el nuevo subtotal calculado
+                        // Campos de cabecera adicionales
+                        // Se usa el valor del campo oculto que ya ha sido formateado
+                        Orden_Fecha: document.getElementById('edit-detalle-fecha').value,
+                        Orden_Total: ordenHeader ? ordenHeader.Orden_Total : 0,
+                        Orden_Moneda: ordenHeader ? ordenHeader.Orden_Moneda : '',
+                        Orden_TasaCambio: ordenHeader ? ordenHeader.Orden_TasaCambio : 1.00,
+                        Orden_UsuarioReg: ordenHeader ? ordenHeader.Orden_UsuarioReg : '',
+                        Orden_DataReg: Orden_DataReg // Agregamos el nuevo campo aquí
                     };
                     
-                    // Lógica para actualizar el subtotal
-                    updatedDetalle.Orden_Subtotal_Pos = updatedDetalle.Orden_Producto_Costo * updatedDetalle.Orden_Producto_Cantidad;
-                    
-                    // Construir el payload para el envío a Google Apps Script
+                    // Paso 4: Construir el payload para el envío a Google Apps Script
                     const payload = {
-                        action: 'updateDetalle',
-                        detalle: updatedDetalle
+                        action: 'updateDetalle', // Una nueva acción que manejará ambos pasos
+                        referentialId: `${ordenId}.${posId}`, // ID para la eliminación
+                        detalle: updatedDetalle // Datos del nuevo registro
                     };
                     
-                    // SENTENCIA console.log AGREGADA PARA DEPURAR EL PAYLOAD
-                    console.log('Contenido del payload a enviar:', payload);
+                    // MOSTRAR EL JSON EN LA CONSOLA ANTES DE ENVIARLO
+                    // console.log('Payload a enviar (POST):', JSON.stringify(payload, null, 2));
 
-                    // --- CAMBIO IMPORTANTE: SE MANTIENE `mode: 'no-cors'` para poder leer la respuesta del servidor
-                    const postResponse = await fetch(GAS_UPDATE_URL, {
+                    // Paso 5: Enviar la solicitud POST
+                    const response = await fetch(GAS_UPDATE_URL, {
                         method: 'POST',
-                        mode: 'no-cors',
                         headers: {
-                            'Content-Type': 'application/json'
+                            'Content-Type': 'application/json',
                         },
-                        body: JSON.stringify(payload)
+                        body: JSON.stringify(payload),
+                        mode: 'no-cors' // Se mantiene 'no-cors' según lo solicitado
                     });
                     
-                    if (!postResponse.ok) {
-                        const errorText = await postResponse.text();
-                        throw new Error(`Error en la inserción: ${postResponse.status} - ${errorText}`);
+                    // Paso 6: Actualizar el valor en el caché local del cliente
+                    // Encontrar y actualizar el detalle en el caché
+                    const detalleIndex = cachedDetallesData.findIndex(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
+                    if (detalleIndex !== -1) {
+                        cachedDetallesData[detalleIndex] = updatedDetalle;
                     }
                     
-                    const postResult = await postResponse.json();
-                    showTemporaryMessage(postResult.message);
-                    console.log('Respuesta del servidor:', postResult);
+                    // Recalcular el Orden_Total
+                    const nuevoTotal = cachedDetallesData.reduce((sum, d) => sum + d.Orden_Subtotal_Pos, 0);
+
+                    // Actualizar el Orden_Total en el caché de la cabecera
+                    const ordenHeaderToUpdate = allOrdenesData.find(o => o.Orden_ID === ordenId);
+                    if (ordenHeaderToUpdate) {
+                        ordenHeaderToUpdate.Orden_Total = nuevoTotal;
+                    }
                     
-                    // Actualizar los datos en el caché para reflejar los cambios en la UI
-                    const detalleIndex = cachedDetallesData.findIndex(d => d.Orden_ID === ordenId && d.Orden_Pos_ID.toString() === posId);
-                    if (detalleIndex > -1) {
-                        // Se encontró el detalle en el caché, se actualiza
-                        cachedDetallesData[detalleIndex] = updatedDetalle;
-                        // Se refresca la tabla de detalles del modal
-                        if (orderDetailsTable) {
-                            orderDetailsTable.clear().rows.add(cachedDetallesData).draw();
-                        }
+                    // Paso 7: Actualizar la UI del modal y la tabla principal
+                    document.getElementById('modal-orden-total-value').textContent = formatNumber(nuevoTotal);
+
+                    // Re-inicializa la tabla de detalles con los datos actualizados del caché
+                    if (orderDetailsTable) {
+                        orderDetailsTable.clear().rows.add(cachedDetallesData).draw();
+                    }
+                    
+                    // Actualiza la tabla principal de DataTables para que el cambio sea visible
+                    if (ordenesTable) {
+                        ordenesTable.rows().every(function() {
+                            const row = this.data();
+                            if (row.Orden_ID === ordenId) {
+                                row.Orden_Total = nuevoTotal;
+                                this.data(row).draw(); // Redibuja la fila
+                            }
+                        });
                     }
 
-                } catch (error) {
-                    showTemporaryMessage(`Error al actualizar el detalle: ${error.message}`);
-                    console.error('Error durante el proceso de actualización:', error);
-                } finally {
-                    // Cerrar el modal después de intentar guardar
+                    // Paso 8: Mensajes y cierre del modal
+                    showTemporaryMessage('¡Cambios guardados!');
                     closeModal('editDetalleModal');
+                    
+                } catch (error) {
+                    showTemporaryMessage(`Error durante el proceso: ${error.message}`);
+                    // console.error('Error durante el proceso de actualización:', error);
                 }
             });
 
@@ -1013,24 +1045,23 @@
                     quantityInput.value = currentValue - 1;
                 }
             });
-
-            // Llama a la función al cargar la página para obtener y mostrar los datos
-            fetchData();
-
+            
             // NUEVA LÓGICA PARA MANEJAR CLICS EN LOS BOTONES DE LA TABLA DE DETALLES
             // Se utiliza la delegación de eventos para capturar los clics en los botones "Editar".
             // Esto es más eficiente y robusto que usar `onclick` en el HTML.
             document.addEventListener('click', (event) => {
-                // Verificamos si el clic fue en un botón con la clase 'edit-detalle-btn'
                 const target = event.target.closest('.edit-detalle-btn');
                 if (target) {
-                    // Obtenemos los datos de los atributos de datos del botón
                     const ordenId = target.getAttribute('data-orden-id');
                     const posId = target.getAttribute('data-pos-id');
-                    // Llamamos a la función `editDetalleItem` con los datos obtenidos
                     editDetalleItem(ordenId, posId);
                 }
             });
+            
+            // El manejador de eventos del botón "Actualizar" ha sido eliminado ya que la actualización ahora es automática.
+            
+            // Llama a la función al cargar la página para obtener y mostrar los datos
+            fetchData();
         });
     </script>
 </body>
