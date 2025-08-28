@@ -339,7 +339,8 @@
 
                     // --- CAMBIO CLAVE: Esperar a que el registro de historial se complete antes de redirigir ---
                     if (data.user && data.user.Cliente_ID && data.user.Cliente_Nombre) {
-                        await registerHistory(data.user.Cliente_ID, data.user.Cliente_Nombre, 'Ingreso a la App');
+                        // await registerHistory(data.user.Cliente_ID, data.user.Cliente_Nombre, 'Ingreso a la App');
+                        registerHistory(data.user.Cliente_ID, data.user.Cliente_Nombre, 'Ingreso a la App');
                     }
                     
                     showMessage(messageContainer, '¡Inicio de Sesión Exitoso! Redirigiendo...', 'success');
