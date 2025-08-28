@@ -235,6 +235,17 @@
             <!-- El contenido de la tabla de órdenes se inyectará aquí con JavaScript -->
         </div>
 
+        <!-- Sección para mostrar y gestionar valores copiados -->
+        <div id="copied-values-container" class="table-container mt-6 p-4 bg-white rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-2">Valores copiados</h2>
+            <div id="copied-values-list" class="flex flex-wrap gap-2">
+                <!-- Los valores copiados se inyectarán aquí -->
+            </div>
+            <button id="clearCopiedBtn" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200">
+                Limpiar Valores Copiados
+            </button>
+        </div>
+
         <!-- Ventana de mensaje personalizada (oculta por defecto) -->
         <div id="message-box" class="message-box">
             <span id="message-text"></span>
@@ -375,6 +386,8 @@
             const messageText = document.getElementById('message-text');
             const searchInput = document.getElementById('searchInput');
             const buscarBtn = document.getElementById('buscarBtn');
+            const copiedValuesList = document.getElementById('copied-values-list');
+            const clearCopiedBtn = document.getElementById('clearCopiedBtn');
 
             // Mapas de nombres para los encabezados de las tablas
             const ordenesHeadersMap = {
@@ -437,6 +450,58 @@
                 return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
             }
 
+            /**
+             * Formatea un número para usar separadores de miles y decimales de estilo español.
+             * Por ejemplo, 1234.56 se convierte en "1.234,56".
+             * @param {number} num El número a formatear.
+             * @returns {string} El número formateado como una cadena.
+             */
+            function formatNumber(num) {
+                // Utiliza la API de internacionalización para un formato robusto
+                return new Intl.NumberFormat('es-ES', { 
+                    style: 'decimal', 
+                    minimumFractionDigits: 2, 
+                    maximumFractionDigits: 2 
+                }).format(Number(num));
+            }
+
+            /**
+             * Función para guardar el valor copiado en un array en sessionStorage
+             * y actualizar la visualización en la página.
+             * @param {string} value El valor a guardar.
+             */
+            function saveCopiedValue(value) {
+                // Obtener el array existente o crear uno nuevo si no existe
+                let copiedValues = JSON.parse(sessionStorage.getItem('copiedValues')) || [];
+                
+                // Añadir el nuevo valor al array
+                copiedValues.push(value);
+                
+                // Guardar el array actualizado en sessionStorage
+                sessionStorage.setItem('copiedValues', JSON.stringify(copiedValues));
+                
+                // Actualizar la visualización de los valores copiados
+                renderCopiedValues();
+            }
+
+            /**
+             * Función para renderizar los valores guardados en la interfaz de usuario.
+             */
+            function renderCopiedValues() {
+                let copiedValues = JSON.parse(sessionStorage.getItem('copiedValues')) || [];
+                copiedValuesList.innerHTML = '';
+                if (copiedValues.length === 0) {
+                    copiedValuesList.innerHTML = '<span class="text-gray-500">No hay valores copiados.</span>';
+                } else {
+                    copiedValues.forEach(val => {
+                        const span = document.createElement('span');
+                        span.className = 'bg-gray-200 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-full';
+                        span.textContent = val;
+                        copiedValuesList.appendChild(span);
+                    });
+                }
+            }
+
             // Función para adjuntar los listeners de copia para la tabla de vehículos
             function attachVehiculosCopyListeners(tableId, headers) {
                 const tableElement = document.getElementById(tableId);
@@ -456,7 +521,7 @@
                         const row = button.closest('tr');
                         const cells = row.querySelectorAll('td');
 
-                        // NUEVA LÓGICA: Solo copia la placa del vehículo
+                        // Lógica: Solo copia la placa del vehículo
                         const vehiculoPlacaIndex = headers.indexOf('Vehiculo_Placa') + 1;
                         const vehiculoPlaca = cells[vehiculoPlacaIndex].textContent.trim();
                         const combinedText = vehiculoPlaca;
@@ -467,8 +532,11 @@
                         tempInput.select();
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
+                        
+                        // Guarda el valor copiado en sessionStorage
+                        saveCopiedValue(vehiculoPlaca);
 
-                        showMessage('Placa de Vehículo copiada.');
+                        showMessage('Placa de Vehículo copiada y guardada.');
                     });
                 });
             }
@@ -492,7 +560,7 @@
                         const row = button.closest('tr');
                         const cells = row.querySelectorAll('td');
 
-                        // LÓGICA EXISTENTE: Solo copia el ID de la orden
+                        // Lógica: Solo copia el ID de la orden
                         const ordenIdIndex = headers.indexOf('Orden_ID') + 1;
                         const ordenId = cells[ordenIdIndex].textContent.trim();
 
@@ -503,7 +571,10 @@
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
 
-                        showMessage('ID de la Orden copiada.');
+                        // Guarda el valor copiado en sessionStorage
+                        saveCopiedValue(ordenId);
+
+                        showMessage('ID de la Orden copiada y guardada.');
                     });
                 });
             }
@@ -632,6 +703,9 @@
                             cellValue = formatDate(cellValue);
                         } else if (technicalKey === 'Vehiculo_Data_Reg' || technicalKey === 'Orden_DataReg') {
                             cellValue = formatDateTime(cellValue);
+                        } else if (technicalKey === 'Orden_Total' && cellValue !== '') {
+                            // NUEVA LÓGICA: Formatea el campo Orden_Total como un número
+                            cellValue = formatNumber(cellValue);
                         }
                         tableHTML += `<td class="${className.trim()}">${cellValue}</td>`;
                     });
@@ -678,6 +752,16 @@
                     handleSearch();
                 }
             });
+
+            // Listener para el botón de limpiar valores copiados
+            clearCopiedBtn.addEventListener('click', () => {
+                sessionStorage.removeItem('copiedValues');
+                renderCopiedValues();
+                showMessage('Valores copiados limpiados.');
+            });
+
+            // Renderizar los valores copiados al cargar la página
+            renderCopiedValues();
         });
     </script>
 </body>
