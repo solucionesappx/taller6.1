@@ -139,7 +139,7 @@
         /* Se ha cambiado el fondo de las celdas a blanco */
         table.dataTable tbody td {
             background-color: #ffffff;
-            white-space: nowrap; /* Mantiene el contenido en una sola línea */
+            white-space: nowrap;
             padding: 0.25rem 0.5rem; /* Reduce la altura de las celdas */
         }
         /* Estilo de hover para las filas, se asegura de que funcione en todas las celdas */
@@ -379,8 +379,8 @@
             <!-- Sección para los detalles de la orden -->
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-bold">Detalles de la Orden</h3>
-                <!-- Se ha eliminado el botón "Actualizar" ya que la tabla se actualiza automáticamente al guardar los cambios de un detalle. -->
             </div>
+            <!-- El contenedor del loader para los detalles de la orden -->
             <div id="orderDetailsLoader" class="flex items-center justify-content-center p-4 hidden">
                 <div class="loader"></div>
                 <p class="ml-2 text-gray-500">Cargando detalles...</p>
@@ -557,6 +557,7 @@
         // LÓGICA DE LA PÁGINA PRINCIPAL
         document.addEventListener('DOMContentLoaded', () => {
             // console.log("DOM content is loaded.");
+            
             // --- Lógica del menú y redirección ---
             const buttonRoutes = {
                 'homeBtn': 'menu_app.html',
@@ -643,10 +644,10 @@
                     return;
                 }
 
-                // Mostrar el cargador y ocultar la tabla
+                // *** CAMBIO CLAVE: Muestra el loader antes de la llamada a la API ***
                 loaderContainer.classList.remove('hidden');
                 ordenesContainer.classList.add('hidden');
-
+                
                 try {
                     const response = await fetch(`${GAS_READ_EDIT_URL}?action=getOrdenesCab`);
                     // console.log('API Response:', response);
@@ -750,6 +751,7 @@
                     // console.error('Fallo al obtener los datos:', error);
                     showTemporaryMessage('Error al cargar los datos. Por favor, intente de nuevo más tarde.');
                 } finally {
+                    // *** CAMBIO CLAVE: Oculta el loader después de que la operación termine (éxito o fracaso) ***
                     loaderContainer.classList.add('hidden');
                     ordenesContainer.classList.remove('hidden');
                 }
@@ -775,7 +777,10 @@
             
             // Función para rellenar y mostrar el modal de edición
             window.editOrden = async function(ordenId) {
-                // Ocultar la tabla de detalles y mostrar el loader mientras se cargan los datos
+                // *** NUEVO: Muestra un mensaje de carga antes de comenzar la operación ***
+                showTemporaryMessage('Cargando datos de la orden...');
+                
+                // Muestra el loader para los detalles de la orden
                 orderDetailsContainer.classList.add('hidden');
                 orderDetailsLoader.classList.remove('hidden');
             
@@ -861,6 +866,7 @@
                         // console.error('Fallo al obtener los detalles de la orden:', error);
                         showTemporaryMessage(`Error al cargar los detalles: ${error.message}`);
                     } finally {
+                        // Ocultar el loader y mostrar la tabla de detalles
                         orderDetailsLoader.classList.add('hidden');
                         orderDetailsContainer.classList.remove('hidden');
                     }
