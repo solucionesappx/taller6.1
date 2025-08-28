@@ -297,7 +297,8 @@
             const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=registerHistory&cliente_id=${encodeURIComponent(cliente_id)}&nombre=${encodeURIComponent(nombre)}&event_action=${encodeURIComponent(action)}`;
             try {
                 const response = await fetch(url);
-                const data = await response.json();
+                const data = response.json();
+                // await const data = await response.json();
                 if (data.success) {
                     console.log("Registro de historial exitoso:", data.message);
                 } else {
@@ -324,7 +325,7 @@
                 // Modificado: Enviar 'action: login' en el body para doPost, o como parámetro para doGet
                 const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
                 // await const data = await response.json();
-                const data = await response.json();
+                const data = response.json();
 
                 if (data.success) {
                     const loggedInUserWithTimestamp = {
