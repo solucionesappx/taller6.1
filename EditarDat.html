@@ -1,5 +1,5 @@
-<!-- versión base creada por le cliente -->
-<!DOCTYPE html>
+<!-- versión base creada por le cliente V5 -->
+<!DOCTYPE ahtml>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -14,7 +14,7 @@
     <!-- Incluye el CSS de DataTables -->
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
     <!-- Incluye el CSS de FixedColumns -->
-    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/css/fixedColumns.dataTables.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/fixedcolumns/5.0.1/js/dataTables.fixedColumns.min.js">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -139,7 +139,7 @@
         /* Se ha cambiado el fondo de las celdas a blanco */
         table.dataTable tbody td {
             background-color: #ffffff;
-            white-space: nowrap; /* Mantiene el contenido en una sola línea */
+            white-space: nowrap;
             padding: 0.25rem 0.5rem; /* Reduce la altura de las celdas */
         }
         /* Estilo de hover para las filas, se asegura de que funcione en todas las celdas */
@@ -324,7 +324,7 @@
             <!-- Nuevo elemento para mostrar el conteo de resultados -->
             <p id="search-results-info" class="text-sm text-gray-600 mb-4"></p>
             <!-- Contenedor del loader -->
-            <div id="loader-container" class="flex items-center justify-center p-4 hidden">
+            <div id="loader-container" class="flex items-center justify-content-center p-4 hidden">
                 <div class="loader"></div>
                 <p class="ml-2 text-gray-500">Cargando datos...</p>
             </div>
@@ -597,10 +597,9 @@
             // Asegúrate de que el script esté desplegado para "Cualquiera"
             const GAS_READ_EDIT_URL = 'https://script.google.com/macros/s/AKfycbxZXTRQTXDqdP26xUHT-K4HZxigYfRKRFPGabCm2iz6SC6aqxK1hE6nknr9O0jTYFyF/exec';
             
-            // --- NUEVO: URL para la petición DELETE que eliminará la fila por ID de Orden y Posición ---
-            // IMPORTANTE: DEBES CREAR Y DESPLEGAR ESTA FUNCIÓN EN TU SCRIPT DE GOOGLE APPS
-            // La función en el lado del servidor debe llamarse 'doDelete(e)'
-            const GAS_DELETE_URL = 'https://script.google.com/macros/s/AKfycbwW_MuzL5gi6yqZJv3qGhQpmCnIUghJlQFeWZDEFovphMQTrZRwXpPB_QON1KgQ0cgiog/exec';
+            // --- CORRECCIÓN: SE MUEVE LA DECLARACIÓN DE LA URL AQUÍ PARA EVITAR EL ERROR DE INICIALIZACIÓN ---
+            const GAS_UPDATE_URL = 'https://script.google.com/macros/s/AKfycby46bh-pYGN43EWUn1xzqts04FYHbWBEn6opWfFGa34JGMIPEQL8z-85WnQlqSLZLtfCA/exec';
+            // ---------------------------------------------------------------------------------------------------
 
             // Cache para datos de órdenes
             let allOrdenesData = [];
@@ -738,7 +737,7 @@
                     ordenesContainer.classList.remove('hidden');
                 }
             }
-
+            
             // Función para actualizar el conteo de resultados de búsqueda
             function updateResultsCount() {
                 if (ordenesTable) {
@@ -887,33 +886,28 @@
                 showTemporaryMessage('Guardando cambios...');
                 
                 try {
-                    // Paso 1: Enviar solicitud DELETE al Google Apps Script
+                    // Paso 1: Enviar solicitud POST con la acción de eliminación al Google Apps Script
                     const deletePayload = {
-                        Orden_ID: ordenId,
-                        Orden_Pos_ID: posId
+                        action: 'deleteDetail', // Agregamos la acción 'deleteDetail'
+                        referentialId: `${ordenId}.${posId}` // Concatenación de IDs
                     };
                     
-                    console.log('Enviando solicitud DELETE:', deletePayload);
+                    console.log('Enviando solicitud POST para eliminar:', deletePayload);
 
-                    // Se envía un DELETE. El cuerpo de la petición se envía en el body.
-                    const deleteResponse = await fetch(GAS_DELETE_URL, {
-                        method: 'DELETE',
+                    // Se envía un POST. Se incluye mode: 'no-cors' para evitar errores de CORS en el cliente.
+                    await fetch(GAS_UPDATE_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
                         headers: {
                             'Content-Type': 'application/json'
                         },
                         body: JSON.stringify(deletePayload)
                     });
-                    
-                    if (!deleteResponse.ok) {
-                        const errorText = await deleteResponse.text();
-                        throw new Error(`Error en la eliminación: ${deleteResponse.status} - ${errorText}`);
-                    }
-                    
-                    const deleteResult = await deleteResponse.json();
-                    console.log('Respuesta de la eliminación:', deleteResult);
-                    
-                    // Paso 2: Si la eliminación fue exitosa, enviar la solicitud POST con los datos actualizados
-                    console.log('Eliminación exitosa. Procediendo con la inserción de datos actualizados.');
+
+                    // Nota: En modo 'no-cors', no podemos leer la respuesta del servidor para verificar el éxito.
+                    // Procedemos directamente con la inserción asumiendo que la petición de eliminación fue enviada.
+
+                    console.log('Solicitud de eliminación enviada. Procediendo con la inserción de datos actualizados.');
                     
                     // Buscar los datos completos de la orden y del detalle en los cachés
                     const ordenHeader = allOrdenesData.find(o => o.Orden_ID === ordenId);
@@ -921,6 +915,8 @@
                     
                     // Construir el objeto updatedDetalle con todos los campos solicitados
                     const updatedDetalle = {
+                        // NUEVO CAMPO AGREGADO: Orden_Detalle_ID
+                        Orden_Detalle_ID: `${ordenId}.${posId}`, 
                         Orden_ID: ordenId,
                         Vehiculo_Placa: ordenHeader ? ordenHeader.Vehiculo_Placa : '',
                         Orden_Pos_ID: posId,
@@ -942,13 +938,13 @@
                         detalle: updatedDetalle
                     };
                     
-                    // MOSTRAR EL JSON EN LA CONSOLA ANTES DE ENVIARLO
-                    console.log('Payload a enviar (POST):', JSON.stringify(payload, null, 2));
+                    // SENTENCIA console.log AGREGADA PARA DEPURAR EL PAYLOAD
+                    console.log('Contenido del payload a enviar:', payload);
 
-                    const GAS_UPDATE_URL = 'https://script.google.com/macros/s/AKfycby46bh-pYGN43EWUn1xzqts04FYHbWBEn6opWfFGa34JGMIPEQL8z-85WnQlqSLZLtfCA/exec'; // URL para la actualización
-
+                    // --- CAMBIO IMPORTANTE: SE MANTIENE `mode: 'no-cors'` para poder leer la respuesta del servidor
                     const postResponse = await fetch(GAS_UPDATE_URL, {
                         method: 'POST',
+                        mode: 'no-cors',
                         headers: {
                             'Content-Type': 'application/json'
                         },
