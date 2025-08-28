@@ -323,6 +323,7 @@
             try {
                 // Modificado: Enviar 'action: login' en el body para doPost, o como parámetro para doGet
                 const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=login&username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+                // await const data = await response.json();
                 const data = await response.json();
 
                 if (data.success) {
