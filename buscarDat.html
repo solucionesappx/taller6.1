@@ -235,15 +235,13 @@
             <!-- El contenido de la tabla de órdenes se inyectará aquí con JavaScript -->
         </div>
 
-        <!-- Sección para mostrar y gestionar valores copiados -->
-        <div id="copied-values-container" class="table-container mt-6 p-4 bg-white rounded-lg shadow-md">
-            <h2 class="text-xl font-semibold mb-2">Valores copiados</h2>
-            <div id="copied-values-list" class="flex flex-wrap gap-2">
-                <!-- Los valores copiados se inyectarán aquí -->
+        <!-- Sección para mostrar el último valor copiado -->
+        <div id="last-copied-value-container" class="table-container mt-6 p-4 bg-white rounded-lg shadow-md">
+            <h2 class="text-xl font-semibold mb-2">Último valor copiado</h2>
+            <div id="last-copied-value-display" class="bg-gray-200 text-gray-800 text-lg font-medium me-2 px-4 py-2 rounded-lg">
+                <!-- El último valor copiado se inyectará aquí -->
+                <span class="text-gray-500">No hay valores copiados.</span>
             </div>
-            <button id="clearCopiedBtn" class="mt-4 px-4 py-2 bg-red-500 text-white rounded-lg shadow-md hover:bg-red-600 transition-colors duration-200">
-                Limpiar Valores Copiados
-            </button>
         </div>
 
         <!-- Ventana de mensaje personalizada (oculta por defecto) -->
@@ -386,8 +384,7 @@
             const messageText = document.getElementById('message-text');
             const searchInput = document.getElementById('searchInput');
             const buscarBtn = document.getElementById('buscarBtn');
-            const copiedValuesList = document.getElementById('copied-values-list');
-            const clearCopiedBtn = document.getElementById('clearCopiedBtn');
+            const lastCopiedValueDisplay = document.getElementById('last-copied-value-display');
 
             // Mapas de nombres para los encabezados de las tablas
             const ordenesHeadersMap = {
@@ -466,39 +463,24 @@
             }
 
             /**
-             * Función para guardar el valor copiado en un array en sessionStorage
+             * Función para guardar el último valor copiado en sessionStorage
              * y actualizar la visualización en la página.
              * @param {string} value El valor a guardar.
              */
-            function saveCopiedValue(value) {
-                // Obtener el array existente o crear uno nuevo si no existe
-                let copiedValues = JSON.parse(sessionStorage.getItem('copiedValues')) || [];
-                
-                // Añadir el nuevo valor al array
-                copiedValues.push(value);
-                
-                // Guardar el array actualizado en sessionStorage
-                sessionStorage.setItem('copiedValues', JSON.stringify(copiedValues));
-                
-                // Actualizar la visualización de los valores copiados
-                renderCopiedValues();
+            function saveLastCopiedValue(value) {
+                sessionStorage.setItem('lastCopiedValue', value);
+                renderLastCopiedValue();
             }
 
             /**
-             * Función para renderizar los valores guardados en la interfaz de usuario.
+             * Función para renderizar el último valor guardado en la interfaz de usuario.
              */
-            function renderCopiedValues() {
-                let copiedValues = JSON.parse(sessionStorage.getItem('copiedValues')) || [];
-                copiedValuesList.innerHTML = '';
-                if (copiedValues.length === 0) {
-                    copiedValuesList.innerHTML = '<span class="text-gray-500">No hay valores copiados.</span>';
+            function renderLastCopiedValue() {
+                const lastValue = sessionStorage.getItem('lastCopiedValue');
+                if (lastValue) {
+                    lastCopiedValueDisplay.textContent = lastValue;
                 } else {
-                    copiedValues.forEach(val => {
-                        const span = document.createElement('span');
-                        span.className = 'bg-gray-200 text-gray-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded-full';
-                        span.textContent = val;
-                        copiedValuesList.appendChild(span);
-                    });
+                    lastCopiedValueDisplay.innerHTML = '<span class="text-gray-500">No hay valores copiados.</span>';
                 }
             }
 
@@ -533,8 +515,8 @@
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
                         
-                        // Guarda el valor copiado en sessionStorage
-                        saveCopiedValue(vehiculoPlaca);
+                        // Guarda el último valor copiado en sessionStorage
+                        saveLastCopiedValue(vehiculoPlaca);
 
                         showMessage('Placa de Vehículo copiada y guardada.');
                     });
@@ -571,8 +553,8 @@
                         document.execCommand('copy');
                         document.body.removeChild(tempInput);
 
-                        // Guarda el valor copiado en sessionStorage
-                        saveCopiedValue(ordenId);
+                        // Guarda el último valor copiado en sessionStorage
+                        saveLastCopiedValue(ordenId);
 
                         showMessage('ID de la Orden copiada y guardada.');
                     });
@@ -753,15 +735,8 @@
                 }
             });
 
-            // Listener para el botón de limpiar valores copiados
-            clearCopiedBtn.addEventListener('click', () => {
-                sessionStorage.removeItem('copiedValues');
-                renderCopiedValues();
-                showMessage('Valores copiados limpiados.');
-            });
-
-            // Renderizar los valores copiados al cargar la página
-            renderCopiedValues();
+            // Renderizar el último valor copiado al cargar la página
+            renderLastCopiedValue();
         });
     </script>
 </body>
