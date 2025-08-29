@@ -225,7 +225,7 @@
                     <input type="text" id="targetCurrencyInput" class="w-2/3 p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 border border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center" placeholder="Ej: 100,25">
                 </div>
                 <!-- Separador visual añadido aquí -->
-                <!-- <hr class="my-4 border-gray-400 dark:border-gray-600">
+                <!-- <hr class="my-4 border-gray-400 dark:border-gray-600"> -->
                 <!-- Nuevo campo para mostrar el valor convertido -->
                 <div class="flex items-center justify-between">
                     <label id="convertedValueLabel" class="text-gray-700 dark:text-gray-300 font-medium">USD eq</label>
@@ -290,7 +290,7 @@
         // URL de tu script de Google Apps Script.
         // REEMPLAZA esta URL con la tuya después de implementar el script de GAS.
         const GAS_REGISTER_ORD_URL = 'https://script.google.com/macros/s/AKfycbwXYK4Ir__FygUSlgCtvn3JcenkfbXpDqy6r8S8gSKF9xx5BgDCWclUKtYVfpPYS-e3bw/exec';
-        
+
         // Función para generar un UUID corto
         function generateShortUUID() {
             const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ23456789';
@@ -309,7 +309,7 @@
             const day = String(date.getDate()).padStart(2, '0');
             return `${year}-${month}-${day}`;
         }
-        
+
         // Nueva función para formatear la fecha a dd.mm.yyyy para la visualización y guardado
         function formatDisplayDate(dateString) {
             if (!dateString) return '';
@@ -344,9 +344,10 @@
             });
             return formatter.format(value);
         }
-
+        
         // Variable para almacenar los detalles de la orden
         let orderDetails = [];
+
         // Variable global para almacenar los detalles de la conversión
         let conversionDetails = null;
 
@@ -354,754 +355,474 @@
         let conversionModalState = {};
 
         // Elimina todos los detalles de la orden
-        function removeAllDetails() {
-            // Limpia el array de detalles de la orden
+        function clearOrderDetails() {
+            const detalleContainer = document.getElementById('detalleContainer');
+            detalleContainer.innerHTML = '';
             orderDetails = [];
-            // Limpia el contenedor del DOM
-            document.getElementById('orderDetailsContainer').innerHTML = '';
-            // Reinicia el contador de ID
-            orderIdCounter = 10;
-            // Actualiza los totales
-            updateTotalsByCurrency();
-            // Muestra un mensaje de éxito
-            showMessage('Todos los productos y servicios han sido eliminados.');
         }
-        
-        // Función para reiniciar el formulario
-        function resetForm() {
-            // Limpiar el array de detalles
-            orderDetails = [];
-            // Limpia el contenedor del DOM
-            document.getElementById('detalleContainer').innerHTML = '';
-            // Limpiar los detalles de conversión
-            conversionDetails = null;
-            // Reiniciar los campos de la cabecera del formulario
-            document.getElementById('ordenForm').reset();
-            // Generar un nuevo ID y fecha
-            document.getElementById('ordenId').value = generateShortUUID();
-            document.getElementById('ordenFecha').value = formatDate(new Date());
-            // Actualizar los totales y renderizar el primer detalle
+
+        // Elimina un detalle de la orden por su ID
+        function removeDetail(id) {
+            orderDetails = orderDetails.filter(detail => detail.id !== id);
+            renderOrderDetails();
             updateTotalsByCurrency();
         }
-            // --- LÓGICA PARA EL REGISTRO DE HISTORIAL DE VISITA ---
-            const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
 
-            if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                // Registrar la visita a esta página
-            //    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Visita a Menú');
-            } else {
-                console.warn("No hay usuario logueado. Redirigiendo a la página de inicio.");
-                window.location.href = 'index.html';
-            }            
-
-            // --- Función para manejar el registro de historial y la redirección ---
-            const handleButtonClick = async (id, action) => {
-                const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                    // Registra la acción del usuario antes de navegar.
-                    registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, action);
-                }
-                // Redirige al usuario a la URL correspondiente.
-                window.location.href = buttonRoutes[id];
-            };
-
-            // --- Aplicar la lógica a los botones de navegación ---
-            Object.keys(buttonRoutes).forEach(id => {
-                const button = document.getElementById(id);
-                if (button) {
-                    button.addEventListener('click', () => {
-                        // Se usa el ID del botón para determinar la acción a registrar.
-                        // Por ejemplo, para 'vehiculosBtn', la acción sería 'Vehículos'.
-                        const actionMap = {
-                            'homeBtn': 'Menú Principal',
-                            'vehiculosBtn': 'Vehículos',
-                            'ordenesBtn': 'Órdenes',
-                            'buscarBtn': 'Buscar',
-                            'EditarBtn': 'Editar'
-                        };
-                        const action = actionMap[id];
-                        handleButtonClick(id, action);
-                    });
-                }
+        // Renderiza todos los detalles de la orden
+        function renderOrderDetails() {
+            const detalleContainer = document.getElementById('detalleContainer');
+            detalleContainer.innerHTML = ''; // Limpiar el contenedor
+            
+            orderDetails.forEach(detail => {
+                const detailElement = document.createElement('div');
+                detailElement.className = 'bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md flex flex-col md:flex-row items-start md:items-center gap-4 relative';
+                detailElement.innerHTML = `
+                    <div class="flex-grow w-full md:w-auto">
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Concepto</label>
+                        <input type="text" value="${detail.concepto}" readonly class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed">
+                    </div>
+                    <div class="flex-grow w-full md:w-auto">
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Costo ($)</label>
+                        <input type="text" value="${formatNumber(detail.costo_usd)}" readonly class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed text-right">
+                    </div>
+                    <div class="flex-grow w-full md:w-auto">
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Cantidad</label>
+                        <input type="text" value="${detail.cantidad}" readonly class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed text-right">
+                    </div>
+                    <div class="flex-grow w-full md:w-auto">
+                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Total ($)</label>
+                        <input type="text" value="${formatNumber(detail.total_usd)}" readonly class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed text-right">
+                    </div>
+                    <div class="flex-shrink-0">
+                        <button type="button" class="mt-7 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md transition-colors duration-200" onclick="removeDetail('${detail.id}')">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </div>
+                `;
+                detalleContainer.appendChild(detailElement);
             });
-
-            // --- Lógica del botón de salida (logoutBtn) ---
-            const logoutBtn = document.getElementById('logoutBtn');
-            if (logoutBtn) {
-                logoutBtn.addEventListener('click', async () => {
-                    const loggedInUser = JSON.parse(sessionStorage.getItem('loggedInUser'));
-                    if (loggedInUser && loggedInUser.Cliente_ID && loggedInUser.Cliente_Nombre) {
-                        registerHistory(loggedInUser.Cliente_ID, loggedInUser.Cliente_Nombre, 'Salida de la App');
-                    }
-                    sessionStorage.removeItem('loggedInUser');
-                    window.location.href = 'index.html';
-                });
-            }        
-          
-        /**
-         * Genera y muestra el resumen de la orden en el contenedor de información adicional.
-         * Esta función ahora se llama cada vez que se actualiza el array de `orderDetails`.
-         */
-        function renderOrderSummary() {
-            const savedOrderContainer = document.getElementById('savedOrderContainer');
-            // Limpia todo el contenido del contenedor de resumen.
-            savedOrderContainer.innerHTML = '';
-            
-            // Datos de la cabecera
-            const orderData = {
-                id: document.getElementById('ordenId').value,
-                fecha: formatDisplayDate(document.getElementById('ordenFecha').value),
-                placa: document.getElementById('placa').value,
-                contacto: document.getElementById('contacto').value,
-                total_USD: document.getElementById('ordenTotal_USD').value,
-                total_VED: document.getElementById('ordenTotal_VED').value,
-                total_final: document.getElementById('ordenTotal_Final').value,
-                moneda_final: document.getElementById('finalTotalLabel').innerText.match(/\(([^)]+)\)/)?.[1] || 'N/A',
-                details: orderDetails
-            };
-
-            let orderHtml = `<h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Resumen de la Orden</h2>
-                            <div class="flex-grow scrollable-form-container">`;
-            
-            orderHtml += `<div class="mt-2 p-4 border rounded-lg border-gray-400 dark:border-gray-600">
-                            <h4 class="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">Detalles de la Orden</h4>`;
-            orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>ID de Orden:</strong> ${orderData.id}</p>`;
-            orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Fecha:</strong> ${orderData.fecha}</p>`;
-            orderHtml += `<p class="text-700 dark:text-gray-300 text-lg"><strong>Placa:</strong> ${orderData.placa}</p>`;
-            if (orderData.contacto) {
-                orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Contacto:</strong> ${orderData.contacto}</p>`;
-            }
-            orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Total USD:</strong> ${orderData.total_USD}</p>`;
-            orderHtml += `<p class="text-gray-700 dark:text-gray-300 text-lg"><strong>Total VED:</strong> ${orderData.total_VED}</p>`;
-            
-            // Agrega los detalles de la conversión si existen
-            if (conversionDetails) {
-                // Se ha corregido la lógica para mostrar el valor original sin formatear
-                const convertedFromAmount = conversionDetails.from === 'USD' ? orderDetails.reduce((sum, item) => sum + (item.moneda === 'USD' ? item.costo * item.cantidad : 0), 0) : orderDetails.reduce((sum, item) => sum + (item.moneda === 'VED' ? item.costo * item.cantidad : 0), 0);
-
-                orderHtml += `
-                    <div class="mt-4 p-4 border-l-4 border-indigo-500 bg-gray-300 dark:bg-gray-700 rounded-lg">
-                        <p class="text-gray-700 dark:text-gray-300">
-                            <i class="fas fa-exchange-alt mr-2 text-indigo-500"></i>
-                            <span class="font-bold">Conversión Aplicada:</span>
-                        </p>
-                        <ul class="list-none list-inside text-sm mt-1 text-gray-700 dark:text-gray-300">
-                            <li>De: <span class="font-semibold">${formatNumber(convertedFromAmount)} ${conversionDetails.from}</span></li>
-                            <li>A: <span class="font-semibold">${formatNumber(conversionDetails.convertedValue)} ${conversionDetails.to}</span></li>
-                            <li>Tasa de Cambio: <span class="font-semibold">${formatNumber(conversionDetails.rate)} VED/USD</span></li>
-                        </ul>
-                    </div>
-                `;
-            }
-
-            orderHtml += `<p class="mt-4 text-2xl font-bold text-indigo-600 dark:text-indigo-400">Total Final: ${orderData.total_final} (${orderData.moneda_final})</p>`;
-            orderHtml += `<h4 class="text-xl font-semibold mt-4 mb-2 text-gray-800 dark:text-gray-200">Productos/Servicios</h4>`;
-
-            // Se ha cambiado el listado para incluir el ID de posición en el formato solicitado
-            if (orderData.details && orderData.details.length > 0) {
-                orderHtml += `<div class="space-y-2 text-gray-700 dark:text-gray-300">`;
-                orderData.details.forEach(detail => {
-                    // LÍNEA MODIFICADA AQUÍ para incluir el Número de Parte (NP)
-                    orderHtml += `<div>`;
-                    orderHtml += `<strong>Posición ${detail.id}:</strong> (${detail.tipo}) - ${detail.descripcion || 'Sin descripción'}${detail.np ? ` - NP: ${detail.np}` : ''} - x${detail.cantidad} (${detail.moneda})</span>`;
-                    orderHtml += `<div class="ml-4 text-sm">Costo unitario: ${formatNumber(detail.costo)} ${detail.moneda}</div>`;
-                    orderHtml += `<div class="ml-4 text-sm">Subtotal: ${formatNumber(detail.subtotal)} ${detail.moneda}</div>`;
-                    orderHtml += `</div>`;
-                });
-                orderHtml += `</div>`;
-            } else {
-                orderHtml = `
-                    <h2 class="text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6">Resumen de la Orden</h2>
-                    <div class="flex-grow scrollable-form-container">
-                        <p class="text-gray-700 dark:text-gray-300 text-lg">
-                            Una vez que guarde la orden, el resumen de la misma aparecerá aquí para su revisión.
-                        </p>
-                    </div>
-                `;
-            }
-            
-            savedOrderContainer.innerHTML = orderHtml;
         }
 
-        // Función para mostrar el modal de conversión
-        function showConversionModal(baseCurrency) {
-            const modal = document.getElementById('conversionModal');
-            const baseInput = document.getElementById('baseCurrencyInput');
-            const targetInput = document.getElementById('targetCurrencyInput');
-            const baseLabel = document.getElementById('baseCurrencyLabel');
-            const convertedValueInput = document.getElementById('convertedValueInput');
+        // Actualiza los totales en USD y VED
+        function updateTotalsByCurrency() {
+            const totalUSD = orderDetails.reduce((sum, detail) => sum + detail.total_usd, 0);
+            document.getElementById('ordenTotal_USD').value = formatNumber(totalUSD);
             
-            // Limpia el input del valor convertido al abrir el modal
-            convertedValueInput.value = '';
-                      
-            modal.classList.remove('hidden', 'opacity-0');
-            modal.classList.add('flex');
-            setTimeout(() => {
-                conversionModal.classList.remove('opacity-0');
-                conversionModal.querySelector('div').classList.remove('scale-95');
-                // Establecer el foco en el campo de texto después de la transición
-                targetCurrencyInput.focus();
-            }, 10);
-            
-            // Lógica para mostrar la moneda base
-            if (baseCurrency === 'USD') {
-                baseLabel.innerText = 'Total USD';
-                baseInput.value = document.getElementById('ordenTotal_USD').value;
-                conversionModalState.from = 'USD';
-                conversionModalState.to = 'VED';
-            } else if (baseCurrency === 'VED') {
-                baseLabel.innerText = 'Total VED';
-                baseInput.value = document.getElementById('ordenTotal_VED').value;
-                conversionModalState.from = 'VED';
-                conversionModalState.to = 'USD';
-            }
+            const totalVED = orderDetails.reduce((sum, detail) => sum + detail.total_ved, 0);
+            document.getElementById('ordenTotal_VED').value = formatNumber(totalVED);
 
-            // Almacena los totales actuales antes de abrir el modal
-            conversionModalState.totalUSD = parseFloat(document.getElementById('ordenTotal_USD').value.replace(/\./g, '').replace(',', '.')) || 0;
-            conversionModalState.totalVED = parseFloat(document.getElementById('ordenTotal_VED').value.replace(/\./g, '').replace(',', '.')) || 0;
+            // Actualiza el total final en el primer contenedor
+            document.getElementById('ordenTotal_Final').value = formatNumber(totalUSD);
         }
 
-        // Función para cerrar el modal de conversión
-        function closeConversionModal() {
-            const modal = document.getElementById('conversionModal');
-            modal.classList.add('opacity-0');
-            modal.querySelector('.transform').classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                document.getElementById('targetCurrencyInput').value = '';
-                document.getElementById('convertedValueInput').value = '';
-            }, 300);
-        }
-        
-        // Nueva función para manejar la lógica de cálculo y cierre del modal
-        function calculateAndCloseConversionModal() {
-            const targetInput = document.getElementById('targetCurrencyInput');
-            const totalFinalInput = document.getElementById('ordenTotal_Final');
-            const finalTotalLabel = document.getElementById('finalTotalLabel');
-
-            // El valor ya viene formateado con puntos para miles y coma para decimales
-            const cleanedValue = targetInput.value.replace(/\./g, '').replace(',', '.');
-            const conversionValue = parseFloat(cleanedValue) || 0;
-            
-            let finalValue = 0;
-            let finalCurrency = '';
-            let convertedPartialValue = 0;
-            
-            if (conversionValue > 0) {
-                const TasaCambio = conversionValue;
-                
-                if (conversionModalState.from === 'USD') {
-                    convertedPartialValue = conversionModalState.totalUSD * TasaCambio;
-                    finalValue = convertedPartialValue + conversionModalState.totalVED;
-                    finalCurrency = 'VED';
-                } else if (conversionModalState.from === 'VED') {
-                    convertedPartialValue = conversionModalState.totalVED / TasaCambio;
-                    finalValue = convertedPartialValue + conversionModalState.totalUSD;
-                    finalCurrency = 'USD';
-                }
-
-                conversionDetails = {
-                    from: conversionModalState.from,
-                    to: finalCurrency,
-                    rate: TasaCambio,
-                    convertedValue: convertedPartialValue
-                };
-                
-                totalFinalInput.value = formatNumber(finalValue);
-                finalTotalLabel.innerHTML = `Total Orden Final <strong>(${finalCurrency})</strong>`;
-            } else {
-                showMessage('El valor de conversión no es válido.');
-                conversionDetails = null;
-            }
-            
-            closeConversionModal();
-            renderOrderSummary();
-        }
-
-        /**
-         * Muestra un mensaje modal.
-         * @param {string} message - El mensaje a mostrar.
-         * @param {string} type - Tipo de mensaje ('success', 'error', etc.) para determinar el comportamiento.
-         */
-        function showMessage(message, type = 'info') {
+        // Muestra un mensaje en el modal de alerta
+        function showMessage(text, listData = null) {
             const messageBox = document.getElementById('messageBox');
             const messageText = document.getElementById('messageText');
+            const dataList = document.getElementById('dataList');
+            const messageOkBtn = document.getElementById('messageOkBtn');
+
+            messageText.textContent = text;
             
-            messageText.innerText = message;
+            // Oculta el botón 'Aceptar' inicialmente para la lista de datos
+            messageOkBtn.classList.remove('hidden');
+            dataList.classList.add('hidden');
+            dataList.innerHTML = '';
             
-            if (type === 'success') {
-                const messageOkBtn = document.getElementById('messageOkBtn');
-                messageOkBtn.onclick = () => {
-                    closeMessage();
-                    resetForm();
-                };
-            } else {
-                const messageOkBtn = document.getElementById('messageOkBtn');
-                messageOkBtn.onclick = closeMessage;
+            if (listData) {
+                messageOkBtn.classList.add('hidden');
+                dataList.classList.remove('hidden');
+                listData.forEach(item => {
+                    const p = document.createElement('p');
+                    p.innerHTML = `<strong>ID:</strong> ${item.id} <br> <strong>Costo USD:</strong> ${formatNumber(item.costo_usd)}<br><strong>Costo VED:</strong> ${formatNumber(item.costo_ved)}<br><strong>Fecha de Creación:</strong> ${item.fecha_creacion}`;
+                    dataList.appendChild(p);
+                });
             }
 
             messageBox.classList.remove('hidden', 'opacity-0');
-            messageBox.classList.add('flex');
-            setTimeout(() => {
-                messageBox.classList.remove('opacity-0');
-                messageBox.querySelector('.transform').classList.remove('scale-95');
-            }, 10);
+            messageBox.classList.add('flex', 'opacity-100');
+            messageBox.querySelector('.transform').classList.remove('scale-95');
         }
 
-        // Función para cerrar el modal de mensaje
+        // Cierra el modal de alerta
         function closeMessage() {
             const messageBox = document.getElementById('messageBox');
-            messageBox.classList.add('opacity-0');
             messageBox.querySelector('.transform').classList.add('scale-95');
+            messageBox.classList.remove('opacity-100');
+            messageBox.classList.add('opacity-0');
             setTimeout(() => {
                 messageBox.classList.add('hidden');
+            }, 300); // Coincide con la duración de la transición
+        }
+
+        // Muestra el modal de conversión
+        function showConversionModal(baseCurrency, targetCurrency) {
+            const modal = document.getElementById('conversionModal');
+            const baseLabel = document.getElementById('baseCurrencyLabel');
+            const targetLabel = document.getElementById('targetCurrencyLabel');
+            const baseInput = document.getElementById('baseCurrencyInput');
+            const targetInput = document.getElementById('targetCurrencyInput');
+            const convertedInput = document.getElementById('convertedValueInput');
+            
+            // Limpia los valores de los inputs
+            baseInput.value = '';
+            targetInput.value = '';
+            convertedInput.value = '';
+
+            // Configura el estado del modal de conversión
+            conversionModalState = { baseCurrency, targetCurrency };
+
+            // Configura las etiquetas
+            baseLabel.textContent = `Total Orden ${baseCurrency}`;
+            targetLabel.textContent = `Tasa (${targetCurrency}/${baseCurrency})`;
+
+            // Calcula y formatea el valor de la moneda base
+            let baseValue = 0;
+            if (baseCurrency === 'USD') {
+                baseValue = orderDetails.reduce((sum, detail) => sum + detail.total_usd, 0);
+                convertedValueLabel.textContent = 'VED eq';
+            } else {
+                baseValue = orderDetails.reduce((sum, detail) => sum + detail.total_ved, 0);
+                convertedValueLabel.textContent = 'USD eq';
+            }
+            baseInput.value = formatNumber(baseValue);
+
+            modal.classList.remove('hidden', 'opacity-0');
+            modal.classList.add('flex', 'opacity-100');
+            modal.querySelector('.transform').classList.remove('scale-95');
+            
+            // Pone el foco en el input de la tasa de cambio
+            setTimeout(() => {
+                targetInput.focus();
             }, 300);
         }
-
-        // Función para eliminar un detalle de la orden
-        function removeDetail(button) {
-            const detailRow = button.closest('.relative');
-            const posId = parseInt(detailRow.querySelector('.orden-pos-id').value);
-            orderDetails = orderDetails.filter(d => d.id !== posId);
-            detailRow.remove();
-            let currentId = 10;
-            orderDetails.forEach(d => {
-                d.id = currentId;
-                currentId += 10;
-            });
-            updateTotalsByCurrency();
-            renderDetails();
-            renderOrderSummary();
+        
+        // Cierra el modal de conversión
+        function closeConversionModal() {
+            const modal = document.getElementById('conversionModal');
+            modal.querySelector('.transform').classList.add('scale-95');
+            modal.classList.remove('opacity-100');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
         }
-
-        // Función para renderizar los detalles de la orden desde el array
-        function renderDetails() {
-            const container = document.getElementById('detalleContainer');
-            container.innerHTML = '';
-            orderDetails.forEach(detail => {
-                const newRow = createDetailRow(detail);
-                container.appendChild(newRow);
-                addQuantityButtonListeners(newRow);
-            });
-        }
-
-        // Función para actualizar los totales por moneda
-        function updateTotalsByCurrency() {
-            let totalUSD = 0;
-            let totalVED = 0;
+        
+        // Función para el cálculo de conversión en tiempo real
+        function calculateConvertedValue() {
+            const baseInput = document.getElementById('baseCurrencyInput');
+            const targetInput = document.getElementById('targetCurrencyInput');
+            const convertedInput = document.getElementById('convertedValueInput');
             
-            orderDetails.forEach(detail => {
-                const subtotal = detail.costo * detail.cantidad;
-                if (detail.moneda === 'USD') {
-                    totalUSD += subtotal;
-                } else if (detail.moneda === 'VED') {
-                    totalVED += subtotal;
-                }
-            });
-
-            document.getElementById('ordenTotal_USD').value = formatNumber(totalUSD);
-            document.getElementById('ordenTotal_VED').value = formatNumber(totalVED);
-
-            const finalTotalInput = document.getElementById('ordenTotal_Final');
-            const finalTotalLabel = document.getElementById('finalTotalLabel');
+            // Limpia el valor del input de la tasa y reemplaza la coma por un punto para un cálculo correcto
+            const cleanedRate = targetInput.value.replace(/\./g, '').replace(',', '.');
+            const rate = parseFloat(cleanedRate) || 0;
             
-            if (totalUSD > 0 && totalVED === 0) {
-                finalTotalInput.value = formatNumber(totalUSD);
-                finalTotalLabel.innerHTML = 'Total Orden Final <strong>(USD)</strong>';
-                conversionDetails = null;
-            } else if (totalUSD === 0 && totalVED > 0) {
-                finalTotalInput.value = formatNumber(totalVED);
-                finalTotalLabel.innerHTML = 'Total Orden Final <strong>(VED)</strong>';
-                conversionDetails = null;
-            } else if (totalUSD === 0 && totalVED === 0) {
-                finalTotalInput.value = '';
-                finalTotalLabel.innerHTML = 'Total Orden Final';
-                conversionDetails = null;
+            // Limpia el valor base para el cálculo
+            const cleanedBaseValue = baseInput.value.replace(/\./g, '').replace(',', '.');
+            const baseValue = parseFloat(cleanedBaseValue) || 0;
+
+            let convertedValue = 0;
+            if (conversionModalState.baseCurrency === 'USD') {
+                convertedValue = baseValue * rate;
             } else {
-                finalTotalInput.value = '';
-                finalTotalLabel.innerHTML = 'Total Orden Final';
+                convertedValue = baseValue / rate;
+            }
+            
+            convertedInput.value = formatNumber(convertedValue);
+        }
+
+        // Lógica para guardar la orden completa
+        async function saveOrder() {
+            const ordenForm = document.getElementById('ordenForm');
+            const formData = new FormData(ordenForm);
+            
+            // Obtenemos los valores del formulario
+            const ordenId = formData.get('ordenId');
+            const ordenFecha = formData.get('ordenFecha');
+            const placa = formData.get('placa');
+            const contacto = formData.get('contacto');
+            const ordenTotal_USD = formData.get('ordenTotal_USD');
+            const ordenTotal_VED = formData.get('ordenTotal_VED');
+            const totalConfirmado = document.getElementById('ordenTotal_Final').value; // Usamos el valor del campo final
+
+            // Validar campos requeridos
+            if (!ordenFecha || !placa || !contacto) {
+                showMessage("Por favor, rellene todos los campos obligatorios marcados con (*).");
+                return;
+            }
+            
+            // Si no hay detalles, no se puede guardar
+            if (orderDetails.length === 0) {
+                showMessage("No se puede guardar una orden sin productos o servicios.");
+                return;
             }
 
-            renderOrderSummary();
-        }
-        
-        // Función para crear la fila de detalle de la orden
-        function createDetailRow(data) {
-            const newRow = document.createElement('div');
-            newRow.className = 'bg-gray-300 dark:bg-gray-700 p-4 rounded-lg space-y-2 relative';
-            newRow.innerHTML = `
-                <button type="button" class="absolute top-2 right-2 text-red-500 hover:text-red-700 transition-colors duration-200" onclick="removeDetail(this)">
-                    <i class="fas fa-times-circle text-xl"></i>
-                </button>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Posición</label>
-                        <input type="text" readonly class="orden-pos-id w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 text-center dark:text-gray-100 cursor-not-allowed" value="${data.id}">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Tipo de Posición</label>
-                        <select class="orden-pos-tipo w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                            <option value="Repuesto" ${data.tipo === 'Repuesto' ? 'selected' : ''}>Repuesto</option>
-                            <option value="Servicio" ${data.tipo === 'Servicio' ? 'selected' : ''}>Servicio</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Descripción de la Posición</label>
-                        <input type="text" class="orden-producto-tipo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. Reparación Tren Delantero" value="${data.descripcion}">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Presentación</label>
-                        <input type="text" class="orden-producto-presentacion w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1 Litro" value="${data.presentacion}">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Número de Parte (NP)</label>
-                        <input type="text" class="orden-producto-np w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400" placeholder="Ej. 1A2B3C" value="${data.np}">
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Costo</label>
-                        <!-- Campo editable Costo con justificación a la derecha y placeholder -->
-                        <input type="number" step="1" class="orden-costo w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right" placeholder="0,00" value="${data.costo > 0 ? data.costo : ''}">
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Moneda</label>
-                        <select class="orden-moneda w-full p-2 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400">
-                            <option value="USD" ${data.moneda === 'USD' ? 'selected' : ''}>USD</option>
-                            <option value="VED" ${data.moneda === 'VED' ? 'selected' : ''}>VED</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Cantidad</label>
-                        <!-- Campo Cantidad con justificación al centro y botones de control -->
-                        <div class="flex items-center space-x-2">
-                            <button type="button" class="quantity-btn decrease bg-gray-400 dark:bg-gray-600 text-white p-1 rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-500 dark:hover:bg-gray-700 transition-colors duration-200">
-                                <i class="fas fa-minus text-xs"></i>
-                            </button>
-                            <input type="number" step="1" class="orden-cantidad w-full p-1 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-center" placeholder="1" value="${data.cantidad}">
-                            <button type="button" class="quantity-btn increase bg-gray-400 dark:bg-gray-600 text-white p-1 rounded-full w-6 h-6 flex items-center justify-center hover:bg-gray-500 dark:hover:bg-gray-700 transition-colors duration-200">
-                                <i class="fas fa-plus text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                    <div>
-                        <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Subtotal Pos</label>
-                        <input type="text" readonly class="orden-subtotal w-full p-1 rounded-lg bg-gray-400 dark:bg-gray-600 text-gray-900 text-center dark:text-gray-100 cursor-not-allowed" placeholder="0,00" value="${formatNumber(data.subtotal)}">
-                    </div>
-                </div>
-            `;
-            return newRow;
-        }
-        
-        // Función para agregar listeners a los botones de cantidad
-        function addQuantityButtonListeners(row) {
-            const quantityButtons = row.querySelectorAll('.quantity-btn');
-            quantityButtons.forEach(btn => {
-                btn.addEventListener('click', (event) => {
-                    const input = event.target.closest('div').querySelector('.orden-cantidad');
-                    let currentValue = parseInt(input.value) || 0;
-                    if (btn.classList.contains('increase')) {
-                        currentValue++;
-                    } else if (btn.classList.contains('decrease') && currentValue > 1) {
-                        currentValue--;
-                    }
-                    input.value = currentValue;
-                    // Dispara un evento de input para actualizar los totales
-                    input.dispatchEvent(new Event('input', { bubbles: true }));
-                });
-            });
-        }
+            // Datos de la cabecera de la orden
+            const orderHeader = {
+                ordenId,
+                ordenFecha: formatDisplayDate(ordenFecha),
+                placa,
+                contacto,
+                ordenTotal_USD,
+                ordenTotal_VED,
+                totalConfirmado,
+                fechaHoraRegistro: formatDateTime(new Date())
+            };
 
-        
-        // *******************************************************************
-        // Lógica agregada para generar y mostrar el JSON de la orden
-        // *******************************************************************
-        
-        /**
-         * Genera un objeto JSON con los datos completos de la orden.
-         * @param {string} userReg - El nombre del usuario registrado.
-         * @returns {object} El objeto JSON de la orden.
-         */
-        function generateOrderJSON(userReg) {
-            // Recopila los datos de la cabecera
-            const ordenId = document.getElementById('ordenId').value;
-            const vehiculoPlaca = document.getElementById('placa').value;
-            const personaContacto = document.getElementById('contacto').value;
-            const ordenFecha = formatDisplayDate(document.getElementById('ordenFecha').value);
-            const ordenTotal = document.getElementById('ordenTotal_Final').value;
-            // Se extrae la moneda del label del total final
-            const ordenTotalMoneda = document.getElementById('finalTotalLabel').innerText.match(/\(([^)]+)\)/)?.[1] || '';
-            const ordenDataReg = formatDateTime(new Date()); // Obtiene la fecha y hora de registro
-
-            // Mapea los detalles del array global 'orderDetails' a la estructura JSON requerida
-            const orderDetailsJSON = orderDetails.map(detail => {
-                return {
-                    "Orden_Pos_ID": detail.id,
-                    "Vehiculo_Placa": vehiculoPlaca,
-                    "Vehiculo_PersonaContacto": personaContacto,
-                    "Orden_Producto_Tipo": detail.tipo,
-                    "Orden_Producto_descripcion": detail.descripcion,
-                    "Orden_Producto_Presentacion": detail.presentacion,
-                    "Orden_Producto_np": detail.np,
-                    "Orden_Producto_Costo": detail.costo,
-                    "Orden_Producto_Moneda": detail.moneda,
-                    "Orden_Producto_Cantidad": detail.cantidad,
-                    "Orden_Subtotal_Pos": parseFloat(detail.subtotal)
-                };
-            });
-            
-            // Construye el objeto final con la cabecera y los detalles
-            const orderJSON = {
-                "Orden_ID": ordenId,
-                "Vehiculo_Placa": vehiculoPlaca,
-                "Vehiculo_PersonaContacto": personaContacto,
-                "Orden_Fecha": ordenFecha,
-                "Orden_Total": parseFloat(ordenTotal.replace(/\./g, '').replace(',', '.')),
-                "Orden_Moneda_Final": ordenTotalMoneda,
-                // Campo nuevo para la Tasa de Cambio
-                "Orden_TasaCambio": conversionDetails ? conversionDetails.rate : null,
-                "Orden_UsuarioReg": userReg,
-                "Orden_DataReg": ordenDataReg,
-                "Detalles_Orden": orderDetailsJSON
+            // Estructura de datos completa a enviar a Google Apps Script
+            const payload = {
+                action: 'saveOrder',
+                orderHeader,
+                orderDetails
             };
             
-            return orderJSON;
-        }
-
-        // *******************************************************************
-        // Fin de la lógica JSON
-        // *******************************************************************
-
-        // *******************************************************************
-        // Lógica agregada para enviar datos a Google Apps Script
-        // *******************************************************************
-        
-        /**
-         * Envía un objeto JavaScript como un cuerpo de solicitud JSON a una URL de un script de Google Apps Script.
-         * @param {string} gasWebappUrl La URL de la web app del script de Google Apps Script.
-         * @param {object} data El objeto JavaScript que se convertirá a JSON y se enviará en el cuerpo de la solicitud.
-         * @returns {Promise<object>} Una promesa que se resuelve con la respuesta JSON del servidor o se rechaza si hay un error.
-         */
-        async function sendDataToGAS(gasWebappUrl, data) {
-            const options = {
-                method: 'POST',
-                mode: 'no-cors',
-                body: JSON.stringify(data),
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-            };
+            console.log("Enviando a Google Apps Script:", payload);
 
             try {
-                const response = await fetch(gasWebappUrl, options);
-                console.log('Respuesta del servidor GAS:', response);
-                return response;
+                // Muestra un mensaje de "Guardando..."
+                showMessage("Guardando orden... Por favor, espere.");
+
+                const response = await fetch(GAS_REGISTER_ORD_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Necesario para evitar errores de CORS con Google Apps Script
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                // No podemos leer la respuesta con 'no-cors', así que asumimos que fue exitoso.
+                console.log("Respuesta de Google Apps Script (asumida exitosa):", response);
+                showMessage("¡Orden guardada exitosamente!");
+
+                // Limpiar el formulario y los detalles después de guardar
+                clearOrderDetails();
+                ordenForm.reset();
+                document.getElementById('ordenTotal_USD').value = formatNumber(0);
+                document.getElementById('ordenTotal_VED').value = formatNumber(0);
+                document.getElementById('ordenTotal_Final').value = formatNumber(0);
+                document.getElementById('ordenId').value = generateShortUUID(); // Genera un nuevo ID
+                document.getElementById('ordenFecha').value = formatDate(new Date()); // Vuelve a establecer la fecha actual
+                
+                // Generar un nuevo UUID después de guardar y limpiar.
+                document.getElementById('ordenId').value = generateShortUUID();
+
             } catch (error) {
-                console.error('Error al enviar los datos a Google Apps Script:', error);
-                throw error;
+                console.error("Error al guardar la orden:", error);
+                showMessage("Ocurrió un error al guardar la orden. Por favor, inténtelo de nuevo.");
+            }
+        }
+
+        // Función para manejar el evento de clic en el botón "Añadir Producto"
+        function handleAddDetailClick() {
+            const detalleContainer = document.getElementById('detalleContainer');
+            
+            // HTML para el nuevo detalle de la orden
+            const newDetail = document.createElement('div');
+            newDetail.className = 'bg-white dark:bg-gray-700 p-4 rounded-lg shadow-md flex flex-col md:flex-row items-start md:items-center gap-4 relative transition-all duration-300';
+            newDetail.innerHTML = `
+                <div class="flex-grow w-full md:w-auto">
+                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Concepto</label>
+                    <input type="text" placeholder="Ej. Cambio de aceite" class="w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400" required>
+                </div>
+                <div class="flex-grow w-full md:w-auto">
+                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Costo ($)</label>
+                    <input type="number" step="0.01" placeholder="Ej. 25.00" class="cost-input w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right" required>
+                </div>
+                <div class="flex-grow w-full md:w-auto">
+                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Cantidad</label>
+                    <input type="number" step="1" value="1" min="1" class="quantity-input w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-400 text-right" required>
+                </div>
+                <div class="flex-grow w-full md:w-auto">
+                    <label class="block text-gray-700 dark:text-gray-300 font-medium mb-1">Total ($)</label>
+                    <input type="text" readonly value="0.00" class="total-input w-full p-2 rounded-lg bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-gray-100 cursor-not-allowed text-right">
+                </div>
+                <div class="flex-shrink-0">
+                    <button type="button" class="mt-7 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full shadow-md transition-colors duration-200 remove-btn">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            `;
+            
+            detalleContainer.appendChild(newDetail);
+            
+            // Asigna los eventos a los nuevos inputs
+            const costInput = newDetail.querySelector('.cost-input');
+            const quantityInput = newDetail.querySelector('.quantity-input');
+            const totalInput = newDetail.querySelector('.total-input');
+            const removeBtn = newDetail.querySelector('.remove-btn');
+            
+            // Función para actualizar el total de la fila
+            function updateRowTotal() {
+                const cost = parseFloat(costInput.value) || 0;
+                const quantity = parseInt(quantityInput.value) || 0;
+                const total = cost * quantity;
+                totalInput.value = formatNumber(total);
+                updateOrderDetails();
+            }
+
+            // Maneja los eventos de cambio para los inputs
+            costInput.addEventListener('input', updateRowTotal);
+            quantityInput.addEventListener('input', updateRowTotal);
+
+            // Maneja el evento de clic para el botón de eliminar
+            removeBtn.addEventListener('click', () => {
+                detalleContainer.removeChild(newDetail);
+                updateOrderDetails();
+            });
+
+            // Actualiza la variable global orderDetails y recalcula los totales
+            function updateOrderDetails() {
+                orderDetails = [];
+                const allDetails = detalleContainer.querySelectorAll('.p-4'); // Selecciona los contenedores de detalles
+                allDetails.forEach(detailElement => {
+                    const concepto = detailElement.querySelector('input').value;
+                    const costo_usd = parseFloat(detailElement.querySelector('.cost-input').value) || 0;
+                    const cantidad = parseInt(detailElement.querySelector('.quantity-input').value) || 0;
+                    const total_usd = costo_usd * cantidad;
+                    const total_ved = total_usd * (conversionDetails ? conversionDetails.rate : 0);
+                    
+                    orderDetails.push({
+                        id: generateShortUUID(),
+                        concepto,
+                        costo_usd,
+                        cantidad,
+                        total_usd,
+                        total_ved,
+                        costo_ved: costo_usd * (conversionDetails ? conversionDetails.rate : 0) // Agregamos el costo individual en VED
+                    });
+                });
+                updateTotalsByCurrency();
             }
         }
         
-        // *******************************************************************
-        // Fin de la lógica para enviar datos a Google Apps Script
-        // *******************************************************************
+        // Función para actualizar la UI del resumen de la orden
+        function updateSavedOrderUI(order) {
+            const savedContainer = document.getElementById('savedOrderContainer');
+            savedContainer.innerHTML = ''; // Limpiar el contenedor
 
+            const orderTitle = document.createElement('h2');
+            orderTitle.className = 'text-3xl font-bold text-center text-gray-800 dark:text-gray-100 mb-6 mt-6';
+            orderTitle.textContent = 'Resumen de la Orden Guardada';
+            savedContainer.appendChild(orderTitle);
+
+            const orderIdDiv = document.createElement('div');
+            orderIdDiv.className = 'bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-md mb-4';
+            orderIdDiv.innerHTML = `
+                <p class="font-semibold text-gray-700 dark:text-gray-200">ID de Orden:</p>
+                <p class="text-xl font-bold text-gray-900 dark:text-gray-100">${order.orderHeader.ordenId}</p>
+            `;
+            savedContainer.appendChild(orderIdDiv);
+
+            const totalDiv = document.createElement('div');
+            totalDiv.className = 'bg-gray-100 dark:bg-gray-700 p-4 rounded-lg shadow-md mb-4';
+            totalDiv.innerHTML = `
+                <p class="font-semibold text-gray-700 dark:text-gray-200">Total de la Orden:</p>
+                <p class="text-2xl font-bold text-green-600">${order.orderHeader.totalConfirmado}</p>
+            `;
+            savedContainer.appendChild(totalDiv);
+
+            const detailsTitle = document.createElement('h3');
+            detailsTitle.className = 'text-xl font-semibold text-gray-700 dark:text-gray-200 border-b border-gray-400 pb-2 mb-4';
+            detailsTitle.textContent = 'Detalles de la Orden';
+            savedContainer.appendChild(detailsTitle);
+
+            order.orderDetails.forEach(detail => {
+                const detailDiv = document.createElement('div');
+                detailDiv.className = 'bg-white dark:bg-gray-600 p-4 rounded-lg shadow-sm mb-2';
+                detailDiv.innerHTML = `
+                    <p><strong>Concepto:</strong> ${detail.concepto}</p>
+                    <p><strong>Costo:</strong> ${formatNumber(detail.costo_usd)} $</p>
+                    <p><strong>Cantidad:</strong> ${detail.cantidad}</p>
+                    <p><strong>Total:</strong> ${formatNumber(detail.total_usd)} $</p>
+                `;
+                savedContainer.appendChild(detailDiv);
+            });
+        }
+        
+        // Escuchadores de eventos
         document.addEventListener('DOMContentLoaded', () => {
-            // Inicialización de la página
-            document.getElementById('ordenId').value = generateShortUUID();
-            document.getElementById('ordenFecha').value = formatDate(new Date());
-
-            // Redirección de botones de la barra de navegación
-            const buttonRoutes = {
-                'homeBtn': 'menu_app.html',
-                'logoutBtn': 'index.html'
-            };
-            Object.keys(buttonRoutes).forEach(id => {
-                const button = document.getElementById(id);
-                if (button) {
-                    button.addEventListener('click', () => {
-                        window.location.href = buttonRoutes[id];
-                    });
-                }
-            });
-            
-            // Lógica para añadir un nuevo producto/servicio
-            document.getElementById('addDetailBtn').addEventListener('click', () => {
-                const newId = orderDetails.length > 0 ? orderDetails[orderDetails.length - 1].id + 10 : 10;
-                const newDetailData = {
-                    id: newId,
-                    tipo: 'Servicio',
-                    descripcion: '',
-                    presentacion: '',
-                    np: '',
-                    costo: 0,
-                    moneda: 'USD',
-                    cantidad: 1,
-                    subtotal: 0
-                };
-                
-                orderDetails.push(newDetailData);
-                const newRow = createDetailRow(newDetailData);
-                const container = document.getElementById('detalleContainer');
-                container.appendChild(newRow);
-                
-                const scrollableContainer = document.querySelector('.scrollable-form-container');
-                if (scrollableContainer) {
-                    scrollableContainer.scrollTop = scrollableContainer.scrollHeight;
-                }
-                
-                const descripcionInput = newRow.querySelector('.orden-producto-tipo');
-                if (descripcionInput) {
-                    descripcionInput.focus();
-                }
-
-                addQuantityButtonListeners(newRow);
-                updateTotalsByCurrency();
-                renderOrderSummary();
-            });
-
-            // Lógica para el botón de Guardar
+            const ordenFechaInput = document.getElementById('ordenFecha');
+            const ordenIdInput = document.getElementById('ordenId');
+            const pasteBtn = document.getElementById('pasteBtn');
+            const addDetailBtn = document.getElementById('addDetailBtn');
             const saveBtn = document.getElementById('saveBtn');
-            saveBtn.addEventListener('click', async () => {
-                const placaInput = document.getElementById('placa');
-                const contactoInput = document.getElementById('contacto');
-                const totalFinalInput = document.getElementById('ordenTotal_Final');
-                const finalTotalLabel = document.getElementById('finalTotalLabel');
-
-                if (!placaInput.value.trim()) {
-                    showMessage('El campo "Placa del Vehículo" es obligatorio.');
-                    placaInput.focus();
-                    return;
-                }
-
-                if (!contactoInput.value.trim()) {
-                    showMessage('El campo "Persona de Contacto" es obligatorio.');
-                    contactoInput.focus();
-                    return;
-                }
-                
-                if (!totalFinalInput.value || !finalTotalLabel.innerText.includes('(')) {
-                    showMessage('Debe confirmar el valor final de la orden. Por favor, use el botón de confirmación de valor o los botones de conversión si es necesario.');
-                    return;
-                }
-                
-                let userReg = '';
-                const loggedInUser = sessionStorage.getItem('loggedInUser');
-                if (loggedInUser) {
-                    try {
-                        const user = JSON.parse(loggedInUser);
-                        userReg = user.Cliente_Nombre || 'Usuario Desconocido';
-                    } catch (e) {
-                        console.error('Error al analizar el JSON de usuario de la sesión:', e);
-                    }
-                }
-                
-                const orderDataJSON = generateOrderJSON(userReg);
-                console.log("Datos de la Orden en formato JSON:", JSON.stringify(orderDataJSON, null, 2));
-                
-                try {
-                    showMessage('Enviando datos de la orden...');
-                    await sendDataToGAS(GAS_REGISTER_ORD_URL, orderDataJSON);
-                    showMessage('¡Orden guardada exitosamente!', 'success');
-                } catch (error) {
-                    showMessage('Error al guardar la orden. Por favor, intente de nuevo.');
-                    console.error('Error al guardar la orden:', error);
-                }
-            });
-
-            // Lógica para la conversión
-            document.getElementById('convertUSD').addEventListener('click', () => {
-                showConversionModal('USD');
-            });
-            document.getElementById('convertVED').addEventListener('click', () => {
-                showConversionModal('VED');
-            });
-            
-            document.getElementById('acceptConversionBtn').addEventListener('click', () => {
-                calculateAndCloseConversionModal();
-            });
-            
-            document.getElementById('ordenForm').addEventListener('input', (event) => {
-                const target = event.target;
-                const parentRow = target.closest('.relative');
-
-                if (parentRow) {
-                    const posId = parseInt(parentRow.querySelector('.orden-pos-id').value);
-                    const detail = orderDetails.find(d => d.id === posId);
-                    
-                    if (detail) {
-                        const costInput = parentRow.querySelector('.orden-costo');
-                        const currencySelect = parentRow.querySelector('.orden-moneda');
-                        const quantityInput = parentRow.querySelector('.orden-cantidad');
-                        const subtotalInput = parentRow.querySelector('.orden-subtotal');
-                        const descripcionInput = parentRow.querySelector('.orden-producto-tipo');
-                        const presentacionInput = parentRow.querySelector('.orden-producto-presentacion');
-                        const npInput = parentRow.querySelector('.orden-producto-np');
-                        const tipoSelect = parentRow.querySelector('.orden-pos-tipo');
-
-                        detail.descripcion = descripcionInput.value;
-                        detail.presentacion = presentacionInput.value;
-                        detail.np = npInput.value;
-                        detail.tipo = tipoSelect.value;
-                        detail.moneda = currencySelect.value;
-                        detail.costo = parseFloat(costInput.value) || 0;
-                        detail.cantidad = parseInt(quantityInput.value) || 0;
-                        
-                        const subtotal = (detail.costo * detail.cantidad).toFixed(2);
-                        detail.subtotal = subtotal;
-                        subtotalInput.value = formatNumber(parseFloat(subtotal));
-
-                        updateTotalsByCurrency();
-                    }
-                }
-            });
-
-            // *******************************************************************
-            // Lógica agregada para formatear el campo de la tasa de cambio
-            // *******************************************************************
-            
+            const confirmTotalBtn = document.getElementById('confirmTotalBtn');
+            const convertUSDbtn = document.getElementById('convertUSD');
+            const convertVEDbtn = document.getElementById('convertVED');
+            const acceptConversionBtn = document.getElementById('acceptConversionBtn');
             const targetCurrencyInput = document.getElementById('targetCurrencyInput');
-            const convertedValueInput = document.getElementById('convertedValueInput');
 
-            // Función para calcular el valor convertido y actualizar el input
-            function calculateConvertedValue() {
-                const cleanedRate = targetCurrencyInput.value.replace(/\./g, '').replace(',', '.');
-                const rate = parseFloat(cleanedRate) || 0;
+            // Establece la fecha actual por defecto
+            ordenFechaInput.value = formatDate(new Date());
 
-                let convertedValue = 0;
-                if (conversionModalState.from === 'USD') {
-                    convertedValue = conversionModalState.totalUSD * rate;
-                } else if (conversionModalState.from === 'VED') {
-                    convertedValue = conversionModalState.totalVED / rate;
+            // Genera un ID inicial
+            ordenIdInput.value = generateShortUUID();
+
+            // Evento para pegar la placa desde sessionStorage
+            // Se ha modificado para que lea desde sessionStorage en lugar del portapapeles.
+            pasteBtn.addEventListener('click', () => {
+                const storedValue = sessionStorage.getItem('copiedValues');
+                if (storedValue) {
+                    document.getElementById('placa').value = storedValue;
+                } else {
+                    showMessage('No hay valores guardados en el almacenamiento de la sesión.');
+                }
+            });
+
+            // Evento para añadir un nuevo detalle
+            addDetailBtn.addEventListener('click', handleAddDetailClick);
+
+            // Evento para guardar la orden
+            saveBtn.addEventListener('click', saveOrder);
+
+            // Evento para confirmar el total (aquí se podría agregar la lógica de confirmación)
+            confirmTotalBtn.addEventListener('click', () => {
+                const finalTotal = document.getElementById('ordenTotal_Final').value;
+                showMessage(`El valor final de la orden ha sido confirmado en: ${finalTotal}`);
+            });
+
+            // Eventos para abrir los modales de conversión
+            convertUSDbtn.addEventListener('click', () => showConversionModal('USD', 'VED'));
+            convertVEDbtn.addEventListener('click', () => showConversionModal('VED', 'USD'));
+
+            // Evento para aceptar la conversión
+            acceptConversionBtn.addEventListener('click', () => {
+                const targetInput = document.getElementById('targetCurrencyInput');
+                const rate = parseFloat(targetInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+                
+                if (rate <= 0) {
+                    showMessage("Por favor, ingrese una tasa de cambio válida (mayor a cero).");
+                    return;
                 }
                 
-                convertedValueInput.value = formatNumber(convertedValue);
-            }
+                conversionDetails = {
+                    baseCurrency: conversionModalState.baseCurrency,
+                    targetCurrency: conversionModalState.targetCurrency,
+                    rate: rate
+                };
 
-            // Evento `input`: Se activa en cada pulsación de tecla para el input de tasa de cambio.
-            // La lógica aquí solo limpia el input para permitir la escritura fluida.
+                // Actualiza los totales con la nueva tasa
+                orderDetails.forEach(detail => {
+                    if (conversionDetails.baseCurrency === 'USD') {
+                        detail.total_ved = detail.total_usd * conversionDetails.rate;
+                        detail.costo_ved = detail.costo_usd * conversionDetails.rate;
+                    } else {
+                        detail.total_usd = detail.total_ved / conversionDetails.rate;
+                        detail.costo_usd = detail.costo_ved / conversionDetails.rate;
+                    }
+                });
+                
+                updateTotalsByCurrency();
+                closeConversionModal();
+                showMessage("La tasa de cambio ha sido aplicada exitosamente.");
+            });
+
+            // Evento para el cálculo en tiempo real en el modal de conversión
             targetCurrencyInput.addEventListener('input', (event) => {
                 const input = event.target;
-                let value = input.value.replace(/[^0-9,.]/g, ''); // Permite solo números, comas y puntos
-                
-                // Asegura que solo haya un separador decimal (el primero que se encuentre)
-                const parts = value.split(/[.,]/);
-                if (parts.length > 2) {
-                    const firstPart = parts.shift();
-                    const lastParts = parts.join('');
-                    value = firstPart + ',' + lastParts;
-                }
-                
-                // Si el valor empieza con un separador decimal, añade un 0 al inicio
-                if (value.startsWith(',') || value.startsWith('.')) {
-                    value = '0' + value;
-                }
-
-                // Normaliza el separador a una coma para la visualización
-                value = value.replace('.', ',');
-
+                const value = input.value.replace(/\./g, ''); // Elimina los puntos para el cálculo
                 input.value = value;
                 calculateConvertedValue(); // Llama a la función de cálculo en tiempo real
             });
